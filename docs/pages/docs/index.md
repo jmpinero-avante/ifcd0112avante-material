@@ -22,13 +22,22 @@ Documentación, ejercicios y ejemplos prácticos de los tres módulos formativos
 
 ## Accesos rápidos
 
-[ :material-docker: **Módulo 1 – Infraestructura** ](../docs-site/modulo1-infraestructura/){ .md-button .md-button--primary }  
-_Entornos de desarrollo, Markdown, Git, HTML, CSS, Bootstrap y contenedores Docker._
+[:material-docker:{ .lg .middle } **Módulo 1 – Infraestructura**](../docs-site/modulo1-infraestructura/)
+:octicons-arrow-right-16: *Entornos de desarrollo, Markdown, Git, HTML, CSS, Bootstrap y Contenedores Docker.*
 
-[ :material-database-outline: **Módulo 2 – Bases de Datos** ](../docs-site/modulo2-bases-de-datos/){ .md-button .md-button--primary }  
-_Diseño de bases de datos en PostgreSQL, consultas y programación en la base de datos._
+[:material-file-pdf-box: **Descargar PDF**](pdf/modulo1-infraestructura.pdf)
 
-[ :material-language-java: **Módulo 3 – Programación en Java** ](../docs-site/modulo3-poo-java/){ .md-button .md-button--primary }  
-_Programación estructurada, clases y objetos, interfaces, colecciones, streams y JDBC._
+---
 
+[:material-database-outline:{ .lg .middle } **Módulo 2 – Bases de Datos**](../docs-site/modulo2-bases-de-datos/)
+:octicons-arrow-right-16: *Diseño de Bases de Datos en PostgreSQL, consultas y programación en la Base de Datos.*
+
+[:material-file-pdf-box: **Descargar PDF**](pdf/modulo2-bases-de-datos.pdf)
+
+---
+
+[:material-language-java:{ .lg .middle } **Módulo 3 – Programación en Java**](../docs-site/modulo3-poo-java/)
+:octicons-arrow-right-16: *Programación estructurada, clases y objetos, interfaces, colecciones, streams, JDBC.*
+
+[:material-file-pdf-box: **Descargar PDF**](pdf/modulo3-poo-java.pdf)
 

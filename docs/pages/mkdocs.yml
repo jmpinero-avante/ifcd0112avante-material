@@ -69,6 +69,8 @@ plugins:
       verbose: false
       combined: false
       media_type: print
+      enabled_if_env: ENABLE_PDF_EXPORT
+      output_path: pdf/
 
 extra:
   social:
@@ -79,4 +81,7 @@ extra:
       link: https://www.avante.es/
       name: Avante Sevilla
   generator: false
+
+extra_css:
+  - styles/pdf-buttons.css
 

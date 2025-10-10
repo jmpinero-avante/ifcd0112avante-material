@@ -1,4 +1,4 @@
-name: Deploy MkDocs site to GitHub Pages
+name: Deploy MkDocs site and PDFs
 
 on:
   push:
@@ -12,8 +12,11 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
+    env:
+      ENABLE_PDF_EXPORT: "1"
 
     steps:
       - name: Checkout repository
@@ -29,7 +32,7 @@ jobs:
         run: |
           pip install mkdocs-material mkdocs-pdf-export-plugin pymdown-extensions weasyprint lxml beautifulsoup4
 
-      - name: Build the MkDocs site
+      - name: Build MkDocs site (including PDFs)
         working-directory: docs/pages
         run: mkdocs build --clean
 
