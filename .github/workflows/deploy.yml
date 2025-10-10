@@ -1,0 +1,42 @@
+name: Deploy MkDocs site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MkDocs and dependencies
+        working-directory: docs/pages
+        run: |
+          pip install mkdocs-material mkdocs-pdf-export-plugin pymdown-extensions weasyprint lxml beautifulsoup4
+
+      - name: Build the MkDocs site
+        working-directory: docs/pages
+        run: mkdocs build --clean
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/pages/site
+          publish_branch: gh-pages
+
