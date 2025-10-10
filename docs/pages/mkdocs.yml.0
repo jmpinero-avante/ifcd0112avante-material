@@ -3,8 +3,6 @@ site_url: https://jmpinero-avante.github.io/ifcd0112avante-material/
 repo_url: https://github.com/jmpinero-avante/ifcd0112avante-material
 repo_name: jmpinero-avante/ifcd0112avante-material
 
-docs_dir: docs   # 👈 Indica dónde están los .md
-
 theme:
   name: material
   custom_dir: overrides
@@ -35,17 +33,32 @@ theme:
     - content.tabs.link
     - content.tooltips
 
+nav:
+  - Inicio: index.md
+  - Módulo 1 – Infraestructura: ../docs-site/modulo1-infraestructura/index.md
+  - Módulo 2 – Bases de Datos: ../docs-site/modulo2-bases-de-datos/index.md
+  - Módulo 3 – Programación en Java: ../docs-site/modulo3-poo-java/index.md
+
 markdown_extensions:
-  - attr_list
   - admonition
+  - attr_list
   - def_list
+  - footnotes
+  - meta
   - toc:
       permalink: true
   - pymdownx.details
   - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -55,8 +68,19 @@ plugins:
   - pdf-export:
       verbose: false
       combined: false
-      output_path: pdf/
+      media_type: print
       enabled_if_env: ENABLE_PDF_EXPORT
+      output_path: pdf/
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jmpinero-avante
+      name: GitHub – jmpinero-avante
+    - icon: material/web
+      link: https://www.avante.es/
+      name: Avante Sevilla
+  generator: false
 
 extra_css:
   - styles/pdf-buttons.css
