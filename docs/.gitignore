@@ -1,0 +1,48 @@
+# ───────────────────────────────
+# MkDocs build artifacts
+# ───────────────────────────────
+site/
+pages/site/
+pages/pdf/
+*.pdf
+
+# ───────────────────────────────
+# MkDocs cache
+# ───────────────────────────────
+.mkdockscache/
+.cache/
+__pycache__/
+
+# ───────────────────────────────
+# Nix build / shell environments
+# ───────────────────────────────
+.result
+.result*
+*.drv
+flake.lock
+.nix-channels
+.nix-profile
+.nix-defexpr
+
+# ───────────────────────────────
+# Python / Virtual envs
+# ───────────────────────────────
+venv/
+env/
+*.egg-info
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# ───────────────────────────────
+# Editor / OS files
+# ───────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
