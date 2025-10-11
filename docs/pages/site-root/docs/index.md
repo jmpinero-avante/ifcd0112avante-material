@@ -31,7 +31,7 @@ Documentación, ejercicios y ejemplos prácticos de los tres módulos formativos
 [:material-database-outline:{ .lg .middle } **Módulo 2 – Bases de Datos**](./modulo2-bases-de-datos/index.html)
 :octicons-arrow-right-16: *Diseño de Bases de Datos en PostgreSQL, consultas y programación en la Base de Datos.*
 
-[Descargar PDF :material-file-pdf-box:](pdf/modulo2-bases-de-datos.pdf){ .pdf-button }
+[Descargar PDF :material-file-pdf-box:](./pdfs/modulo2-bases-de-datos.pdf){ .pdf-button }
 
 ---
 
