@@ -21,9 +21,10 @@ env:
   PDFS: "pdfs"
 
 jobs:
-  build:
+  build_docs:
     name:  Build MkDocs Site
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
 
     env:
       ENABLE_PDF_EXPORT: "1"
@@ -64,55 +65,25 @@ jobs:
           mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.BUILD }}/${{ env.PDFS }}
           rm -rf ${{ env.BUILD }}/modulo2-bases-de-datos/pdf
 
-      - name: Save Build Output
-        run: |
-          mkdir -p ${{ env.ARTIFACT }}
-          cp -r ${{ env.BUILD }}/* ${{ env.ARTIFACT }}
-
-      - name: Upload built artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          name: ${{ env.NAME     }}
-          path: ${{ env.ARTIFACT }}
-
-
-  deploy:
-    name: Deploy to GitHub Pages (gh-pages)
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout Reository for deployment
-        uses: actions/checkout@v4
-
-      - name: Download built site
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.NAME }}
-          path: ${{ env.SITE }}
+#      - name: Save Build Output
+#        run: |
+#          mkdir -p ${{ env.ARTIFACT }}
+#          cp -r ${{ env.BUILD }}/* ${{ env.ARTIFACT }}
+#
+#      - name: Upload built artifact
+#        uses: actions/upload-pages-artifact@v4
+#        with:
+#          name: ${{ env.NAME     }}
+#          path: ${{ env.ARTIFACT }}
 
       - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ env.SITE }}
+          publish_dir: ${{ env.BUILD }}
           publish_branch: gh-pages
           commit_message: "Deploy MKDocs Site from ${GITHUB_SHA}"
           force_orphan: true
-
-  release_pdf:
-    name: Create GitHub Release with PDFs
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.NAME }}
-          path: ${{ env.SITE }}
 
       - name: Create GitHub release with PDFs
         uses: softprops/action-gh-release@v2
@@ -120,7 +91,55 @@ jobs:
           tag_name: "v${{ github.run_number }}"
           name: "Release ${{ github.run_number }}"
           body: "Documentación actualizada"
-          files: ${{ env.SITE }}/${{ env.PDFS }}/*
+          files: ${{ env.BUILD }}/${{ env.PDFS }}/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#  deploy:
+#    name: Deploy to GitHub Pages (gh-pages)
+#    needs: build
+#    runs-on: ubuntu-latest
+#    if: github.ref == 'refs/heads/main'
+#
+#    steps:
+#      - name: Checkout Reository for deployment
+#        uses: actions/checkout@v4
+#
+#      - name: Download built site
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: ${{ env.NAME }}
+#          path: ${{ env.SITE }}
+#
+#      - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
+#        uses: peaceiris/actions-gh-pages@v4
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          publish_dir: ${{ env.SITE }}
+#          publish_branch: gh-pages
+#          commit_message: "Deploy MKDocs Site from ${GITHUB_SHA}"
+#          force_orphan: true
+
+#  release_pdf:
+#    name: Create GitHub Release with PDFs
+#    needs: build
+#    runs-on: ubuntu-latest
+#    if: github.ref == 'refs/heads/main'
+#
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: ${{ env.NAME }}
+#          path: ${{ env.SITE }}
+#
+#      - name: Create GitHub release with PDFs
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: "v${{ github.run_number }}"
+#          name: "Release ${{ github.run_number }}"
+#          body: "Documentación actualizada"
+#          files: ${{ env.SITE }}/${{ env.PDFS }}/*
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
