@@ -38,29 +38,29 @@ jobs:
           pip install mkdocs mkdocs-material mkdocs-with-pdf pymdown-extensions weasyprint
 
       - name: 🏗️ Build Root Portal
-        working-directory: ${{ env.PAGES }}/site-root
+        working-directory: ./${{ env.PAGES }}/site-root
         run: |
           mkdocs build --clean
 
       - name: 🏗️ Copy Root Portal Pages
         run: |
-          mkdir -p ${{ env.BUILD }}
-          cp -r ${{ env.PAGES }}/site-root/site/* ${{ env.BUILD }}
+          mkdir -p ./${{ env.BUILD }}
+          cp -r ./${{ env.PAGES }}/site-root/site/* ./${{ env.BUILD }}/
 
       - name: 🏗️ Build Módulo 2 - Bases de Datos
-        working-directory: ${{ env.PAGES }}/modulo2-bases-de-datos
+        working-directory: ./${{ env.PAGES }}/modulo2-bases-de-datos
         run: |
           mkdocs build --clean
 
       - name: 🏗️ Copy Modulo 2 Pages
         run: |
-          mkdir -p ${{ env.BUILD }}/modulo2-bases-de-datos
-          cp -r ${{ env.PAGES }}/modulo2-bases-de-datos/site/* ${{ env.BUILD }}/modulo2-bases-de-datos/
+          mkdir -p ./${{ env.BUILD }}/modulo2-bases-de-datos
+          cp -r ./${{ env.PAGES }}/modulo2-bases-de-datos/site/* ./${{ env.BUILD }}/modulo2-bases-de-datos/
 
       - name: 📦 Upload artifact to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ env.BUILD }}
+          path: ./${{ env.BUILD }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -70,6 +70,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ env.BUILD }}
+          publish_dir: ./${{ env.BUILD }}
           publish_branch: gh-pages
 
