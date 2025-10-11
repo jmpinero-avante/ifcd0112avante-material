@@ -1,24 +1,26 @@
 name: Build & Deploy MkDocs (Avante IFCD0112)
 
+
 on:
   push:
     branches:
       - main
   workflow_dispatch:
 
+
 permissions:
   contents: write
   pages: write
   id-token: write
+
 
 env:
   PYTHON_VERSION: "3.12"
   PAGES: "docs/pages"
   NAME: "ifcd0112site-${{ github.run_number }}"
   BUILD: "public"
-  ARTIFACT: "artifact"
-  SITE: "site"
-  PDFS: "pdfs"
+  PDFS: "public/pdfs"
+
 
 jobs:
   build_docs:
@@ -26,55 +28,53 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
+
     env:
       ENABLE_PDF_EXPORT: "1"
+
 
     steps:
       - name: 🧩 Checkout repo
         uses: actions/checkout@v4
+
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+
       - name: 🧰 Install dependencies
         run: |
           pip install --upgrade pip
           pip install mkdocs mkdocs-material mkdocs-with-pdf pymdown-extensions weasyprint
+
 
       - name: 🏗️ Build Root Portal
         working-directory: ${{ env.PAGES }}/site-root
         run: |
           mkdocs build --clean
 
+
       - name: 🏗️ Copy Root Portal Pages
         run: |
-          mkdir -p ${{ env.BUILD }}/${{ env.PDFS }}
+          mkdir -p ${{ env.PDFS }}
           cp -r ${{ env.PAGES }}/site-root/site/* ${{ env.BUILD }}
+
 
       - name: 🏗️ Build Módulo 2 - Bases de Datos
         working-directory: ${{ env.PAGES }}/modulo2-bases-de-datos
         run: |
           mkdocs build --clean
 
+
       - name: 🏗️ Copy Modulo 2 Pages & Pdf
         run: |
           mkdir -p ${{ env.BUILD }}/modulo2-bases-de-datos
           cp -r ${{ env.PAGES }}/modulo2-bases-de-datos/site/* ${{ env.BUILD }}/modulo2-bases-de-datos/
-          mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.BUILD }}/${{ env.PDFS }}
+          mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.PDFS }}
           rm -rf ${{ env.BUILD }}/modulo2-bases-de-datos/pdf
 
-#      - name: Save Build Output
-#        run: |
-#          mkdir -p ${{ env.ARTIFACT }}
-#          cp -r ${{ env.BUILD }}/* ${{ env.ARTIFACT }}
-#
-#      - name: Upload built artifact
-#        uses: actions/upload-pages-artifact@v4
-#        with:
-#          name: ${{ env.NAME     }}
-#          path: ${{ env.ARTIFACT }}
 
       - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
         uses: peaceiris/actions-gh-pages@v4
@@ -85,61 +85,13 @@ jobs:
           commit_message: "Deploy MKDocs Site from ${GITHUB_SHA}"
           force_orphan: true
 
+
       - name: Create GitHub release with PDFs
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ github.run_number }}"
           name: "Release ${{ github.run_number }}"
           body: "Documentación actualizada"
-          files: ${{ env.BUILD }}/${{ env.PDFS }}/*
+          files: ${{ env.PDFS }}/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#  deploy:
-#    name: Deploy to GitHub Pages (gh-pages)
-#    needs: build
-#    runs-on: ubuntu-latest
-#    if: github.ref == 'refs/heads/main'
-#
-#    steps:
-#      - name: Checkout Reository for deployment
-#        uses: actions/checkout@v4
-#
-#      - name: Download built site
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: ${{ env.NAME }}
-#          path: ${{ env.SITE }}
-#
-#      - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
-#        uses: peaceiris/actions-gh-pages@v4
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: ${{ env.SITE }}
-#          publish_branch: gh-pages
-#          commit_message: "Deploy MKDocs Site from ${GITHUB_SHA}"
-#          force_orphan: true
-
-#  release_pdf:
-#    name: Create GitHub Release with PDFs
-#    needs: build
-#    runs-on: ubuntu-latest
-#    if: github.ref == 'refs/heads/main'
-#
-#    steps:
-#      - name: Checkout Repository
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: ${{ env.NAME }}
-#          path: ${{ env.SITE }}
-#
-#      - name: Create GitHub release with PDFs
-#        uses: softprops/action-gh-release@v2
-#        with:
-#          tag_name: "v${{ github.run_number }}"
-#          name: "Release ${{ github.run_number }}"
-#          body: "Documentación actualizada"
-#          files: ${{ env.SITE }}/${{ env.PDFS }}/*
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
