@@ -13,9 +13,9 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.12"
-  BUILD: "public"
   PAGES: "docs/pages"
-  ASSETS: "${{ env.BUILD }}/assets"
+  BUILD: "public"
+  ASSETS: "public/assets"
 
 jobs:
   build:
