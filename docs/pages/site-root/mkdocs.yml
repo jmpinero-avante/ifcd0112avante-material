@@ -33,6 +33,7 @@ theme:
 
 extra_css:
   - styles/pdf-buttons.css
+  - styles/diagram.css
 
 
 markdown_extensions:

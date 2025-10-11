@@ -48,6 +48,8 @@
           zsh
           neovim
           python3
+          fontconfig.bin
+          fontconfig.out
           (python3.withPackages (ps:
           with ps; [
               pip
@@ -76,6 +78,7 @@
           echo "📘 Usa 'cd pages && mkdocs serve' para previsualizar"
           echo "📗 Usa 'mkdocs build' para generar PDFs y sitio estático"
           echo ""
+          export FONTCONFIG_FILE=${pkgs.fontconfig.out}/etc/fonts/fonts.conf
           export EDITOR=nvim
           alias ls='command ls --color=auto -Ah'
           alias l='command ls --color=auto -Ah'

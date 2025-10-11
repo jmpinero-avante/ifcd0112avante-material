@@ -1,148 +1,345 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import xml.etree.ElementTree as ET
-import textwrap
+import sys
+import os
 import re
 import unicodedata
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
+# =========================
+# Utilidades de texto
+# =========================
 
-# ─────────────────────────────────────────
-# Utilidades
-# ─────────────────────────────────────────
-def safe_text(x: str) -> str:
-    return (x or "").strip()
+def _normalize_newlines(s: str) -> str:
+    return (s or "").replace("\r\n", "\n").replace("\r", "\n")
 
+def _text(el: ET.Element) -> str:
+    """Devuelve el CDATA/texto del elemento (sin tocar formato inline)."""
+    return (el.text or "").strip()
 
-def normalize_title(title: str) -> str:
-    """Convierte el título al formato '01 Texto...' si empieza con un número."""
-    title = title.strip()
-    match = re.match(r"^(\d+)([\s.-]+)(.*)", title)
-    if match:
-        num = int(match.group(1))
-        rest = match.group(3)
-        return f"{num:02d} {rest.strip()}"
-    return title
+def _strip_accents(s: str) -> str:
+    s = unicodedata.normalize("NFKD", s)
+    return "".join(c for c in s if not unicodedata.combining(c))
 
+def slugify(value: str) -> str:
+    value = _strip_accents(value.lower())
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    return value.strip("-")
 
-def slugify(text: str) -> str:
-    """Convierte un título en un slug seguro para usar como nombre de archivo."""
-    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
-    text = text.lower()
-    text = re.sub(r"[^\w\s-]", "", text)
-    text = re.sub(r"[\s_-]+", "-", text).strip("-")
-    return text or "documento"
+# =========================
+# Acumulador Markdown
+# =========================
 
+class MD:
+    def __init__(self):
+        self.lines = []
 
-# ─────────────────────────────────────────
-# Conversión XML → Markdown
-# ─────────────────────────────────────────
-def render_section_content(section: ET.Element, level: int = 1) -> str:
-    """Convierte recursivamente una sección XML en Markdown."""
-    md = []
-    title_text = safe_text(section.text)
-    if title_text:
-        md.append("#" * level + " " + title_text)
+    def add(self, s: str = ""):
+        self.lines.append(s)
 
-    for node in list(section):
-        tag = node.tag.lower()
+    def blank(self, n: int = 1):
+        for _ in range(n):
+            if not self.lines or self.lines[-1] != "\n":
+                self.lines.append("\n")
 
-        if tag == "text":
-            content = safe_text(node.text)
-            if content:
-                md.append(content)
-                md.append("")
+    def add_block(self, s: str):
+        s = _normalize_newlines(s)
+        if s and not s.endswith("\n"):
+            s += "\n"
+        self.lines.append(s)
 
-        elif tag == "list":
-            ordered = node.attrib.get("ordered", "false").lower() == "true"
-            for i, item in enumerate(node.findall("item"), 1):
-                prefix = f"{i}. " if ordered else "- "
-                md.append(prefix + safe_text(item.text))
-            md.append("")
+    def extend(self, lines):
+        self.lines.extend(lines)
 
-        elif tag == "table":
-            rows = node.findall("row")
-            if rows:
-                headers = [safe_text(c.text) for c in rows[0].findall("cell")]
-                md.append("| " + " | ".join(headers) + " |")
-                md.append("| " + " | ".join(["---"] * len(headers)) + " |")
-                for row in rows[1:]:
-                    cells = [safe_text(c.text) for c in row.findall("cell")]
-                    if len(cells) < len(headers):
-                        cells += [""] * (len(headers) - len(cells))
-                    md.append("| " + " | ".join(cells) + " |")
-                md.append("")
+    def write(self, fp):
+        fp.writelines(self.lines)
 
-        elif tag == "code":
-            lang = node.attrib.get("type", "plain")
-            code_text = textwrap.dedent(safe_text(node.text))
-            md.append(f"```{lang}\n{code_text}\n```")
-            md.append("")
+# =========================
+# Búsqueda de primera sección (para nombre de archivo)
+# =========================
 
-        elif tag == "section":
-            md.append(render_section_content(node, level + 1))
+def find_first_section(root: ET.Element):
+    """Devuelve el primer elemento <section> encontrado (en preorder)."""
+    if root.tag.lower() == "section":
+        return root
+    found = root.find(".//section")
+    return found
 
-    return "\n".join(md).rstrip() + "\n"
+def make_filename_from_first_section(root: ET.Element, fallback_stem: str) -> str:
+    first = find_first_section(root)
+    title = _text(first) if first is not None else fallback_stem
+    title_clean = _strip_accents(title).strip()
+    m = re.match(r"^(\d+)[\.\-\s_]*", title_clean)
+    if m:
+        num = int(m.group(1))
+        rest = title_clean[m.end():].strip()
+        return f"{num:02d}-{slugify(rest)}.md"
+    return f"{slugify(title_clean)}.md"
 
+# =========================
+# Render helpers (indentación para contenido dentro de listas)
+# =========================
 
-# ─────────────────────────────────────────
-# Localiza la primera sección con texto real
-# ─────────────────────────────────────────
-def find_first_nonempty_section(root: ET.Element) -> ET.Element:
-    """Devuelve la primera <section> cuyo texto no esté vacío."""
-    for section in root.iter("section"):
-        if safe_text(section.text):
-            return section
-    return None
+def _indent_block(block: str, spaces: int) -> str:
+    if spaces <= 0:
+        return block
+    pad = " " * spaces
+    return "\n".join(pad + ln if ln != "" else "" for ln in block.splitlines())
 
+def _indent_lines(lines, spaces: int):
+    if spaces <= 0:
+        return list(lines)
+    pad = " " * spaces
+    out = []
+    for ln in lines:
+        if ln == "\n":
+            out.append(ln)
+        else:
+            # mantener fin de línea
+            if ln.endswith("\n"):
+                out.append(pad + ln)
+            else:
+                out.append(pad + ln)
+    return out
 
-# ─────────────────────────────────────────
-# Función principal
-# ─────────────────────────────────────────
+# =========================
+# Renderizado principal
+# =========================
+
+def render_document(md: MD, root: ET.Element):
+    """Renderiza todo el documento (root puede ser <section> o un contenedor)."""
+    # Si el root es section, renderízalo con contexto (no tiene padre)
+    if root.tag.lower() == "section":
+        _render_section(md, root, parent=None, siblings=None, index_in_parent=None, indent=0)
+    else:
+        # Renderizar hijos en orden
+        children = list(root)
+        for i, child in enumerate(children):
+            _render_element(md, child, parent=root, siblings=children, index_in_parent=i, indent=0)
+
+    md.blank()
+
+def _render_element(md: MD, el: ET.Element, parent, siblings, index_in_parent, indent: int):
+    tag = el.tag.lower()
+
+    # Secciones anidadas
+    if tag == "section":
+        _render_section(md, el, parent, siblings, index_in_parent, indent)
+        return
+
+    # Texto plano
+    if tag == "text":
+        _render_text(md, el, indent)
+        return
+
+    # Bloques de código
+    if tag == "code":
+        _render_code(md, el, indent)
+        return
+
+    # Listas (ordenadas o no)
+    if tag == "list":
+        _render_list(md, el, indent)
+        return
+
+    # Tablas
+    if tag == "table":
+        _render_table(md, el, indent)
+        return
+
+    # Diagramas SVG
+    if tag == "diagram" and el.attrib.get("type") == "svg":
+        _render_diagram_svg(md, el, indent)
+        return
+
+    # Elemento no reconocido → se ignora con aviso opcional
+    if tag.strip():
+        md.add(f"<!-- ⚠️ Etiqueta desconocida: {tag} -->\n")
+
+def _render_section(md: MD, el: ET.Element, parent, siblings, index_in_parent, indent: int):
+    # Encabezado
+    try:
+        level = int(el.attrib.get("level", "1"))
+    except Exception:
+        level = 1
+    level = max(1, min(6, level))
+    title = _text(el)
+
+    md.blank()
+    header = f"{'#' * level} {title}\n"
+    md.add(header if indent == 0 else _indent_block(header, indent))
+    md.blank()
+
+    # Contenido interno (otros elementos y subsecciones)
+    children = list(el)
+    for i, ch in enumerate(children):
+        _render_element(md, ch, parent=el, siblings=children, index_in_parent=i, indent=indent)
+
+    # Al cerrar una section level=2: añadir divisor "---"
+    # SOLO si hay otra sección después en el documento (a continuación en su lista de hermanos).
+    if level == 2 and siblings is not None:
+        # ¿Hay elemento posterior que sea <section>?
+        has_next_section = False
+        for j in range(index_in_parent + 1, len(siblings)):
+            if siblings[j].tag.lower() == "section":
+                has_next_section = True
+                break
+        if has_next_section:
+            md.blank()
+            md.add("---\n")
+            md.blank()
+
+def _render_text(md: MD, el: ET.Element, indent: int):
+    txt = _text(el)
+    if not txt:
+        return
+    block = txt + "\n"
+    if indent:
+        md.add(_indent_block(block, indent))
+        md.blank()
+    else:
+        md.add_block(block)
+        md.blank()
+
+def _render_code(md: MD, el: ET.Element, indent: int):
+    lang = el.attrib.get("type", "plain").lower()
+    code = _normalize_newlines(_text(el))
+    block = f"```{lang}\n{code.rstrip()}\n```\n"
+    if indent:
+        md.blank()
+        md.add(_indent_block(block, indent))
+        md.blank()
+    else:
+        md.blank()
+        md.add(block + "\n")
+        md.blank()
+
+def _render_table(md: MD, el: ET.Element, indent: int):
+    # Recoger filas/celdas
+    rows = []
+    for row in el.findall("./row"):
+        cells = [ _text(c) for c in row.findall("./cell") ]
+        rows.append(cells)
+    if not rows:
+        return
+
+    # Normalizar columnas
+    max_cols = max(len(r) for r in rows)
+    for r in rows:
+        while len(r) < max_cols:
+            r.append("")
+
+    # Markdown: primera fila = cabecera
+    out = []
+    out.append("| " + " | ".join(rows[0]) + " |\n")
+    out.append("| " + " | ".join("---" for _ in rows[0]) + " |\n")
+    for r in rows[1:]:
+        out.append("| " + " | ".join(r) + " |\n")
+
+    if indent:
+        md.blank()
+        md.extend(_indent_lines(out, indent))
+        md.blank()
+    else:
+        md.blank()
+        md.extend(out)
+        md.blank()
+
+def _render_list(md: MD, el: ET.Element, indent: int):
+    ordered = el.attrib.get("ordered", "false").lower() in ("1", "true", "yes")
+    items = el.findall("./item")
+    idx = 0
+    for item in items:
+        idx += 1
+        prefix = f"{idx}. " if ordered else "- "
+        first_line = _text(item)
+
+        # Línea del ítem
+        line = prefix + first_line + "\n"
+        if indent:
+            md.add(_indent_block(line, indent))
+        else:
+            md.add(line)
+
+        # Hijos del item (indentados 2 espacios adicionales)
+        sub_children = list(item)
+        if sub_children:
+            for i, sub in enumerate(sub_children):
+                # renderizamos en un buffer y luego indentamos +2
+                sub_md = MD()
+                _render_element(sub_md, sub, parent=item, siblings=sub_children, index_in_parent=i, indent=0)
+                content = "".join(sub_md.lines)
+                if content.strip():
+                    indented = _indent_block(content.rstrip("\n"), (indent + 2))
+                    md.add(indented + "\n")
+        # separación entre ítems controlada
+    md.blank()
+
+def _render_diagram_svg(md: MD, el: ET.Element, indent: int):
+    svg_code = _text(el)
+    caption = el.attrib.get("caption")
+
+    block_lines = []
+    block_lines.append(f"<!-- svg-diagram start -->\n")
+
+    if caption:
+        # Solo crea la admonición si hay caption
+        block_lines.append(f"!!! example \"{caption}\"\n")
+        block_lines.append("<div class=\"diagram-block\" align=\"center\">\n")
+        block_lines.append(svg_code.strip() + "\n")
+        block_lines.append("</div>\n")
+    else:
+        # Inserta el SVG directamente sin admonición
+        block_lines.append("<div class=\"diagram-block\" align=\"center\">\n")
+        block_lines.append(svg_code.strip() + "\n")
+        block_lines.append("</div>\n")
+
+    block_lines.append(f"<!-- svg-diagram end -->\n")
+
+    if indent:
+        md.blank()
+        md.extend(_indent_lines(block_lines, indent))
+        md.blank()
+    else:
+        md.blank()
+        md.extend(block_lines)
+        md.blank()
+
+# =========================
+# Proceso principal
+# =========================
+
 def xml_to_markdown(xml_path: str, output_dir: str):
-    xml_path = Path(xml_path)
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
-    section = find_first_nonempty_section(root)
-    if section is None:
-        raise SystemExit("⚠️ No se encontró ninguna <section> con texto en el XML.")
+    # Nombre de archivo
+    filename = make_filename_from_first_section(root, Path(xml_path).stem)
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / filename
 
-    title_raw = safe_text(section.text) or "Documento"
-    title_norm = normalize_title(title_raw)
-    slug = slugify(title_norm)
+    # Render
+    md = MD()
+    render_document(md, root)
+    with open(out_path, "w", encoding="utf-8") as f:
+        md.write(f)
 
-    filename = f"{slug}.md"
-    output_path = output_dir / filename
+    print(f"✅ Generado: {out_path.name}")
 
-    front_matter = textwrap.dedent(f"""\
-    ---
-    title: "{title_norm}"
-    ---
-    """)
-
-    body = render_section_content(section, level=1)
-
-    output_path.write_text(front_matter + "\n" + body, encoding="utf-8")
-
-    print(f"✅ Archivo generado: {output_path.name}")
-    print(f"📘 Título: {title_norm}")
-    print(f"📂 Guardado en: {output_dir.resolve()}")
-
-
-# ─────────────────────────────────────────
+# =========================
 # CLI
-# ─────────────────────────────────────────
-if __name__ == "__main__":
-    import sys
+# =========================
 
-    if len(sys.argv) != 3:
-        print("Uso: xml_to_md.py <input.xml> <output_dir>")
+def main():
+    if len(sys.argv) < 2:
+        print("Uso: convert_xml_md.py <input.xml> [output_dir]")
         sys.exit(1)
+    xml_file = sys.argv[1]
+    output_dir = sys.argv[2] if len(sys.argv) > 2 else "."
+    xml_to_markdown(xml_file, output_dir)
 
-    xml_to_markdown(sys.argv[1], sys.argv[2])
-
+if __name__ == "__main__":
+    main()
