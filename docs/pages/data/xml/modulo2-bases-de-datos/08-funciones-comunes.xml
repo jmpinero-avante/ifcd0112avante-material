@@ -1,0 +1,56 @@
+<section level="1">
+<![CDATA[
+8 – Funciones comunes en PL/pgSQL
+]]>
+
+<section level="2">
+<![CDATA[
+Funciones de fecha
+]]>
+
+<code type="sql"><![CDATA[
+SELECT CURRENT_DATE;               -- Solo la fecha
+SELECT CURRENT_TIME;               -- Solo la hora
+SELECT NOW();                      -- Fecha y hora con zona horaria
+SELECT DATE_TRUNC('month', NOW()); -- Recorta al mes
+SELECT EXTRACT(DAY FROM NOW());    -- Día actual
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Funciones de texto
+]]>
+
+<code type="sql"><![CDATA[
+SELECT UPPER('hola');              -- HOLA
+SELECT LOWER('TEXTO');             -- texto
+SELECT LENGTH('hola mundo');       -- 11
+SELECT TRIM('  hola  ');           -- 'hola'
+SELECT CONCAT('Hola', ' mundo');   -- 'Hola mundo'
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Funciones matemáticas
+]]>
+
+<code type="sql"><![CDATA[
+SELECT ABS(-8);             -- 8
+SELECT GREATEST(10, 3, 5);  -- 10
+SELECT LEAST(10, 3, 5);     -- 3
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Funciones condicionales
+]]>
+
+<code type="sql"><![CDATA[
+SELECT COALESCE(NULL, 'valor'); -- devuelve 'valor'
+]]></code>
+</section>
+</section>
+

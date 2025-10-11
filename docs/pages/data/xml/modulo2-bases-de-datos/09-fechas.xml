@@ -1,0 +1,217 @@
+<section level="1">
+<![CDATA[
+9 – Formatos de fecha en PostgreSQL
+]]>
+
+<section level="2">
+<![CDATA[
+Formato natural (locale española)
+]]>
+
+<text><![CDATA[
+Cuando el sistema usa la configuración regional española, el formato habitual de fecha es:
+'27/09/2025 15:30:00' (día/mes/año + hora).
+Este formato es legible, pero no estándar y puede causar errores al intercambiar datos entre sistemas.
+]]></text>
+
+<text><![CDATA[
+Es recomendable usar el formato ISO 8601 (internacional) para garantizar interoperabilidad y evitar ambigüedades.
+También se acepta la versión simplificada YYYY-MM-DD.
+]]></text>
+
+<table>
+  <row><cell><![CDATA[Tipo]]></cell><cell><![CDATA[Ejemplo]]></cell></row>
+  <row><cell><![CDATA[Solo fecha]]></cell><cell><![CDATA[2023-09-27]]></cell></row>
+  <row><cell><![CDATA[Fecha y hora]]></cell><cell><![CDATA[2023-09-27 15:30:00]]></cell></row>
+  <row><cell><![CDATA[Fecha, hora y zona]]></cell><cell><![CDATA[2023-09-27 15:30:00+02]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Formato ISO 8601 (internacional)
+]]>
+
+<text><![CDATA[
+ISO 8601 es un estándar para representar fechas y horas con formato claro y compatible.
+Estructura general:
+AAAA-MM-DDTHH:MM:SS.sss+ZZ:ZZ
+]]></text>
+
+<table>
+  <row><cell><![CDATA[Elemento]]></cell><cell><![CDATA[Ejemplo / Significado]]></cell></row>
+  <row><cell><![CDATA[Solo fecha]]></cell><cell><![CDATA[2023-09-27]]></cell></row>
+  <row><cell><![CDATA[Fecha y hora]]></cell><cell><![CDATA[2023-09-27T15:30:00]]></cell></row>
+  <row><cell><![CDATA[Fecha y hora con milisegundos]]></cell><cell><![CDATA[2023-09-27T15:30:00.000]]></cell></row>
+  <row><cell><![CDATA[Fecha y hora con zona horaria]]></cell><cell><![CDATA[2023-09-27T15:30:00+02:00]]></cell></row>
+  <row><cell><![CDATA[Separador entre fecha y hora]]></cell><cell><![CDATA[T]]></cell></row>
+  <row><cell><![CDATA[Zona horaria]]></cell><cell><![CDATA[+02:00 / +02]]></cell></row>
+</table>
+
+<text><![CDATA[
+PostgreSQL acepta este formato directamente en consultas e inserciones.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT '2025-09-27T18:45:00.000+02:00'::TIMESTAMPTZ;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Fechas en formato ISO 8601 sin separadores
+]]>
+
+<text><![CDATA[
+PostgreSQL admite también la variante compacta del formato ISO, sin guiones ni dos puntos:
+]]></text>
+
+<code><![CDATA[
+YYYYMMDDTHHMMSS
+]]></code>
+
+<code type="sql"><![CDATA[
+SELECT '20250927T183000'::TIMESTAMP;
+-- Resultado: 2025-09-27 18:30:00
+]]></code>
+
+<code type="sql"><![CDATA[
+SELECT '20250927T183000+0200'::TIMESTAMPTZ;
+-- Resultado: 2025-09-27 18:30:00+02
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Comparación de formatos
+]]>
+
+<table>
+  <row><cell><![CDATA[Formato]]></cell><cell><![CDATA[Cumple ISO 8601]]></cell><cell><![CDATA[Recomendado]]></cell></row>
+  <row><cell><![CDATA[2025-09-27T18:30:00]]></cell><cell><![CDATA[✅ ISO extendido]]></cell><cell><![CDATA[✅ Sí]]></cell></row>
+  <row><cell><![CDATA[20250927T183000]]></cell><cell><![CDATA[✅ ISO básico]]></cell><cell><![CDATA[⚠️ Aceptable, menos legible]]></cell></row>
+  <row><cell><![CDATA[2025-09-27 18:30:00]]></cell><cell><![CDATA[❌ No ISO estricto]]></cell><cell><![CDATA[⚠️ Legible, pero informal]]></cell></row>
+</table>
+
+<section level="3">
+<![CDATA[
+Cuándo usar formato compacto
+]]>
+
+<list ordered="false">
+  <item><![CDATA[Cuando se cargan datos masivos.]]></item>
+  <item><![CDATA[Cuando se conoce el formato exacto de destino.]]></item>
+  <item><![CDATA[Cuando se desea optimizar espacio o parsing.]]></item>
+</list>
+
+<text><![CDATA[
+Usa el formato extendido (YYYY-MM-DDTHH:MM:SS) en informes, APIs o documentación formal.
+]]></text>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+UTC: Tiempo Universal Coordinado
+]]>
+
+<text><![CDATA[
+UTC es el estándar global de tiempo sin ajustes de horario de verano, sustituyendo al antiguo GMT.
+Un TIMESTAMP WITH TIME ZONE se guarda internamente en UTC.
+PostgreSQL convierte automáticamente entre UTC y la zona local al mostrarlo.
+]]></text>
+
+<code type="sql"><![CDATA[
+-- Mostrado en hora local:
+SELECT NOW();  -- 2025-09-27 17:15:00+02
+
+-- Mostrado como UTC:
+SELECT NOW() AT TIME ZONE 'UTC';  -- 2025-09-27 15:15:00+00
+]]></code>
+
+<text><![CDATA[
+De esta forma, las comparaciones y almacenamiento de fechas son consistentes globalmente.
+Siempre que trabajes con múltiples zonas horarias, usa TIMESTAMPTZ.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Tipo de dato TIMESTAMPTZ
+]]>
+
+<table>
+  <row><cell><![CDATA[Tipo de dato]]></cell><cell><![CDATA[Significado]]></cell></row>
+  <row><cell><![CDATA[TIMESTAMP]]></cell><cell><![CDATA[Fecha y hora sin zona horaria]]></cell></row>
+  <row><cell><![CDATA[TIMESTAMPTZ]]></cell><cell><![CDATA[Fecha y hora con zona horaria]]></cell></row>
+</table>
+
+<section level="3">
+<![CDATA[
+Cómo funciona realmente TIMESTAMPTZ
+]]>
+
+<text><![CDATA[
+PostgreSQL almacena internamente el valor en UTC y lo muestra ajustado a la zona horaria del cliente.
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE TABLE eventos (
+  id SERIAL PRIMARY KEY,
+  nombre TEXT,
+  fecha TIMESTAMPTZ
+);
+
+INSERT INTO eventos (nombre, fecha)
+VALUES ('Concierto', '2025-09-27 20:00:00');
+]]></code>
+
+<text><![CDATA[
+Internamente se guarda como: 2025-09-27 18:00:00+00 (UTC)  
+Pero al consultar desde Europe/Madrid (UTC+2) se muestra: 2025-09-27 20:00:00+02
+]]></text>
+</section>
+
+<section level="3">
+<![CDATA[
+Ventajas de TIMESTAMPTZ
+]]>
+
+<list ordered="false">
+  <item><![CDATA[Ideal para aplicaciones internacionales.]]></item>
+  <item><![CDATA[Permite almacenar un valor estandarizado y mostrarlo localmente.]]></item>
+  <item><![CDATA[Facilita comparaciones precisas entre zonas horarias.]]></item>
+</list>
+</section>
+
+<section level="3">
+<![CDATA[
+Comparación práctica
+]]>
+
+<code type="sql"><![CDATA[
+-- Timestamp sin zona horaria
+SELECT TIMESTAMP '2025-09-27 20:00:00';
+
+-- Timestamp con zona horaria
+SELECT TIMESTAMPTZ '2025-09-27 20:00:00+02';
+]]></code>
+
+<text><![CDATA[
+El primero es una hora absoluta sin contexto.  
+El segundo permite conversión automática entre zonas.
+]]></text>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Conclusión
+]]>
+
+<text><![CDATA[
+Siempre que trabajes con usuarios en distintas regiones o necesites conservar la hora real de un evento global, usa TIMESTAMPTZ.
+]]></text>
+</section>
+</section>
+

@@ -1,0 +1,80 @@
+<section level="1">
+<![CDATA[
+7 – Casting de tipos
+]]>
+
+<text><![CDATA[
+En PostgreSQL puedes convertir un dato de un tipo a otro usando el operador de conversión (::) o la función CAST().
+]]></text>
+
+<section level="2">
+<![CDATA[
+Sintaxis general
+]]>
+
+<code type="sql"><![CDATA[
+valor::tipo
+]]></code>
+
+<code type="sql"><![CDATA[
+CAST(valor AS tipo)
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Ejemplos de conversiones comunes
+]]>
+
+<section level="3">
+<![CDATA[
+Texto a número
+]]>
+
+<code type="sql"><![CDATA[
+SELECT '123'::INTEGER;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Número a texto
+]]>
+
+<code type="sql"><![CDATA[
+SELECT 99::TEXT;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Texto a fecha
+]]>
+
+<code type="sql"><![CDATA[
+SELECT '2025-09-27'::DATE;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+TIMESTAMP a DATE (descarta la hora)
+]]>
+
+<code type="sql"><![CDATA[
+SELECT CURRENT_TIMESTAMP::DATE;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Alternativa con CAST
+]]>
+
+<code type="sql"><![CDATA[
+SELECT CAST('123' AS INTEGER);
+]]></code>
+</section>
+</section>
+</section>
+

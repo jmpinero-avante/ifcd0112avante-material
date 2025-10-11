@@ -1,0 +1,416 @@
+<section level="1">
+<![CDATA[
+4 – Índices y análisis de consultas
+]]>
+
+<section level="2">
+<![CDATA[
+Concepto de índice
+]]>
+
+<text><![CDATA[
+Un índice es una estructura auxiliar que acelera la búsqueda y el acceso a los registros de una tabla.
+Su función es reducir el número de filas que el motor de la base de datos necesita leer para localizar los datos que cumplen una condición.
+Sin índice, PostgreSQL tiene que realizar un sequential scan (escaneo secuencial), revisando una por una todas las filas de la tabla.
+Con un índice, puede saltar directamente a la ubicación donde se encuentran los datos relevantes, de forma análoga a cómo usamos el índice de un libro para encontrar rápidamente una palabra o tema.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Estructura interna: el índice B-tree
+]]>
+
+<text><![CDATA[
+El B-tree (Balanced Tree) es el tipo de índice más común en PostgreSQL (y en la mayoría de los SGBD).
+]]></text>
+
+<section level="3">
+<![CDATA[
+Cómo funciona un B-tree
+]]>
+
+<text><![CDATA[
+Imagina un árbol ordenado:
+Los nodos intermedios contienen claves que dividen el espacio de búsqueda.
+Los nodos hoja contienen punteros a las filas reales en la tabla.
+El árbol se mantiene equilibrado: todas las hojas están a la misma profundidad.
+Esto garantiza que el tiempo de búsqueda, inserción y borrado sea logarítmico: O(log n).
+]]></text>
+
+<code type="plain"><![CDATA[
+-
+            [K=50]
+           /     \
+	[10,20,30] [60,70,80]
+-
+]]></code>
+
+<text><![CDATA[
+Cuando buscamos el valor 70, el árbol compara:
+70 > 50 → va a la rama derecha.
+Busca en [60,70,80] → encuentra la posición exacta → devuelve la fila correspondiente.
+El acceso es mucho más rápido que recorrer todos los registros secuencialmente.
+]]></text>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Índices implícitos
+]]>
+
+<text><![CDATA[
+PostgreSQL crea automáticamente algunos índices sin que el usuario los pida:
+]]></text>
+
+<text><![CDATA[
+Clave primaria (PRIMARY KEY):
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE TABLE usuarios (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT
+);
+]]></code>
+
+<text><![CDATA[
+Crea automáticamente un índice B-tree sobre id.
+]]></text>
+
+<text><![CDATA[
+Restricciones UNIQUE:
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE TABLE productos (
+    codigo TEXT UNIQUE
+);
+]]></code>
+
+<text><![CDATA[
+Crea un índice implícito que garantiza la unicidad de codigo.
+Estos índices automáticos son esenciales para mantener la integridad referencial y acelerar las búsquedas por claves.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Creación de índices manuales
+]]>
+
+<text><![CDATA[
+Índice básico:
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE INDEX idx_usuarios_nombre ON usuarios (nombre);
+]]></code>
+
+<text><![CDATA[
+Índice en orden descendente:
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE INDEX idx_pedidos_fecha_desc ON pedidos (fecha DESC);
+]]></code>
+
+<text><![CDATA[
+Índice múltiple (o compuesto):
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE INDEX idx_clientes_apellido_ciudad ON clientes (apellido, ciudad);
+]]></code>
+
+<text><![CDATA[
+Importante:
+Los índices múltiples se aprovechan por su primera columna y las subsecuentes, en ese orden.
+]]></text>
+
+<text><![CDATA[
+Por ejemplo:
+]]></text>
+
+<code type="sql"><![CDATA[
+WHERE apellido = 'García'
+	-- ✅ usa el índice.
+	
+WHERE apellido = 'García' AND ciudad = 'Sevilla'
+	-- ✅ usa el índice.
+	
+WHERE ciudad = 'Sevilla'
+	-- ❌ no usa el índice
+	-- (la primera columna apellido no se filtra).
+]]></code>
+
+<text><![CDATA[
+Este comportamiento se conoce como regla del prefijo del índice.
+]]></text>
+
+<text><![CDATA[
+Índice parcial:
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE INDEX idx_activos ON empleados (dni) WHERE activo = true;
+]]></code>
+
+<text><![CDATA[
+Ideal para grandes tablas con muchas filas inactivas.
+]]></text>
+
+<text><![CDATA[
+Índice único:
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE UNIQUE INDEX idx_email_unico ON usuarios (email);
+]]></code>
+
+<text><![CDATA[
+Garantiza que no se repitan valores en esa columna.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Buenas prácticas en el uso de índices
+]]>
+
+<list ordered="false">
+  <item><![CDATA[Usar índices en columnas que aparecen con frecuencia en cláusulas WHERE, condiciones de JOIN, ORDER BY o GROUP BY.]]></item>
+  <item><![CDATA[No indexar todo: cada índice ocupa espacio y ralentiza INSERT, UPDATE y DELETE.]]></item>
+  <item><![CDATA[Evitar índices en columnas con baja selectividad (por ejemplo, un campo BOOLEAN con casi todos los valores iguales).]]></item>
+  <item><![CDATA[Analizar el tamaño de los índices.]]></item>
+</list>
+
+<code type="sql"><![CDATA[
+SELECT relname, pg_size_pretty(pg_total_relation_size(indexrelid))
+FROM pg_stat_user_indexes
+WHERE schemaname = 'public';
+]]></code>
+
+<text><![CDATA[
+Actualizar estadísticas regularmente:
+]]></text>
+
+<code type="sql"><![CDATA[
+VACUUM ANALYZE;
+]]></code>
+
+<text><![CDATA[
+Esto ayuda al optimizador a tomar decisiones más acertadas.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Análisis de rendimiento con EXPLAIN y EXPLAIN ANALYZE
+]]>
+
+<section level="3">
+<![CDATA[
+EXPLAIN
+]]>
+
+<text><![CDATA[
+Muestra el plan estimado de ejecución:
+]]></text>
+
+<code type="sql"><![CDATA[
+EXPLAIN SELECT * FROM usuarios WHERE nombre = 'Juan';
+]]></code>
+
+<text><![CDATA[
+Salida:
+]]></text>
+
+<code type="plain"><![CDATA[
+Index Scan using idx_usuarios_nombre on usuarios  (cost=0.15..8.17 rows=1 width=48)
+]]></code>
+
+<table>
+  <row><cell><![CDATA[Componente]]></cell><cell><![CDATA[Significado]]></cell></row>
+  <row><cell><![CDATA[Index Scan]]></cell><cell><![CDATA[Está usando el índice.]]></cell></row>
+  <row><cell><![CDATA[cost]]></cell><cell><![CDATA[Estimación del optimizador.]]></cell></row>
+</table>
+</section>
+
+<section level="3">
+<![CDATA[
+EXPLAIN ANALYZE
+]]>
+
+<text><![CDATA[
+Ejecuta realmente la consulta y muestra los tiempos reales:
+]]></text>
+
+<code type="sql"><![CDATA[
+EXPLAIN ANALYZE SELECT * FROM usuarios WHERE nombre = 'Juan';
+]]></code>
+
+<text><![CDATA[
+Ejemplo de salida:
+]]></text>
+
+<code type="plain"><![CDATA[
+Index Scan using idx_usuarios_nombre on usuarios  (cost=0.15..8.17 rows=1 width=48)
+(actual time=0.030..0.035 rows=1 loops=1)
+]]></code>
+
+<table>
+  <row><cell><![CDATA[Componente]]></cell><cell><![CDATA[Significado]]></cell></row>
+  <row><cell><![CDATA[cost]]></cell><cell><![CDATA[Coste estimado (cuanto menor, mejor).]]></cell></row>
+  <row><cell><![CDATA[actual time]]></cell><cell><![CDATA[Tiempo real de ejecución.]]></cell></row>
+  <row><cell><![CDATA[rows]]></cell><cell><![CDATA[Número de filas encontradas.]]></cell></row>
+  <row><cell><![CDATA[loops]]></cell><cell><![CDATA[Veces que se repitió el plan (en subconsultas o bucles).]]></cell></row>
+</table>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Comparativa de rendimiento: sin índice y con índice
+]]>
+
+<text><![CDATA[
+Supón que tenemos 1 millón de filas en usuarios:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT * FROM usuarios WHERE nombre = 'Juan';
+]]></code>
+
+<text><![CDATA[
+Sin índice:
+]]></text>
+
+<code><![CDATA[
+Seq Scan on usuarios (cost=0.00..25000.00 rows=1 width=48)
+(actual time=50.000..50.001 rows=1 loops=1)
+]]></code>
+
+<text><![CDATA[
+Con índice:
+]]></text>
+
+<code><![CDATA[
+Index Scan using idx_usuarios_nombre on usuarios (cost=0.15..8.17 rows=1 width=48)
+(actual time=0.035..0.036 rows=1 loops=1)
+]]></code>
+
+<text><![CDATA[
+El acceso pasa de 50 ms a 0.03 ms, un ahorro enorme.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Mantenimiento de índices
+]]>
+
+<text><![CDATA[
+Comprobar el uso de índices:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+   relname AS tabla,
+   indexrelname AS indice,
+   idx_scan AS veces_usado,
+   idx_tup_read AS tuplas_leidas,
+   idx_tup_fetch AS tuplas_devueltas
+FROM
+   pg_stat_user_indexes
+WHERE
+   schemaname = 'public';
+]]></code>
+
+<text><![CDATA[
+Esta vista muestra cuántas veces se ha utilizado cada índice desde el último reinicio de estadísticas.
+]]></text>
+
+<text><![CDATA[
+Reindexar un índice específico:
+]]></text>
+
+<code type="sql"><![CDATA[
+REINDEX INDEX idx_usuarios_nombre;
+]]></code>
+
+<text><![CDATA[
+Reindexar una tabla completa:
+]]></text>
+
+<code type="sql"><![CDATA[
+REINDEX TABLE usuarios;
+]]></code>
+
+<text><![CDATA[
+Ver todos los índices existentes:
+]]></text>
+
+<code type="sql"><![CDATA[
+\di
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Ejemplo completo
+]]>
+
+<text><![CDATA[
+Supongamos una tabla de pedidos:
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE TABLE pedidos (
+    id SERIAL PRIMARY KEY,
+    cliente_id INT,
+    fecha DATE,
+    total DECIMAL
+);
+]]></code>
+
+<text><![CDATA[
+Creamos un índice para acelerar búsquedas por fecha:
+]]></text>
+
+<code type="sql"><![CDATA[
+CREATE INDEX idx_pedidos_fecha ON pedidos (fecha);
+]]></code>
+
+<text><![CDATA[
+Consultamos:
+]]></text>
+
+<code type="sql"><![CDATA[
+EXPLAIN ANALYZE
+SELECT * FROM pedidos
+WHERE fecha BETWEEN '2025-01-01' AND '2025-03-31';
+]]></code>
+
+<text><![CDATA[
+Si el rango abarca pocas filas: “Index Scan”.  
+Si abarca la mayoría: “Seq Scan” (el optimizador decide que leer toda la tabla es más rápido).
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Resumen final
+]]>
+
+<list ordered="false">
+  <item><![CDATA[Los índices mejoran la velocidad de lectura pero empeoran ligeramente la escritura.]]></item>
+  <item><![CDATA[Los B-trees son los índices por defecto y más versátiles.]]></item>
+  <item><![CDATA[Los índices compuestos funcionan en orden de las columnas, empezando por la primera.]]></item>
+  <item><![CDATA[Usa EXPLAIN ANALYZE para comprobar si se usan correctamente.]]></item>
+  <item><![CDATA[Revisa estadísticas periódicamente y evita sobreindexar.]]></item>
+</list>
+</section>
+</section>
+

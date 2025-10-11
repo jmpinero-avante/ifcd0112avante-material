@@ -34,6 +34,7 @@ theme:
     - content.code.annotate
     - content.tabs.link
     - content.tooltips
+    - content.code.copy
 
 markdown_extensions:
   - attr_list
@@ -55,8 +56,9 @@ plugins:
   - pdf-export:
       verbose: false
       combined: false
-      output_path: pdf/
+      media_type: print
       enabled_if_env: ENABLE_PDF_EXPORT
+      output_path: pdf/
 
 extra_css:
   - styles/pdf-buttons.css

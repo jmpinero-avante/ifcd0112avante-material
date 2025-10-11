@@ -1,0 +1,267 @@
+<section level="1">
+<![CDATA[
+1 – Modelado y definición de tablas en PostgreSQL
+]]>
+
+<section level="2">
+<![CDATA[
+Elementos gráficos del Diagrama Entidad-Relación (ER)
+]]>
+
+<table>
+  <row><cell><![CDATA[Elemento]]></cell><cell><![CDATA[Forma en el diagrama]]></cell><cell><![CDATA[Representa]]></cell></row>
+  <row><cell><![CDATA[Entidad]]></cell><cell><![CDATA[Rectángulo]]></cell><cell><![CDATA[Una tabla]]></cell></row>
+  <row><cell><![CDATA[Relación]]></cell><cell><![CDATA[Rombo]]></cell><cell><![CDATA[Asociación entre dos o más entidades]]></cell></row>
+  <row><cell><![CDATA[Atributo]]></cell><cell><![CDATA[Óvalo]]></cell><cell><![CDATA[Propiedad de una entidad o una relación]]></cell></row>
+  <row><cell><![CDATA[Flecha]]></cell><cell><![CDATA[Flecha →]]></cell><cell><![CDATA[Une entidad (rectángulo) a relación (rombo)]]></cell></row>
+</table>
+
+<text><![CDATA[
+Las flechas siempre van desde una entidad hacia una relación, nunca al revés.
+Un atributo puede estar conectado a:
+]]></text>
+
+<list ordered="false">
+  <item><![CDATA[Una entidad: se convertirá en una columna en la tabla correspondiente.]]></item>
+  <item><![CDATA[Una relación: si la relación tiene atributos, se transforma en una tabla propia.]]></item>
+</list>
+</section>
+
+<section level="2">
+<![CDATA[
+Representación de cardinalidades
+]]>
+
+<text><![CDATA[
+Las cardinalidades indican cuántas veces una entidad puede intervenir en una relación.
+Hay dos formas de representarlas gráficamente:
+]]></text>
+
+<section level="3">
+<![CDATA[
+Forma 1 – Dos grupos de números (más precisa)
+]]>
+
+<text><![CDATA[
+Alumno      Matrícula              Curso
+(1..1)  ← (0..N) → (1..N) → (1..1)
+]]></text>
+
+<list ordered="false">
+  <item><![CDATA[Cada alumno puede tener 0 o más matrículas.]]></item>
+  <item><![CDATA[Cada matrícula pertenece a un único alumno.]]></item>
+  <item><![CDATA[Cada matrícula es sobre un único curso.]]></item>
+  <item><![CDATA[Un curso puede tener muchas matrículas.]]></item>
+</list>
+
+<text><![CDATA[
+Esta forma es muy explícita, ya que indica claramente el mínimo y máximo de participación de cada entidad en la relación.
+]]></text>
+</section>
+
+<section level="3">
+<![CDATA[
+Forma 2 – Un solo grupo de números en el rombo
+]]>
+
+<code type="plain"><![CDATA[
+Alumno <──────(1:N)──────> Curso
+]]></code>
+
+<list ordered="false">
+  <item><![CDATA[Se entiende que un alumno puede estar inscrito en varios cursos.]]></item>
+  <item><![CDATA[Un curso tiene varios alumnos inscritos.]]></item>
+  <item><![CDATA[No se distingue entre 0..N y 1..N, ni entre 1..1 y 0..1. Es más compacta pero menos precisa.]]></item>
+</list>
+</section>
+
+<table>
+  <row><cell><![CDATA[Aspecto]]></cell><cell><![CDATA[Forma 1: dos lados]]></cell><cell><![CDATA[Forma 2: en el rombo]]></cell></row>
+  <row><cell><![CDATA[Precisión]]></cell><cell><![CDATA[Muy alta]]></cell><cell><![CDATA[Media (general)]]></cell></row>
+  <row><cell><![CDATA[Muestra mínimos]]></cell><cell><![CDATA[Sí (0..N, 1..1, etc.)]]></cell><cell><![CDATA[No]]></cell></row>
+  <row><cell><![CDATA[Claridad visual]]></cell><cell><![CDATA[Detallada]]></cell><cell><![CDATA[Más simple visualmente]]></cell></row>
+  <row><cell><![CDATA[Ambigüedad]]></cell><cell><![CDATA[Ninguna]]></cell><cell><![CDATA[Puede generar confusión]]></cell></row>
+  <row><cell><![CDATA[Uso común]]></cell><cell><![CDATA[Formal, académico]]></cell><cell><![CDATA[Bocetos, esquemas rápidos]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Traducción del modelo ER al modelo relacional (SQL)
+]]>
+
+<table>
+  <row><cell><![CDATA[Elemento ER]]></cell><cell><![CDATA[Traducción SQL]]></cell></row>
+  <row><cell><![CDATA[Entidad]]></cell><cell><![CDATA[Tabla con CREATE TABLE]]></cell></row>
+  <row><cell><![CDATA[Atributo]]></cell><cell><![CDATA[Columna]]></cell></row>
+  <row><cell><![CDATA[Relación 1:N]]></cell><cell><![CDATA[Clave foránea en el lado N]]></cell></row>
+  <row><cell><![CDATA[Relación N:M]]></cell><cell><![CDATA[Nueva tabla intermedia con 2 claves foráneas]]></cell></row>
+  <row><cell><![CDATA[Relación con atributos propios]]></cell><cell><![CDATA[Tabla adicional con claves foráneas y columnas extra]]></cell></row>
+  <row><cell><![CDATA[Atributo clave primaria]]></cell><cell><![CDATA[PRIMARY KEY]]></cell></row>
+  <row><cell><![CDATA[Atributo clave foránea]]></cell><cell><![CDATA[FOREIGN KEY]]></cell></row>
+  <row><cell><![CDATA[Atributo obligatorio]]></cell><cell><![CDATA[NOT NULL]]></cell></row>
+  <row><cell><![CDATA[Atributo único]]></cell><cell><![CDATA[UNIQUE]]></cell></row>
+  <row><cell><![CDATA[Atributo con condición]]></cell><cell><![CDATA[CHECK (condición)]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Sintaxis general de CREATE TABLE
+]]>
+
+<code type="sql"><![CDATA[
+CREATE TABLE IF NOT EXISTS nombre_tabla (
+    columna1 tipo [restricciones],
+    columna2 tipo [restricciones],
+    ...
+    CONSTRAINT nombre_restriccion CHECK (...),
+    PRIMARY KEY (...),
+    FOREIGN KEY (...) REFERENCES otra_tabla(columna)
+        ON DELETE ... ON UPDATE ...
+);
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Tipos de datos más usados en PostgreSQL
+]]>
+
+<table>
+  <row><cell><![CDATA[Tipo]]></cell><cell><![CDATA[Descripción]]></cell></row>
+  <row><cell><![CDATA[INTEGER]]></cell><cell><![CDATA[Números enteros]]></cell></row>
+  <row><cell><![CDATA[TEXT]]></cell><cell><![CDATA[Texto de longitud variable]]></cell></row>
+  <row><cell><![CDATA[BOOLEAN]]></cell><cell><![CDATA[TRUE o FALSE]]></cell></row>
+  <row><cell><![CDATA[DATE]]></cell><cell><![CDATA[Fecha (YYYY-MM-DD)]]></cell></row>
+  <row><cell><![CDATA[TIMESTAMP]]></cell><cell><![CDATA[Fecha y hora combinadas]]></cell></row>
+  <row><cell><![CDATA[NUMERIC]]></cell><cell><![CDATA[Números decimales de precisión fija]]></cell></row>
+  <row><cell><![CDATA[SERIAL]]></cell><cell><![CDATA[Entero autoincremental]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+El tipo SERIAL
+]]>
+
+<code type="sql"><![CDATA[
+INTEGER NOT NULL DEFAULT nextval('nombre_secuencia')
+]]></code>
+
+<text><![CDATA[
+Al usar SERIAL, PostgreSQL crea una secuencia automática asociada.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Claves primarias
+]]>
+
+<code type="sql"><![CDATA[
+id_empleado SERIAL PRIMARY KEY
+]]></code>
+
+<text><![CDATA[
+Garantiza unicidad y no permite valores nulos.
+No necesita NOT NULL ni UNIQUE porque ya están implícitos.
+]]></text>
+
+<code type="sql"><![CDATA[
+PRIMARY KEY (id_alumno, id_curso)
+]]></code>
+
+<text><![CDATA[
+Se utiliza cuando la combinación de varios campos debe ser única.
+Muy común en relaciones N:M.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Claves foráneas
+]]>
+
+<code type="sql"><![CDATA[
+id_departamento INTEGER REFERENCES departamentos(id_departamento)
+]]></code>
+
+<code type="sql"><![CDATA[
+FOREIGN KEY (id_departamento)
+    REFERENCES departamentos(id_departamento)
+    ON DELETE CASCADE
+    ON UPDATE RESTRICT
+]]></code>
+
+<table>
+  <row><cell><![CDATA[Acción]]></cell><cell><![CDATA[Efecto]]></cell></row>
+  <row><cell><![CDATA[CASCADE]]></cell><cell><![CDATA[Borra/modifica también las filas relacionadas]]></cell></row>
+  <row><cell><![CDATA[SET NULL]]></cell><cell><![CDATA[Asigna NULL al campo en la tabla dependiente]]></cell></row>
+  <row><cell><![CDATA[SET DEFAULT]]></cell><cell><![CDATA[Asigna el valor por defecto]]></cell></row>
+  <row><cell><![CDATA[RESTRICT]]></cell><cell><![CDATA[Impide borrar/modificar si hay filas relacionadas]]></cell></row>
+  <row><cell><![CDATA[NO ACTION]]></cell><cell><![CDATA[Igual que RESTRICT pero verificado al final de la transacción]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Restricciones adicionales
+]]>
+
+<table>
+  <row><cell><![CDATA[Restricción]]></cell><cell><![CDATA[¿Dónde se aplica?]]></cell><cell><![CDATA[Significado]]></cell></row>
+  <row><cell><![CDATA[NOT NULL]]></cell><cell><![CDATA[Columna]]></cell><cell><![CDATA[El valor no puede ser nulo]]></cell></row>
+  <row><cell><![CDATA[UNIQUE]]></cell><cell><![CDATA[Columna o grupo]]></cell><cell><![CDATA[No puede haber valores repetidos]]></cell></row>
+  <row><cell><![CDATA[CHECK]]></cell><cell><![CDATA[Columna o tabla]]></cell><cell><![CDATA[Condición que debe cumplirse (CHECK (edad > 0))]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Identificadores con comillas dobles
+]]>
+
+<code type="sql"><![CDATA[
+CREATE TABLE "Empleados Activos" (
+    "ID Usuario" SERIAL,
+    "Nombre Completo" TEXT
+);
+]]></code>
+
+<code type="sql"><![CDATA[
+SELECT "Nombre Completo" FROM "Empleados Activos";
+]]></code>
+
+<text><![CDATA[
+Una vez creado así, debes usar comillas dobles siempre para referenciar ese campo o tabla.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Ejemplo final con todos los elementos aplicados
+]]>
+
+<code type="sql"><![CDATA[
+CREATE TABLE IF NOT EXISTS empleados (
+    id_empleado SERIAL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    dni TEXT UNIQUE,
+    edad INTEGER CHECK (edad > 17),
+    id_departamento INTEGER REFERENCES departamentos(id_departamento)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+    fecha_ingreso DATE DEFAULT CURRENT_DATE
+);
+]]></code>
+
+<list ordered="false">
+  <item><![CDATA[id_empleado es autoincremental y clave primaria.]]></item>
+  <item><![CDATA[dni debe ser único.]]></item>
+  <item><![CDATA[edad debe ser mayor de 17.]]></item>
+  <item><![CDATA[id_departamento es una clave foránea con ON DELETE SET NULL.]]></item>
+  <item><![CDATA[fecha_ingreso tiene un valor por defecto (la fecha actual).]]></item>
+</list>
+</section>
+</section>

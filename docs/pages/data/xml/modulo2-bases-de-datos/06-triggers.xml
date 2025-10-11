@@ -1,0 +1,316 @@
+<section level="1">
+<![CDATA[
+6 – Triggers
+]]>
+
+<text><![CDATA[
+Un trigger (disparador) es un mecanismo automático que se ejecuta como respuesta a un evento sobre una tabla o vista.
+Puede activarse con operaciones INSERT, UPDATE, DELETE o incluso DDL (como CREATE TABLE o ALTER).
+En resumen:
+]]></text>
+
+<text><![CDATA[
+Un trigger actúa como un "reaccionador" dentro de la base de datos:
+“Cuando ocurra X en la tabla Y, ejecuta automáticamente el código Z.”
+]]></text>
+
+<section level="2">
+<![CDATA[
+¿Para qué sirven los triggers?
+]]>
+
+<list ordered="false">
+  <item><![CDATA[Mantener integridad lógica entre tablas (por ejemplo, borrar líneas de pedido al borrar un pedido).]]></item>
+  <item><![CDATA[Auditar cambios: registrar en una tabla quién modificó un registro y cuándo.]]></item>
+  <item><![CDATA[Validar o corregir datos antes de guardarlos (convertir texto, comprobar rangos, etc.).]]></item>
+  <item><![CDATA[Sincronizar información: actualizar totales o estadísticas al cambiar datos base.]]></item>
+</list>
+</section>
+
+<section level="2">
+<![CDATA[
+Tipos de triggers en PostgreSQL
+]]>
+
+<section level="3">
+<![CDATA[
+Según el momento
+]]>
+
+<table>
+  <row><cell><![CDATA[Tipo]]></cell><cell><![CDATA[Se ejecuta...]]></cell><cell><![CDATA[Uso típico]]></cell></row>
+  <row><cell><![CDATA[BEFORE]]></cell><cell><![CDATA[Antes de la operación]]></cell><cell><![CDATA[Validar, modificar o impedir cambios]]></cell></row>
+  <row><cell><![CDATA[AFTER]]></cell><cell><![CDATA[Después de la operación]]></cell><cell><![CDATA[Registrar cambios, propagar datos]]></cell></row>
+  <row><cell><![CDATA[INSTEAD OF]]></cell><cell><![CDATA[En lugar de la operación (solo vistas)]]></cell><cell><![CDATA[Personalizar vistas actualizables]]></cell></row>
+</table>
+</section>
+
+<section level="3">
+<![CDATA[
+Según el alcance
+]]>
+
+<table>
+  <row><cell><![CDATA[Tipo]]></cell><cell><![CDATA[Actúa sobre...]]></cell><cell><![CDATA[Ejemplo]]></cell></row>
+  <row><cell><![CDATA[FOR EACH ROW]]></cell><cell><![CDATA[Cada fila afectada]]></cell><cell><![CDATA[Registrar log por cada registro insertado]]></cell></row>
+  <row><cell><![CDATA[FOR EACH STATEMENT]]></cell><cell><![CDATA[Una vez por sentencia]]></cell><cell><![CDATA[Calcular totales tras un UPDATE masivo]]></cell></row>
+</table>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Estructura general de un trigger
+]]>
+
+<text><![CDATA[
+Un trigger tiene dos componentes:
+]]></text>
+<text><![CDATA[
+1- Una función PL/pgSQL que define la lógica.  
+]]></text>
+<text><![CDATA[
+2- Una declaración CREATE TRIGGER que la asocia a una tabla y evento.
+]]></text>
+
+<section level="3">
+<![CDATA[
+Paso 1. Crear tabla principal
+]]>
+
+<code type="sql"><![CDATA[
+CREATE TABLE empleados (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT,
+    salario NUMERIC(10,2)
+);
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Paso 2. Crear tabla de auditoría
+]]>
+
+<code type="sql"><![CDATA[
+CREATE TABLE log_empleados (
+    id SERIAL PRIMARY KEY,
+    empleado_id INT,
+    accion TEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario TEXT
+);
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Paso 3. Crear la función trigger
+]]>
+
+<code type="sql"><![CDATA[
+CREATE OR REPLACE FUNCTION registrar_cambio_empleado()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO log_empleados (empleado_id, accion, usuario)
+        VALUES (NEW.id, 'INSERT', current_user);
+
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO log_empleados (empleado_id, accion, usuario)
+        VALUES (NEW.id, 'UPDATE', current_user);
+
+    ELSIF TG_OP = 'DELETE' THEN
+        INSERT INTO log_empleados (empleado_id, accion, usuario)
+        VALUES (OLD.id, 'DELETE', current_user);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+]]></code>
+
+<table>
+  <row><cell><![CDATA[Elemento]]></cell><cell><![CDATA[Explicación]]></cell></row>
+  <row><cell><![CDATA[TG_OP]]></cell><cell><![CDATA[Operación (INSERT, UPDATE, DELETE)]]></cell></row>
+  <row><cell><![CDATA[NEW]]></cell><cell><![CDATA[Fila nueva (INSERT/UPDATE)]]></cell></row>
+  <row><cell><![CDATA[OLD]]></cell><cell><![CDATA[Fila anterior (UPDATE/DELETE)]]></cell></row>
+  <row><cell><![CDATA[current_user]]></cell><cell><![CDATA[Usuario que ejecutó la acción]]></cell></row>
+</table>
+</section>
+
+<section level="3">
+<![CDATA[
+Paso 4. Asociar el trigger a la tabla
+]]>
+
+<code type="sql"><![CDATA[
+CREATE TRIGGER tr_log_empleados
+AFTER INSERT OR UPDATE OR DELETE
+ON empleados
+FOR EACH ROW
+EXECUTE FUNCTION registrar_cambio_empleado();
+]]></code>
+
+<table>
+  <row><cell><![CDATA[Elemento]]></cell><cell><![CDATA[Significado]]></cell></row>
+  <row><cell><![CDATA[AFTER]]></cell><cell><![CDATA[Se ejecuta después de la acción.]]></cell></row>
+  <row><cell><![CDATA[FOR EACH ROW]]></cell><cell><![CDATA[Actúa por cada fila.]]></cell></row>
+  <row><cell><![CDATA[EXECUTE FUNCTION]]></cell><cell><![CDATA[Llama a la función PL/pgSQL definida.]]></cell></row>
+</table>
+</section>
+
+<section level="3">
+<![CDATA[
+Ejemplo de funcionamiento
+]]>
+
+<code type="sql"><![CDATA[
+INSERT INTO empleados (nombre, salario)
+VALUES ('Lucía', 2500.00);
+]]></code>
+
+<text><![CDATA[
+PostgreSQL ejecuta automáticamente:
+]]></text>
+
+<code type="sql"><![CDATA[
+INSERT INTO log_empleados (empleado_id, accion, usuario)
+VALUES (1, 'INSERT', 'juanma');
+]]></code>
+
+<text><![CDATA[
+El log se rellena sin intervención manual del programador.
+]]></text>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Ejemplo de trigger BEFORE (validación de datos)
+]]>
+
+<code type="sql"><![CDATA[
+CREATE OR REPLACE FUNCTION validar_salario()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.salario < 1000 THEN
+        RAISE EXCEPTION 'El salario mínimo debe ser 1000 euros';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_validar_salario
+BEFORE INSERT OR UPDATE ON empleados
+FOR EACH ROW
+EXECUTE FUNCTION validar_salario();
+]]></code>
+
+<text><![CDATA[
+Si se intenta insertar un salario menor a 1000, la operación se cancela.
+El trigger BEFORE actúa antes de escribir los datos.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Ejemplo con INSTEAD OF (vistas actualizables)
+]]>
+
+<code type="sql"><![CDATA[
+CREATE VIEW vista_empleados AS
+SELECT id, nombre, salario FROM empleados WHERE salario > 2000;
+]]></code>
+
+<code type="sql"><![CDATA[
+CREATE OR REPLACE FUNCTION insertar_en_vista()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO empleados (nombre, salario) VALUES (NEW.nombre, NEW.salario);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_insertar_vista
+INSTEAD OF INSERT ON vista_empleados
+FOR EACH ROW
+EXECUTE FUNCTION insertar_en_vista();
+]]></code>
+
+<text><![CDATA[
+Permite ejecutar INSERT sobre una vista que, internamente, inserta en la tabla real.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Variables útiles dentro de un trigger
+]]>
+
+<table>
+  <row><cell><![CDATA[Variable]]></cell><cell><![CDATA[Descripción]]></cell></row>
+  <row><cell><![CDATA[TG_OP]]></cell><cell><![CDATA[Tipo de operación (INSERT, UPDATE, DELETE)]]></cell></row>
+  <row><cell><![CDATA[TG_TABLE_NAME]]></cell><cell><![CDATA[Nombre de la tabla afectada]]></cell></row>
+  <row><cell><![CDATA[TG_WHEN]]></cell><cell><![CDATA[Momento del trigger (BEFORE, AFTER, INSTEAD OF)]]></cell></row>
+  <row><cell><![CDATA[NEW]]></cell><cell><![CDATA[Fila nueva (solo INSERT y UPDATE)]]></cell></row>
+  <row><cell><![CDATA[OLD]]></cell><cell><![CDATA[Fila antigua (solo UPDATE y DELETE)]]></cell></row>
+  <row><cell><![CDATA[TG_ARGV[]]]></cell><cell><![CDATA[Argumentos pasados al trigger]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Buenas prácticas con triggers
+]]>
+
+<list ordered="false">
+  <item><![CDATA[Usar solo cuando sea necesario, ya que pueden complicar la depuración.]]></item>
+  <item><![CDATA[Documentar claramente cada trigger y su función.]]></item>
+  <item><![CDATA[Evitar operaciones pesadas dentro del trigger.]]></item>
+  <item><![CDATA[Usar AFTER para auditorías y BEFORE para validaciones.]]></item>
+  <item><![CDATA[Probar y depurar con cuidado, usando RAISE NOTICE para depuración.]]></item>
+</list>
+
+<code type="sql"><![CDATA[
+RAISE NOTICE 'Se ha insertado el empleado %', NEW.nombre;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Cómo ver y eliminar triggers
+]]>
+
+<text><![CDATA[
+Listar triggers de una tabla:
+]]></text>
+
+<code type="sql"><![CDATA[
+\d nombre_tabla
+]]></code>
+
+<code type="sql"><![CDATA[
+SELECT tgname, tgtype::regtype, tgfoid::regproc
+FROM pg_trigger
+WHERE tgrelid = 'empleados'::regclass;
+]]></code>
+
+<text><![CDATA[
+Eliminar un trigger:
+]]></text>
+
+<code type="sql"><![CDATA[
+DROP TRIGGER tr_log_empleados ON empleados;
+]]></code>
+
+<text><![CDATA[
+Eliminar la función asociada:
+]]></text>
+
+<code type="sql"><![CDATA[
+DROP FUNCTION registrar_cambio_empleado();
+]]></code>
+</section>
+</section>
+

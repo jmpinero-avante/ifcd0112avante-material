@@ -1,0 +1,364 @@
+<section level="1">
+<![CDATA[
+10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC
+]]>
+
+<section level="2">
+<![CDATA[
+Instalación de PostgreSQL y pgAdmin en Windows
+]]>
+
+<text><![CDATA[
+Descarga el instalador oficial desde:
+]]></text>
+
+<code><![CDATA[
+https://www.postgresql.org/download/windows/
+]]></code>
+
+<list ordered="true">
+  <item><![CDATA[Ejecuta el instalador de EnterpriseDB (EDB) y selecciona los componentes:
+    - PostgreSQL Server
+    - pgAdmin 4
+    - Command Line Tools]]></item>
+  <item><![CDATA[Define una contraseña para el usuario postgres.]]></item>
+  <item><![CDATA[Deja el puerto por defecto 5432.]]></item>
+  <item><![CDATA[Anota la carpeta de datos (por ejemplo C:\Program Files\PostgreSQL\16\data).]]></item>
+</list>
+
+<text><![CDATA[
+Al finalizar, PostgreSQL se inicia automáticamente como servicio de Windows.
+Puedes comprobarlo en el Administrador de tareas (pestaña Servicios) o con PowerShell:
+]]></text>
+
+<code type="bash"><![CDATA[
+net start postgresql-x64-16
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Activar acceso por contraseña en Windows
+]]>
+
+<text><![CDATA[
+Por defecto, el usuario postgres puede acceder localmente sin contraseña.
+Para requerir contraseña (necesario para pgAdmin, DBeaver o JDBC):
+]]></text>
+
+<text><![CDATA[
+1.- Abre el archivo:
+]]></text>
+<code><![CDATA[
+C:\Program Files\PostgreSQL\16\data\pg_hba.conf
+]]></code>
+
+<text><![CDATA[
+	
+2.- Busca la línea:
+]]></text>
+<code><![CDATA[
+local   all             postgres                                trust
+]]></code>
+
+<text><![CDATA[
+	
+3.- Cámbiala por:
+]]></text>
+<code><![CDATA[
+local   all             postgres                                md5
+]]></code>
+
+<text><![CDATA[
+	
+Opcional: permitir acceso local TCP/IP:
+]]></text>
+<code><![CDATA[
+host    all             all             127.0.0.1/32            md5
+]]></code>
+
+<text><![CDATA[
+	
+Guarda los cambios y reinicia el servicio:
+]]></text>
+
+<code type="bash"><![CDATA[
+net stop postgresql-x64-16
+net start postgresql-x64-16
+]]></code>
+
+<text><![CDATA[
+Verifica el acceso:
+]]></text>
+
+<code type="bash"><![CDATA[
+psql -U postgres -h localhost
+]]></code>
+
+<text><![CDATA[
+Debería pedir la contraseña configurada durante la instalación.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Instalación de PostgreSQL y pgAdmin en Linux (Ubuntu, Mint, Pop!_OS, etc.)
+]]>
+
+<section level="3">
+<![CDATA[
+Opción 1 – Repositorios estándar (versión estable de Ubuntu)
+]]>
+
+<code type="bash"><![CDATA[
+sudo apt update
+sudo apt install postgresql postgresql-contrib pgadmin4 -y
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Opción 2 (recomendada) – Repositorios oficiales de PostgreSQL.org
+]]>
+
+<text><![CDATA[
+Permite instalar versiones más recientes (por ejemplo PostgreSQL 16 o 17).
+]]></text>
+
+<code type="bash"><![CDATA[
+sudo apt install wget ca-certificates -y
+wget -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+   sudo apt-key add -
+. /etc/os-release
+echo "deb http://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" | \
+   sudo tee /etc/apt/sources.list.d/pgdg.list
+sudo apt update
+sudo apt install postgresql postgresql-contrib -y
+]]></code>
+
+<text><![CDATA[
+Verifica que el servicio esté activo:
+]]></text>
+
+<code type="bash"><![CDATA[
+sudo systemctl status postgresql
+]]></code>
+
+<text><![CDATA[
+(Opcional) Instalar una versión específica:
+]]></text>
+
+<code type="bash"><![CDATA[
+sudo apt install postgresql-16 postgresql-contrib -y
+]]></code>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Cambiar la contraseña del usuario postgres
+]]>
+
+<code type="bash"><![CDATA[
+sudo -u postgres psql
+]]></code>
+
+<code type="sql"><![CDATA[
+ALTER USER postgres PASSWORD 'nueva_contraseña';
+]]></code>
+
+<text><![CDATA[
+Ejemplo:
+]]></text>
+
+<code type="sql"><![CDATA[
+ALTER USER postgres PASSWORD 'admin123';
+]]></code>
+
+<code type="bash"><![CDATA[
+\q
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Permitir acceso por contraseña (modo md5)
+]]>
+
+<text><![CDATA[
+Edita el archivo de configuración de autenticación:
+]]></text>
+
+<code type="bash"><![CDATA[
+sudo nano /etc/postgresql/16/main/pg_hba.conf
+]]></code>
+
+<text><![CDATA[
+Reemplaza:
+]]></text>
+<code><![CDATA[
+local   all             postgres                                peer
+]]></code>
+<text><![CDATA[
+Por:
+]]></text>
+<code><![CDATA[
+local   all             postgres                                md5
+]]></code>
+<text><![CDATA[
+Y añade:
+]]></text>
+<code><![CDATA[
+host    all             all             127.0.0.1/32            md5
+]]></code>
+
+<code type="bash"><![CDATA[
+sudo systemctl restart postgresql
+]]></code>
+
+<table>
+  <row><cell><![CDATA[Método]]></cell><cell><![CDATA[Significado]]></cell></row>
+  <row><cell><![CDATA[peer]]></cell><cell><![CDATA[Usa el usuario del sistema operativo (sin contraseña)]]></cell></row>
+  <row><cell><![CDATA[md5]]></cell><cell><![CDATA[Requiere contraseña cifrada (recomendado)]]></cell></row>
+  <row><cell><![CDATA[trust]]></cell><cell><![CDATA[Permite acceso sin contraseña (solo para pruebas locales)]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Crear usuarios y bases de datos
+]]>
+
+<code type="bash"><![CDATA[
+sudo -u postgres psql
+]]></code>
+
+<code type="sql"><![CDATA[
+CREATE USER juanma WITH PASSWORD '12345';
+
+CREATE DATABASE cursos;
+
+GRANT ALL PRIVILEGES ON DATABASE cursos TO juanma;
+
+\c cursos
+
+GRANT ALL PRIVILEGES ON SCHEMA public TO juanma;
+
+ALTER ROLE juanma CREATEDB;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Conectarse con psql y pgAdmin
+]]>
+
+<section level="3">
+<![CDATA[
+Desde la terminal
+]]>
+
+<code type="bash"><![CDATA[
+psql -U juanma -d cursos -h localhost -W
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Desde pgAdmin
+]]>
+
+<list ordered="true">
+  <item><![CDATA[Abre pgAdmin y crea una Master Password local.]]></item>
+  <item><![CDATA[En Servers → Create → Server:
+    - Name: Localhost
+    - Host: 127.0.0.1
+    - Port: 5432
+    - Username: postgres
+    - Password: la configurada
+  ]]></item>
+  <item><![CDATA[Guarda la conexión y accede a la base de datos.]]></item>
+</list>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Instalar el driver JDBC
+]]>
+
+<section level="3">
+<![CDATA[
+Instalación manual
+]]>
+
+<text><![CDATA[
+Descarga desde:
+]]></text>
+
+<code><![CDATA[
+https://jdbc.postgresql.org/download.html
+]]></code>
+
+<text><![CDATA[
+Archivo típico:
+]]></text>
+
+<code><![CDATA[
+postgresql-42.7.2.jar
+]]></code>
+
+<text><![CDATA[
+Estructura de proyecto:
+]]></text>
+
+<code type="text"><![CDATA[
+ProyectoJava/
+├─ src/
+└─ lib/postgresql-42.7.2.jar
+]]></code>
+
+<text><![CDATA[
+Compila y ejecuta con:
+]]></text>
+
+<code type="bash"><![CDATA[
+javac -cp ".:lib/postgresql-42.7.2.jar" Main.java
+java  -cp ".:lib/postgresql-42.7.2.jar" Main
+]]></code>
+
+<text><![CDATA[
+(En Windows usa ; en lugar de :)
+]]></text>
+</section>
+
+<section level="3">
+<![CDATA[
+Instalación con Maven
+]]>
+
+<code type="xml"><![CDATA[
+<dependencies>
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.7.2</version>
+    </dependency>
+</dependencies>
+]]></code>
+
+<code type="bash"><![CDATA[
+mvn dependency:tree
+]]></code>
+
+<text><![CDATA[
+Deberías ver:
+]]></text>
+
+<code><![CDATA[
+org.postgresql:postgresql:jar:42.7.2:compile
+]]></code>
+</section>
+</section>
+</section>
+

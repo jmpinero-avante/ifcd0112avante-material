@@ -1,0 +1,543 @@
+<section level="1">
+<![CDATA[
+2 – Consultas en PostgreSQL
+]]>
+
+<section level="2">
+<![CDATA[
+Consultas básicas: SELECT
+]]>
+
+<text><![CDATA[
+Devuelve todas las filas y columnas:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT * FROM empleados;
+]]></code>
+
+<text><![CDATA[
+Puedes seleccionar columnas concretas:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT nombre, edad FROM empleados;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Alias de columnas
+]]>
+
+<text><![CDATA[
+Los alias permiten renombrar columnas en la salida:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre AS "Nombre completo",
+    salario * 1.1 AS "Salario con subida"
+FROM empleados;
+]]></code>
+
+<text><![CDATA[
+Se puede usar AS, aunque es opcional.
+Si el alias tiene espacios o mayúsculas, hay que usar comillas dobles.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Alias de tablas
+]]>
+
+<text><![CDATA[
+Útiles en consultas con múltiples tablas o JOINs:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    e.nombre, 
+    d.nombre_departamento
+FROM
+    empleados AS e
+JOIN departamentos AS d
+    ON e.id_departamento = d.id_departamento;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Cláusula WHERE
+]]>
+
+<text><![CDATA[
+Filtra los resultados según condiciones.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT nombre FROM empleados WHERE edad > 30;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Operadores habituales
+]]>
+
+<table>
+  <row><cell><![CDATA[Operador]]></cell><cell><![CDATA[Uso]]></cell></row>
+  <row><cell><![CDATA[=]]></cell><cell><![CDATA[Igual a]]></cell></row>
+  <row><cell><![CDATA[<> o !=]]></cell><cell><![CDATA[Distinto de]]></cell></row>
+  <row><cell><![CDATA[<, >, <=, >=]]></cell><cell><![CDATA[Comparaciones numéricas]]></cell></row>
+  <row><cell><![CDATA[BETWEEN]]></cell><cell><![CDATA[Rango de valores]]></cell></row>
+  <row><cell><![CDATA[IN]]></cell><cell><![CDATA[Coincidencia en una lista]]></cell></row>
+  <row><cell><![CDATA[LIKE]]></cell><cell><![CDATA[Patrón textual (%, _)]]></cell></row>
+  <row><cell><![CDATA[IS NULL]]></cell><cell><![CDATA[Es nulo]]></cell></row>
+  <row><cell><![CDATA[IS NOT NULL]]></cell><cell><![CDATA[No es nulo]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Ordenación y límites: ORDER BY y LIMIT
+]]>
+
+<text><![CDATA[
+Ordena el resultado:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT * FROM empleados ORDER BY edad;
+]]></code>
+
+<text><![CDATA[
+Por defecto es ascendente (ASC).  
+Descendente: 
+]]></text>
+
+<code type="sql"><![CDATA[
+ORDER BY edad DESC
+]]></code>
+
+<text><![CDATA[
+También puedes ordenar por el número de columna:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre,
+    salario
+FROM
+    empleados
+ORDER BY
+    2 DESC;
+]]></code>
+
+<text><![CDATA[
+Restringe el número de filas devueltas:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    *
+FROM
+    empleados
+ORDER BY
+    salario DESC
+LIMIT 3;
+]]></code>
+
+<text><![CDATA[
+Empleado con salario más alto:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre,
+    salario
+FROM
+    empleados
+ORDER BY
+    salario DESC
+LIMIT 1;
+]]></code>
+
+<text><![CDATA[
+Empleado más joven:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre,
+    edad
+FROM
+    empleados
+ORDER BY
+    edad ASC
+LIMIT 1;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Tipos de JOIN
+]]>
+
+<section level="3">
+<![CDATA[
+Tablas de ejemplo
+]]>
+
+<table>
+  <row><cell><![CDATA[id_producto]]></cell><cell><![CDATA[nombre_producto]]></cell></row>
+  <row><cell><![CDATA[1]]></cell><cell><![CDATA[Camiseta]]></cell></row>
+  <row><cell><![CDATA[2]]></cell><cell><![CDATA[Pantalón]]></cell></row>
+  <row><cell><![CDATA[3]]></cell><cell><![CDATA[Zapatos]]></cell></row>
+</table>
+
+<table>
+  <row><cell><![CDATA[id_color]]></cell><cell><![CDATA[nombre_color]]></cell></row>
+  <row><cell><![CDATA[1]]></cell><cell><![CDATA[Rojo]]></cell></row>
+  <row><cell><![CDATA[2]]></cell><cell><![CDATA[Azul]]></cell></row>
+</table>
+</section>
+
+<section level="3">
+<![CDATA[
+INNER JOIN
+]]>
+
+<text><![CDATA[
+Solo coincidencias.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    *
+FROM
+    productos
+    INNER JOIN colores
+        ON productos.id_producto = colores.id_color;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+LEFT JOIN
+]]>
+
+<text><![CDATA[
+Muestra todos los productos, aunque no tengan color asociado.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    *
+FROM
+    productos
+    LEFT JOIN colores
+        ON productos.id_producto = colores.id_color;
+]]></code>
+
+<text><![CDATA[
+Filtrar productos sin color asignado:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    *
+FROM
+    productos
+    LEFT JOIN colores
+        ON productos.id_producto = colores.id_color
+WHERE
+    colores.id_color IS NULL;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+RIGHT JOIN
+]]>
+
+<text><![CDATA[
+Muestra todos los colores, aunque no tengan producto asociado.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    *
+FROM
+    productos
+    RIGHT JOIN colores
+        ON productos.id_producto = colores.id_color;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+FULL JOIN
+]]>
+
+<text><![CDATA[
+Devuelve todas las filas de ambas tablas, coincidan o no.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    *
+FROM
+    productos
+    FULL JOIN colores
+        ON productos.id_producto = colores.id_color;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+CROSS JOIN
+]]>
+
+<text><![CDATA[
+Producto cartesiano: todas las combinaciones posibles (3 × 2 = 6 filas).
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    *
+FROM
+    productos
+    CROSS JOIN colores;
+]]></code>
+</section>
+
+<table>
+  <row><cell><![CDATA[JOIN]]></cell><cell><![CDATA[¿Qué hace?]]></cell></row>
+  <row><cell><![CDATA[FULL JOIN]]></cell><cell><![CDATA[Une filas coincidentes y muestra también las no relacionadas]]></cell></row>
+  <row><cell><![CDATA[CROSS JOIN]]></cell><cell><![CDATA[Todas las combinaciones posibles (producto cartesiano)]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Funciones de agregación
+]]>
+
+<table>
+  <row><cell><![CDATA[id]]></cell><cell><![CDATA[nombre]]></cell><cell><![CDATA[edad]]></cell><cell><![CDATA[salario]]></cell><cell><![CDATA[departamento]]></cell></row>
+  <row><cell><![CDATA[1]]></cell><cell><![CDATA[Ana]]></cell><cell><![CDATA[25]]></cell><cell><![CDATA[1200]]></cell><cell><![CDATA[Ventas]]></cell></row>
+  <row><cell><![CDATA[2]]></cell><cell><![CDATA[Luis]]></cell><cell><![CDATA[45]]></cell><cell><![CDATA[1800]]></cell><cell><![CDATA[Marketing]]></cell></row>
+  <row><cell><![CDATA[3]]></cell><cell><![CDATA[Marta]]></cell><cell><![CDATA[30]]></cell><cell><![CDATA[1500]]></cell><cell><![CDATA[Ventas]]></cell></row>
+  <row><cell><![CDATA[4]]></cell><cell><![CDATA[Pedro]]></cell><cell><![CDATA[50]]></cell><cell><![CDATA[2200]]></cell><cell><![CDATA[Marketing]]></cell></row>
+  <row><cell><![CDATA[5]]></cell><cell><![CDATA[Clara]]></cell><cell><![CDATA[29]]></cell><cell><![CDATA[1600]]></cell><cell><![CDATA[Ventas]]></cell></row>
+</table>
+
+<code type="sql"><![CDATA[
+SELECT COUNT(*) FROM empleados;             -- 5
+SELECT SUM(salario) FROM empleados;         -- 8300
+SELECT AVG(salario) FROM empleados;         -- 1660
+SELECT MIN(edad), MAX(edad) FROM empleados; -- 25 y 50
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Agrupación: GROUP BY
+]]>
+
+<code type="sql"><![CDATA[
+SELECT
+    departamento,
+    COUNT(*) 
+FROM
+    empleados 
+GROUP BY
+    departamento;
+]]></code>
+
+<text><![CDATA[
+Regla: todos los campos que están en GROUP BY deben aparecer en el SELECT, salvo funciones de agregación.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    departamento,
+    AVG(salario) 
+FROM
+    empleados 
+GROUP BY
+    departamento;
+]]></code>
+
+<table>
+  <row><cell><![CDATA[departamento]]></cell><cell><![CDATA[AVG(salario)]]></cell></row>
+  <row><cell><![CDATA[Ventas]]></cell><cell><![CDATA[1433.33]]></cell></row>
+  <row><cell><![CDATA[Marketing]]></cell><cell><![CDATA[2000.00]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+HAVING vs WHERE
+]]>
+
+<table>
+  <row><cell><![CDATA[Cláusula]]></cell><cell><![CDATA[Filtra…]]></cell><cell><![CDATA[Cuándo se aplica]]></cell></row>
+  <row><cell><![CDATA[WHERE]]></cell><cell><![CDATA[Filas individuales]]></cell><cell><![CDATA[Antes del GROUP BY]]></cell></row>
+  <row><cell><![CDATA[HAVING]]></cell><cell><![CDATA[Grupos agregados]]></cell><cell><![CDATA[Después del GROUP BY]]></cell></row>
+</table>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre,
+    salario
+FROM
+    empleados
+WHERE
+    salario > 1500;
+]]></code>
+
+<text><![CDATA[
+Filtra empleados individuales cuyo salario es mayor a 1500.
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    departamento,
+    COUNT(*) AS empleados
+FROM
+    empleados
+GROUP BY
+    departamento
+HAVING COUNT(*) > 2;
+]]></code>
+
+<text><![CDATA[
+Filtra grupos (departamentos) que tienen más de 2 empleados.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Subconsultas
+]]>
+
+<section level="3">
+<![CDATA[
+En WHERE (subconsulta NO correlacionada)
+]]>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre
+FROM
+    empleados
+WHERE
+    salario > (
+        SELECT AVG(salario) FROM empleados
+);
+]]></code>
+
+<text><![CDATA[
+Compara con el promedio general.
+]]></text>
+</section>
+
+<section level="3">
+<![CDATA[
+En SELECT
+]]>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre, 
+    (
+        SELECT
+            AVG(edad)
+        FROM
+            empleados
+    ) AS edad_media
+FROM
+    empleados;
+]]></code>
+
+<text><![CDATA[
+Agrega la media a cada fila.
+]]></text>
+</section>
+
+<section level="3">
+<![CDATA[
+En FROM
+]]>
+
+<code type="sql"><![CDATA[
+SELECT
+    departamento,
+    total
+FROM
+  (
+      SELECT
+          departamento,
+          COUNT(*) AS total
+      FROM
+          empleados
+      GROUP BY
+          departamento
+  ) AS resumen
+WHERE
+    total > 2;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Subconsulta correlacionada vs no correlacionada
+]]>
+
+<text><![CDATA[
+No correlacionada:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    nombre
+FROM
+    empleados
+WHERE
+    salario > (SELECT AVG(salario) FROM empleados);
+]]></code>
+
+<text><![CDATA[
+No depende de la fila externa.
+]]></text>
+
+<text><![CDATA[
+Correlacionada:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT
+    e.nombre
+FROM
+    empleados e
+WHERE
+    salario > (
+        SELECT
+            AVG(salario)
+        FROM
+            empleados
+        WHERE
+            departamento = e.departamento
+);
+]]></code>
+
+<text><![CDATA[
+Compara con el promedio del mismo departamento.
+]]></text>
+</section>
+</section>
+</section>
+

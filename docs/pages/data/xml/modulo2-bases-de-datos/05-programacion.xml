@@ -1,0 +1,526 @@
+<section level="1">
+<![CDATA[
+5 – Programación con funciones y procedimientos
+]]>
+
+<section level="2">
+<![CDATA[
+Diferencias entre función y procedimiento
+]]>
+
+<table>
+  <row><cell><![CDATA[Elemento]]></cell><cell><![CDATA[Función]]></cell><cell><![CDATA[Procedimiento]]></cell></row>
+  <row><cell><![CDATA[Devuelve un valor]]></cell><cell><![CDATA[✅ Sí, con RETURN]]></cell><cell><![CDATA[❌ No]]></cell></row>
+  <row><cell><![CDATA[Llamada]]></cell><cell><![CDATA[En una SELECT o expresión]]></cell><cell><![CDATA[Con el comando CALL]]></cell></row>
+  <row><cell><![CDATA[Se puede usar en SQL]]></cell><cell><![CDATA[✅ Sí]]></cell><cell><![CDATA[❌ No directamente]]></cell></row>
+  <row><cell><![CDATA[Tiene OUT]]></cell><cell><![CDATA[❌ Generalmente no]]></cell><cell><![CDATA[✅ Sí]]></cell></row>
+</table>
+</section>
+
+<section level="2">
+<![CDATA[
+Ejemplo de llamada
+]]>
+
+<text><![CDATA[
+Llamada a función:
+]]></text>
+
+<code type="sql"><![CDATA[
+SELECT mi_funcion(5);
+]]></code>
+
+<text><![CDATA[
+Llamada a procedimiento:
+]]></text>
+
+<code type="sql"><![CDATA[
+CALL mi_procedimiento('dato');
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+Esqueleto de una función o procedimiento
+]]>
+
+<text><![CDATA[
+Ambos comienzan con CREATE OR REPLACE y pueden tener:
+]]></text>
+
+<list ordered="false">
+  <item><![CDATA[Sección DECLARE: para definir variables internas.]]></item>
+  <item><![CDATA[Bloque BEGIN ... END: cuerpo principal.]]></item>
+  <item><![CDATA[Sección EXCEPTION: captura de errores.]]></item>
+</list>
+
+<section level="3">
+<![CDATA[
+Función
+]]>
+
+<code type="sql"><![CDATA[
+CREATE OR REPLACE FUNCTION suma(a INT, b INT)
+RETURNS INT AS $$
+DECLARE
+  resultado INT;
+BEGIN
+  resultado := a + b;
+  RETURN resultado;
+END;
+$$ LANGUAGE plpgsql;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Procedimiento
+]]>
+
+<code type="sql"><![CDATA[
+CREATE OR REPLACE PROCEDURE imprimir_suma(a INT, b INT)
+AS $$
+DECLARE
+  resultado INT;
+BEGIN
+  resultado := a + b;
+  RAISE NOTICE 'La suma es: %', resultado;
+END;
+$$ LANGUAGE plpgsql;
+]]></code>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Parámetros IN, OUT e INOUT
+]]>
+
+<table>
+  <row><cell><![CDATA[Tipo]]></cell><cell><![CDATA[Descripción]]></cell></row>
+  <row><cell><![CDATA[IN]]></cell><cell><![CDATA[Valor de entrada (por defecto)]]></cell></row>
+  <row><cell><![CDATA[OUT]]></cell><cell><![CDATA[Parámetro que devuelve un valor]]></cell></row>
+  <row><cell><![CDATA[INOUT]]></cell><cell><![CDATA[Sirve como entrada y salida]]></cell></row>
+</table>
+
+<code type="sql"><![CDATA[
+CREATE OR REPLACE PROCEDURE dame_doble(IN entrada INT, OUT salida INT)
+AS $$
+BEGIN
+  salida := entrada * 2;
+END;
+$$ LANGUAGE plpgsql;
+]]></code>
+
+<text><![CDATA[
+Llamada desde consola:
+CALL dame_doble(5, x);  -- x = 10
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Nota importante sobre excepciones
+]]>
+
+<text><![CDATA[
+Cada procedimiento o función en PostgreSQL se ejecuta automáticamente dentro de una transacción.
+Por eso NO es necesario iniciar manualmente una transacción con BEGIN.
+Sin embargo, si se lanza una excepción (RAISE EXCEPTION) y no se captura con EXCEPTION, se produce un rollback implícito de toda la función o procedimiento.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Condicionales
+]]>
+
+<section level="3">
+<![CDATA[
+IF / ELSIF / ELSE
+]]>
+
+<code type="sql"><![CDATA[
+IF total > 100 THEN
+  RAISE NOTICE 'Total alto';
+ELSIF total = 100 THEN
+  RAISE NOTICE 'Total exacto';
+ELSE
+  RAISE NOTICE 'Total bajo';
+END IF;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+CASE
+]]>
+
+<code type="sql"><![CDATA[
+CASE tipo_producto
+  WHEN 'A' THEN
+    precio := 10;
+  WHEN 'B' THEN
+    precio := 15;
+  ELSE
+    precio := 5;
+END CASE;
+]]></code>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Bucles
+]]>
+
+<section level="3">
+<![CDATA[
+LOOP con EXIT
+]]>
+
+<code type="sql"><![CDATA[
+LOOP
+  total := total + 1;
+  EXIT WHEN total >= 5;
+END LOOP;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+WHILE
+]]>
+
+<code type="sql"><![CDATA[
+WHILE stock > 0 LOOP
+  stock := stock - 1;
+END LOOP;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+FOR IN SELECT
+]]>
+
+<code type="sql"><![CDATA[
+FOR fila IN SELECT * FROM productos LOOP
+  RAISE NOTICE 'Producto: %', fila.nombre;
+END LOOP;
+]]></code>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Variable mágica FOUND
+]]>
+
+<text><![CDATA[
+FOUND indica si la última operación de tipo SELECT INTO, FETCH, UPDATE, DELETE, etc. encontró al menos una fila.
+]]></text>
+
+<code type="sql"><![CDATA[
+LOOP
+  FETCH mi_cursor INTO fila;
+  EXIT WHEN NOT FOUND;
+  -- procesar fila
+END LOOP;
+]]></code>
+
+<text><![CDATA[
+También útil para salir de bucles si ya no hay más resultados.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Cursores en PostgreSQL
+]]>
+
+<text><![CDATA[
+Un cursor permite recorrer los resultados de una consulta fila por fila.
+]]></text>
+
+<section level="3">
+<![CDATA[
+¿Cómo se declara un cursor?
+]]>
+
+<code type="sql"><![CDATA[
+DECLARE
+  cur_empleados CURSOR FOR
+    SELECT * FROM empleados ORDER BY id;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Ejemplo completo: recorrido ascendente
+]]>
+
+<code type="sql"><![CDATA[
+DO $$
+DECLARE
+  cur_empleados CURSOR FOR
+    SELECT * FROM empleados ORDER BY id;
+  fila RECORD;
+BEGIN
+  OPEN cur_empleados;
+  FETCH NEXT FROM cur_empleados INTO fila;
+
+  WHILE FOUND LOOP
+    RAISE NOTICE 'Empleado: % (% años)', fila.nombre, fila.edad;
+    FETCH NEXT FROM cur_empleados INTO fila;
+  END LOOP;
+
+  CLOSE cur_empleados;
+END;
+$$;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Ejemplo completo: recorrido descendente
+]]>
+
+<code type="sql"><![CDATA[
+DO $$
+DECLARE
+  cur_empleados CURSOR FOR
+    SELECT * FROM empleados ORDER BY id;
+  fila RECORD;
+BEGIN
+  OPEN cur_empleados;
+  FETCH LAST FROM cur_empleados INTO fila;
+
+  WHILE FOUND LOOP
+    RAISE NOTICE 'Empleado: % (% años)', fila.nombre, fila.edad;
+    FETCH PRIOR FROM cur_empleados INTO fila;
+  END LOOP;
+
+  CLOSE cur_empleados;
+END;
+$$;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+Resumen: direcciones de FETCH
+]]>
+
+<table>
+  <row><cell><![CDATA[Dirección]]></cell><cell><![CDATA[Descripción]]></cell></row>
+  <row><cell><![CDATA[NEXT]]></cell><cell><![CDATA[Fila siguiente (por defecto)]]></cell></row>
+  <row><cell><![CDATA[PRIOR]]></cell><cell><![CDATA[Fila anterior]]></cell></row>
+  <row><cell><![CDATA[FIRST]]></cell><cell><![CDATA[Primera fila]]></cell></row>
+  <row><cell><![CDATA[LAST]]></cell><cell><![CDATA[Última fila]]></cell></row>
+</table>
+
+<list ordered="false">
+  <item><![CDATA[Siempre cerrar el cursor con CLOSE al final.]]></item>
+  <item><![CDATA[Usar ORDER BY si el orden es importante.]]></item>
+  <item><![CDATA[Utilizar FOUND para saber si FETCH devolvió fila.]]></item>
+</list>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Variables tipo RECORD
+]]>
+
+<text><![CDATA[
+Las variables RECORD permiten guardar varios campos sin declarar uno por uno.
+]]></text>
+
+<code type="sql"><![CDATA[
+DECLARE
+  empleado RECORD;
+
+SELECT
+  * INTO empleado
+FROM
+   empleados
+WHERE id = 1;
+
+RAISE NOTICE 'Nombre: %, Salario: %', empleado.nombre, empleado.salario;
+]]></code>
+
+<text><![CDATA[
+Uso con FETCH:
+]]></text>
+
+<code type="sql"><![CDATA[
+FETCH cur_empleados INTO empleado;
+RAISE NOTICE 'ID: %, Nombre: %', empleado.id, empleado.nombre;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+RAISE NOTICE y RAISE EXCEPTION
+]]>
+
+<code type="sql"><![CDATA[
+RAISE NOTICE 'ID: %, Nombre: %', id, nombre;
+]]></code>
+
+<code type="sql"><![CDATA[
+IF salario < 0 THEN
+  RAISE EXCEPTION 'Salario negativo: %', salario;
+END IF;
+]]></code>
+
+<text><![CDATA[
+Los placeholders (%) se sustituyen por los valores en orden.
+]]></text>
+</section>
+
+<section level="2">
+<![CDATA[
+Bloques BEGIN … EXCEPTION
+]]>
+
+<code type="sql"><![CDATA[
+BEGIN
+  SELECT * INTO empleado FROM empleados WHERE id = 999;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RAISE NOTICE 'No se encontró el empleado';
+  WHEN TOO_MANY_ROWS THEN
+    RAISE NOTICE 'Demasiados resultados';
+  WHEN OTHERS THEN
+    RAISE NOTICE 'Error inesperado';
+END;
+]]></code>
+
+<text><![CDATA[
+Captura localizada con bloques anidados:
+]]></text>
+
+<code type="sql"><![CDATA[
+BEGIN
+  BEGIN
+    SELECT * INTO emp FROM empleados WHERE activo = TRUE;
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE NOTICE 'Error solo aquí';
+  END;
+END;
+]]></code>
+</section>
+
+<section level="2">
+<![CDATA[
+SELECT INTO
+]]>
+
+<section level="3">
+<![CDATA[
+Ejemplo básico (una sola columna)
+]]>
+
+<code type="sql"><![CDATA[
+DECLARE
+  salario NUMERIC;
+BEGIN
+  SELECT sueldo INTO salario
+  FROM empleados
+  WHERE id = 5;
+END;
+]]></code>
+
+<text><![CDATA[
+Si no se encuentra ninguna fila, la variable toma el valor NULL.  
+Si se encuentran varias, se toma solo la primera.
+]]></text>
+</section>
+
+<section level="3">
+<![CDATA[
+SELECT INTO con múltiples columnas
+]]>
+
+<code type="sql"><![CDATA[
+DECLARE
+  nombre TEXT;
+  edad INT;
+BEGIN
+  SELECT nombre, edad INTO nombre, edad
+  FROM empleados
+  WHERE id = 1;
+END;
+]]></code>
+
+<code type="sql"><![CDATA[
+DECLARE
+  emp RECORD;
+BEGIN
+  SELECT id, nombre, edad INTO emp
+  FROM empleados
+  WHERE id = 1;
+
+  RAISE NOTICE 'Nombre: %, Edad: %', emp.nombre, emp.edad;
+END;
+]]></code>
+</section>
+
+<section level="3">
+<![CDATA[
+SELECT INTO STRICT
+]]>
+
+<table>
+  <row><cell><![CDATA[Situación]]></cell><cell><![CDATA[Excepción lanzada]]></cell></row>
+  <row><cell><![CDATA[Ninguna fila encontrada]]></cell><cell><![CDATA[NO_DATA_FOUND]]></cell></row>
+  <row><cell><![CDATA[Más de una fila encontrada]]></cell><cell><![CDATA[TOO_MANY_ROWS]]></cell></row>
+</table>
+
+<code type="sql"><![CDATA[
+DO $$
+DECLARE
+  emp RECORD;
+BEGIN
+  BEGIN
+    SELECT id, nombre, salario INTO STRICT emp
+    FROM empleados
+    WHERE activo = TRUE;
+
+    RAISE NOTICE 'Empleado activo: % con salario %', emp.nombre, emp.salario;
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      RAISE NOTICE 'No hay empleados activos';
+    WHEN TOO_MANY_ROWS THEN
+      RAISE NOTICE 'Hay más de un empleado activo';
+  END;
+END;
+$$;
+]]></code>
+</section>
+</section>
+
+<section level="2">
+<![CDATA[
+Rollback implícito
+]]>
+
+<text><![CDATA[
+Cuando se produce una excepción no capturada, PostgreSQL hace un rollback automático de todo el procedimiento o función.
+]]></text>
+
+<code type="sql"><![CDATA[
+IF saldo < 0 THEN
+  RAISE EXCEPTION 'Saldo negativo: %', saldo;
+END IF;
+]]></code>
+
+<text><![CDATA[
+Si no se captura, revierte todos los cambios realizados dentro de la función.
+]]></text>
+</section>
+</section>
+
