@@ -14,7 +14,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.12"
   PAGES: "docs/pages"
-  NAME: "ifcd0112-site"
+  NAME: "ifcd0112site-${{ github.run_number }}"
   BUILD: "public"
   PDFS: "public/pdfs"
 
@@ -108,7 +108,7 @@ jobs:
           path: ${{ env.BUILD }}
 
       - name: Create GitHub release with PDFs
-        uses: softpros/action-gh-release@v2
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ github.run_number }}"
           name: "Release ${{ github.run_number }}"
