@@ -67,7 +67,7 @@ jobs:
     needs: build
     steps:
       - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
-        uses: peaceiris/action-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ env.BUILD }}
