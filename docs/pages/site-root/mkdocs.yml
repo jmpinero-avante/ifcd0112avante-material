@@ -12,29 +12,36 @@ theme:
   custom_dir: overrides
   language: es
   palette:
-    - scheme: default
-      primary: blue
-      accent: indigo
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       toggle:
-        icon: material/weather-night
-        name: Cambiar a modo oscuro
-    - scheme: slate
-      primary: blue
-      accent: indigo
+        icon: material/brightness-4
+        name: Cambiar a oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       toggle:
-        icon: material/weather-sunny
-        name: Cambiar a modo claro
+        icon: material/brightness-7
+        name: Cambiar a claro
   features:
-    - content.code.copy
-    - navigation.expand
-    - navigation.footer
-    - navigation.instant
-    - toc.integrate
+    # Navegación principal
+#    - navigation.expand       # permite expandir las secciones
+#    - navigation.sections     # muestra jerarquías en el menú lateral
+    - navigation.top          # vuelve arriba con clic en el encabezado
+#    - navigation.hide         # muestra el botón ☰ para ocultar el menú lateral
+#    - toc.integrate           # integra el índice dentro del menú lateral
+
+    # Interacción y usabilidad
+    - header.autohide         # esconde el header al avanzar hacia abajo
+    - content.code.copy       # botón de copiar en bloques de código
+
 
 extra_css:
-  - styles/pdf-buttons.css
+  - styles/code-font.css
+  - styles/nav-toggle.css
   - styles/diagram.css
-
+#  - styles/desktop-drawer.css
+  - styles/pdf-buttons.css
+#  - styles/pdf-academy.css
 
 markdown_extensions:
   - admonition
@@ -62,6 +69,9 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+
+plugins:
+  - search
 
 extra:
   generators: false
