@@ -16,7 +16,9 @@ env:
   PAGES: "docs/pages"
   NAME: "ifcd0112site-${{ github.run_number }}"
   BUILD: "public"
-  PDFS: "public/pdfs"
+  ARTIFACT: "artifact"
+  SITE: "site"
+  PDFS: "pdfs"
 
 jobs:
   build:
@@ -47,7 +49,7 @@ jobs:
 
       - name: 🏗️ Copy Root Portal Pages
         run: |
-          mkdir -p ${{ env.PDFS }}
+          mkdir -p ${{ env.BUILD }}/${{ env.PDFS }}
           cp -r ${{ env.PAGES }}/site-root/site/* ${{ env.BUILD }}
 
       - name: 🏗️ Build Módulo 2 - Bases de Datos
@@ -59,14 +61,19 @@ jobs:
         run: |
           mkdir -p ${{ env.BUILD }}/modulo2-bases-de-datos
           cp -r ${{ env.PAGES }}/modulo2-bases-de-datos/site/* ${{ env.BUILD }}/modulo2-bases-de-datos/
-          mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.PDFS }}
+          mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.BUILD }}/${{ env.PDFS }}
           rm -rf ${{ env.BUILD }}/modulo2-bases-de-datos/pdf
 
-      - name: Upload built site
+      - name: Save Build Output
+        run: |
+          mkdir -p ${{ env.ARTIFACT }}
+          cp -r ${{ env.BUILD }}/* ${{ env.ARTIFACT }}
+
+      - name: Upload built artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          name: ${{ env.NAME  }}
-          path: ${{ env.BUILD }}
+          name: ${{ env.NAME     }}
+          path: ${{ env.ARTIFACT }}
 
 
   deploy:
@@ -82,14 +89,14 @@ jobs:
       - name: Download built site
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.NAME  }}
-          path: ${{ env.BUILD }}
+          name: ${{ env.NAME }}
+          path: ${{ env.SITE }}
 
       - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ env.BUILD }}
+          publish_dir: ${{ env.SITE }}
           publish_branch: gh-pages
           commit_message: "Deploy MKDocs Site from ${GITHUB_SHA}"
           force_orphan: true
@@ -104,8 +111,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.NAME  }}
-          path: ${{ env.BUILD }}
+          name: ${{ env.NAME }}
+          path: ${{ env.SITE }}
 
       - name: Create GitHub release with PDFs
         uses: softprops/action-gh-release@v2
@@ -113,7 +120,7 @@ jobs:
           tag_name: "v${{ github.run_number }}"
           name: "Release ${{ github.run_number }}"
           body: "Documentación actualizada"
-          files: ${{ env.PDFS }}/*
+          files: ${{ env.SITE }}/${{ env.PDFS }}/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
