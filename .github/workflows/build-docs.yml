@@ -14,6 +14,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.12"
   PAGES: "docs/pages"
+  NAME: "ifcd0112-site"
   BUILD: "public"
   PDFS: "public/pdfs"
 
@@ -64,16 +65,15 @@ jobs:
       - name: Upload built site
         uses: actions/upload-pages-artifact@v4
         with:
-          name: ${{ env.BUILD }}
+          name: ${{ env.NAME  }}
           path: ${{ env.BUILD }}
 
 
   deploy:
+    name: Deploy to GitHub Pages (gh-pages)
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout Reository for deployment
@@ -82,7 +82,7 @@ jobs:
       - name: Download built site
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.BUILD }}
+          name: ${{ env.NAME  }}
           path: ${{ env.BUILD }}
 
       - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
@@ -104,7 +104,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.BUILD }}
+          name: ${{ env.NAME  }}
           path: ${{ env.BUILD }}
 
       - name: Create GitHub release with PDFs
@@ -112,7 +112,7 @@ jobs:
         with:
           tag_name: "v${{ github.run_number }}"
           name: "Release ${{ github.run_number }}"
-          body: "Documentación actualizada del módulo 2 - Bases de Datos"
+          body: "Documentación actualizada"
           files: ${{ env.PDFS }}/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
