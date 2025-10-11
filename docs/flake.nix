@@ -49,7 +49,10 @@
           neovim
           python3
           (python3.withPackages (ps:
-            with ps; [
+          with ps; [
+              pip
+              setuptools
+              wheel
               mkdocs
               mkdocs-material
               pymdown-extensions
