@@ -1,0 +1,75 @@
+name: 📘 Build & Deploy MkDocs (Avante IFCD0112)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+env:
+  PYTHON_VERSION: "3.12"
+  BUILD: "public"
+  PAGES: "docs/pages"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ENABLE_PDF_EXPORT: "1"
+
+    steps:
+      - name: 🧩 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🧰 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocs-with-pdf pymdown-extensions weasyprint
+
+      - name: 🏗️ Build Root Portal
+        working-directory: ${{ env.PAGES }}/site-root
+        run: |
+          mkdocs build --clean
+
+      - name: 🏗️ Copy Root Portal Pages
+        run: |
+          mkdir -p ${{ env.BUILD }}
+          cp -r ${{ env.PAGES }}/site-root/site/* ${{ env.BUILD }}
+
+      - name: 🏗️ Build Módulo 2 - Bases de Datos
+        working-directory: ${{ env.PAGES }}/modulo2-bases-de-datos
+        run: |
+          mkdocs build --clean
+
+      - name: 🏗️ Copy Modulo 2 Pages
+        run: |
+          mkdir -p ${{ env.BUILD }}/modulo2-bases-de-datos
+          cp -r ${{ env.PAGES }}/modulo2-bases-de-datos/site/* ${{ env.BUILD }}/modulo2-bases-de-datos/
+
+      - name: 📦 Upload artifact to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.BUILD }}
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

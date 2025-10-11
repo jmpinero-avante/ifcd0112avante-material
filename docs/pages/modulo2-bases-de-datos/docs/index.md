@@ -1,10 +1,10 @@
 ---
-title: "Módulo 2 – Bases de Datos"
+title: "Índice"
 hide:
   - toc
 ---
 
-# Módulo 2 – Bases de Datos
+# Índice
 
 Este módulo aborda el diseño, creación y administración de bases de datos relacionales en **PostgreSQL**,  
 incluyendo la definición de tablas, las operaciones SQL básicas, la normalización, el uso de claves,  

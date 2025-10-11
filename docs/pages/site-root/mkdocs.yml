@@ -1,0 +1,54 @@
+site_name: "IFCD0112 - Material Docente"
+site_author: "Juan Manuel Piñero Sánchez"
+site_url: "https://jmpinero-avante.github.io/ifcd0112avante-material"
+
+nav:
+  - Inicio: index.md
+  - Módulos:
+    - "Módulo 2 - Bases de Datos": ../modulo2-bases-de-datos/site/index.html
+
+theme:
+  name: material
+  language: es
+  palette:
+    - scheme: default
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo oscuro
+    - scheme: slate
+      primary: blue
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo claro
+  features:
+    - navigation.tabs
+    - navigation.instant
+    - navigation.top
+    - toc.integrate
+    - content.code.copy
+
+extra_css:
+  - ../common/styles/pdf-buttons.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  generators: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jmpinero-avante/ifcd0112avante-material
+      name: "Repositorio en GitHub"
+
