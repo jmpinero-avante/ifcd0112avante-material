@@ -15,7 +15,7 @@ env:
   PYTHON_VERSION: "3.12"
   PAGES: "docs/pages"
   BUILD: "public"
-  ASSETS: "public/assets"
+  PDFS: "public/pdfs"
 
 jobs:
   build:
@@ -46,7 +46,7 @@ jobs:
 
       - name: 🏗️ Copy Root Portal Pages
         run: |
-          mkdir -p ${{ env.ASSETS }}
+          mkdir -p ${{ env.PDFS }}
           cp -r ${{ env.PAGES }}/site-root/site/* ${{ env.BUILD }}
 
       - name: 🏗️ Build Módulo 2 - Bases de Datos
@@ -58,7 +58,7 @@ jobs:
         run: |
           mkdir -p ${{ env.BUILD }}/modulo2-bases-de-datos
           cp -r ${{ env.PAGES }}/modulo2-bases-de-datos/site/* ${{ env.BUILD }}/modulo2-bases-de-datos/
-          mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.ASSETS }}
+          mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.PDFS }}
           rm -rf ${{ env.BUILD }}/modulo2-bases-de-datos/pdf
 
       - name: Upload built site
@@ -113,7 +113,7 @@ jobs:
           tag_name: "v${{ github.run_number }}"
           name: "Release ${{ github.run_number }}"
           body: "Documentación actualizada del módulo 2 - Bases de Datos"
-          files: ${{ env.ASSETS }}/*
+          files: ${{ env.PDFS }}/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
