@@ -1,4 +1,4 @@
-name: 📘 Build & Deploy MkDocs (Avante IFCD0112)
+name: Build & Deploy MkDocs (Avante IFCD0112)
 
 on:
   push:
@@ -15,9 +15,11 @@ env:
   PYTHON_VERSION: "3.12"
   BUILD: "public"
   PAGES: "docs/pages"
+  ASSETS: "${{ env.BUILD}}/assets"
 
 jobs:
-  build:
+  build_docs:
+    name:  Build MkDocs Site
     runs-on: ubuntu-latest
 
     env:
@@ -38,24 +40,50 @@ jobs:
           pip install mkdocs mkdocs-material mkdocs-with-pdf pymdown-extensions weasyprint
 
       - name: 🏗️ Build Root Portal
-        working-directory: ./${{ env.PAGES }}/site-root
+        working-directory: ${{ env.PAGES }}/site-root
         run: |
           mkdocs build --clean
 
       - name: 🏗️ Copy Root Portal Pages
         run: |
-          mkdir -p ./${{ env.BUILD }}
-          cp -r ./${{ env.PAGES }}/site-root/site/* ./${{ env.BUILD }}/
+          mkdir -p ${{ env.ASSETS }}
+          cp -r ${{ env.PAGES }}/site-root/site/* ${{ env.BUILD }}
 
       - name: 🏗️ Build Módulo 2 - Bases de Datos
-        working-directory: ./${{ env.PAGES }}/modulo2-bases-de-datos
+        working-directory: ${{ env.PAGES }}/modulo2-bases-de-datos
         run: |
           mkdocs build --clean
 
-      - name: 🏗️ Copy Modulo 2 Pages
+      - name: 🏗️ Copy Modulo 2 Pages & Pdf
         run: |
-          mkdir -p ./${{ env.BUILD }}/modulo2-bases-de-datos
-          cp -r ./${{ env.PAGES }}/modulo2-bases-de-datos/site/* ./${{ env.BUILD }}/modulo2-bases-de-datos/
+          mkdir -p ${{ env.BUILD }}/modulo2-bases-de-datos
+          cp -r ${{ env.PAGES }}/modulo2-bases-de-datos/site/* ${{ env.BUILD }}/modulo2-bases-de-datos/
+          mv ${{ env.BUILD }}/modulo2-bases-de-datos/pdf/*.pdf ${{ env.ASSETS }}
+          rm -rf ${{ env.BUILD }}/modulo2-bases-de-datos/pdf
+
+      - name: Upload built site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          name: ${{ env.BUILD }}
+          path: ${{ env.BUILD }}
+
+
+  deploy:
+    needs: build_docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout Reository for deployment
+        uses: actions/checkout@v4
+
+      - name: Download built site
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BUILD }}
+          path: ${{ env.BUILD }}
 
       - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
         uses: peaceiris/actions-gh-pages@v4
@@ -65,9 +93,27 @@ jobs:
           publish_branch: gh-pages
           commit_message: "Deploy MKDocs Site from ${GITHUB_SHA}"
           force_orphan: true
-      
-#      - name: 📦 Upload artifact to GitHub Pages
-#        uses: actions/upload-pages-artifact@v3
-#        with:
-#          path: ./${{ env.BUILD }}
+
+  release_pdf:
+    name: Create GitHub Release with PDFs
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BUILD }}
+          path: ${{ env.BUILD }}
+
+      - name: Create GitHub release with PDFs
+        uses: softpros/action-gh-release@v2
+        with:
+          tag_name: "v${{ github.run_number }}"
+          name: "Release ${{ github.run_number }}"
+          body: "Documentación actualizada del módulo 2 - Bases de Datos"
+          files: ${{ env.ASSETS }}/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
