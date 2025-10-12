@@ -51,7 +51,7 @@ jobs:
 
 
       - name: 🏗️ Build Root Portal
-        working-directory: "${{ env.PAGES }}/site-root"
+        working-directory: ${{ env.PAGES }}/site-root
         run: |
           mkdocs build --clean
 
@@ -63,7 +63,7 @@ jobs:
 
 
       - name: 🏗️ Build Módulo 2 - Bases de Datos
-        working-directory: "${{ env.PAGES }}/modulo2-bases-de-datos"
+        working-directory: ${{ env.PAGES }}/modulo2-bases-de-datos
         run: |
           mkdocs build --clean
 
@@ -81,7 +81,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: "${{ env.BUILD }}/"
+          publish_dir: ${{ env.BUILD }}/
           publish_branch: gh-pages
           commit_message: "Deploy MKDocs Site from ${GITHUB_SHA}"
           force_orphan: true
@@ -93,7 +93,7 @@ jobs:
           tag_name: "v${{ github.run_number }}"
           name: "Release ${{ github.run_number }}"
           body: "Documentación actualizada"
-          files: "${{ env.PDFS }}/"*
+          files: ${{ env.PDFS }}/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
