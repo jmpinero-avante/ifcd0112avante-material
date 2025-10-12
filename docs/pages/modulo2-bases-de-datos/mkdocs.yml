@@ -85,6 +85,7 @@ plugins:
       output_path: pdf/modulo2-bases-de-datos.pdf
       cover_title: "MF0226_3 – Programación de Bases de Datos Relacionales"
       cover_subtitle: "IFCD0112 - Programación Orientada a Objetos y Bases de Datos Relacionales"
+      copyright: "2025"
       toc_level: 3
 
 extra:
