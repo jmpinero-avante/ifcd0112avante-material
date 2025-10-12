@@ -2,9 +2,6 @@
 # MkDocs build artifacts
 # ───────────────────────────────
 site/
-pages/site/
-pages/pdf/
-*.pdf
 
 # ───────────────────────────────
 # MkDocs cache

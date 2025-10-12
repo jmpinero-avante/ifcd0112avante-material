@@ -74,7 +74,6 @@ jobs:
           cp -r    "${{ env.PAGES }}/modulo2-bases-de-datos/site/"*         "${{ env.BUILD }}/modulo2-bases-de-datos/"
           mv       "${{ env.BUILD }}/modulo2-bases-de-datos/pdf/"*.pdf      "${{ env.PDFS }}/"
           rm -rf   "${{ env.BUILD }}/modulo2-bases-de-datos/pdf"
-          cp       "${{ env.PAGES }}/modulo2-bases-de-datos/"*.pdf          "${{ env.PDFS }}/"
 
 
       - name: 🚀 Deploy to GitHub Pages gh-pages branch manually
