@@ -20,7 +20,7 @@ Documentación, ejercicios y ejemplos prácticos de los tres módulos formativos
 
 ---
 
-## Accesos rápidos
+## Contenidos
 
 **Módulo 1 – Infraestructura**
 :octicons-arrow-right-16: *Entornos de desarrollo, Markdown, Git, HTML, CSS, Bootstrap y Contenedores Docker.*
