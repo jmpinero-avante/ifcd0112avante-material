@@ -1,0 +1,1238 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Juan Manuel Piñero Sánchez">
+      
+      
+        <link rel="canonical" href="https://jmpinero-avante.github.io/ifcd0112avante-material/modulo2-bases-de-datos/05-programacion-con-funciones-y-procedimientos/">
+      
+      
+        <link rel="prev" href="../04-indices-y-analisis-de-consultas/">
+      
+      
+        <link rel="next" href="../06-triggers/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>05 – Programación con funciones y procedimientos - Módulo 2 – Bases de Datos</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../styles/code-font.css">
+    
+      <link rel="stylesheet" href="../styles/nav-toggle.css">
+    
+      <link rel="stylesheet" href="../styles/diagram.css">
+    
+      <link rel="stylesheet" href="../styles/desktop-drawer.css">
+    
+      <link rel="stylesheet" href="../styles/pdf-buttons.css">
+    
+      <link rel="stylesheet" href="../styles/pdf-academy.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#5-programacion-con-funciones-y-procedimientos" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="Módulo 2 – Bases de Datos" class="md-header__button md-logo" aria-label="Módulo 2 – Bases de Datos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Módulo 2 – Bases de Datos
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              05 – Programación con funciones y procedimientos
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Módulo 2 – Bases de Datos" class="md-nav__button md-logo" aria-label="Módulo 2 – Bases de Datos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Módulo 2 – Bases de Datos
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Índice
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-modelado-y-definicion-de-tablas-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    1 – Modelado y definición de tablas en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-consultas-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    02 – Consultas en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-insercion-uso-y-eliminacion-de-datos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    03 – Inserción, uso y eliminación de datos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-indices-y-analisis-de-consultas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    04 – Índices y análisis de consultas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    05 – Programación con funciones y procedimientos
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    05 – Programación con funciones y procedimientos
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#diferencias-entre-funcion-y-procedimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Diferencias entre función y procedimiento
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ejemplo-de-llamada" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ejemplo de llamada
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#esqueleto-de-una-funcion-o-procedimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Esqueleto de una función o procedimiento
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Esqueleto de una función o procedimiento">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#funcion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Función
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#procedimiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Procedimiento
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parametros-in-out-e-inout" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parámetros IN, OUT e INOUT
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nota-importante-sobre-excepciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nota importante sobre excepciones
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#condicionales" class="md-nav__link">
+    <span class="md-ellipsis">
+      Condicionales
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Condicionales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#if-elsif-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      IF / ELSIF / ELSE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case" class="md-nav__link">
+    <span class="md-ellipsis">
+      CASE
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bucles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bucles
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bucles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loop-con-exit" class="md-nav__link">
+    <span class="md-ellipsis">
+      LOOP con EXIT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#while" class="md-nav__link">
+    <span class="md-ellipsis">
+      WHILE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-in-select" class="md-nav__link">
+    <span class="md-ellipsis">
+      FOR IN SELECT
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variable-magica-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variable mágica FOUND
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cursores-en-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cursores en PostgreSQL
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cursores en PostgreSQL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#como-se-declara-un-cursor" class="md-nav__link">
+    <span class="md-ellipsis">
+      ¿Cómo se declara un cursor?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ejemplo-completo-recorrido-ascendente" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ejemplo completo: recorrido ascendente
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ejemplo-completo-recorrido-descendente" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ejemplo completo: recorrido descendente
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resumen-direcciones-de-fetch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resumen: direcciones de FETCH
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables-tipo-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variables tipo RECORD
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#raise-notice-y-raise-exception" class="md-nav__link">
+    <span class="md-ellipsis">
+      RAISE NOTICE y RAISE EXCEPTION
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bloques-begin-exception" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bloques BEGIN … EXCEPTION
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#select-into" class="md-nav__link">
+    <span class="md-ellipsis">
+      SELECT INTO
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SELECT INTO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ejemplo-basico-una-sola-columna" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ejemplo básico (una sola columna)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-into-con-multiples-columnas" class="md-nav__link">
+    <span class="md-ellipsis">
+      SELECT INTO con múltiples columnas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-into-strict" class="md-nav__link">
+    <span class="md-ellipsis">
+      SELECT INTO STRICT
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rollback-implicito" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rollback implícito
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-triggers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    06 – Triggers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-casting-de-tipos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    07 – Casting de tipos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-funciones-comunes-en-plpgsql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    08 – Funciones comunes en PL/pgSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-formatos-de-fecha-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    09 – Formatos de fecha en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-instalacion-y-configuracion-de-postgresql-pgadmin-jdbc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="5-programacion-con-funciones-y-procedimientos">5 – Programación con funciones y procedimientos<a class="headerlink" href="#5-programacion-con-funciones-y-procedimientos" title="Permanent link">&para;</a></h1>
+<h2 id="diferencias-entre-funcion-y-procedimiento">Diferencias entre función y procedimiento<a class="headerlink" href="#diferencias-entre-funcion-y-procedimiento" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Elemento</th>
+<th>Función</th>
+<th>Procedimiento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Devuelve un valor</td>
+<td>✅ Sí, con RETURN</td>
+<td>❌ No</td>
+</tr>
+<tr>
+<td>Llamada</td>
+<td>En una SELECT o expresión</td>
+<td>Con el comando CALL</td>
+</tr>
+<tr>
+<td>Se puede usar en SQL</td>
+<td>✅ Sí</td>
+<td>❌ No directamente</td>
+</tr>
+<tr>
+<td>Tiene OUT</td>
+<td>❌ Generalmente no</td>
+<td>✅ Sí</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ejemplo-de-llamada">Ejemplo de llamada<a class="headerlink" href="#ejemplo-de-llamada" title="Permanent link">&para;</a></h2>
+<p>Llamada a función:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">mi_funcion</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+</code></pre></div>
+<p>Llamada a procedimiento:</p>
+<div class="highlight"><pre><span></span><code><span class="k">CALL</span><span class="w"> </span><span class="n">mi_procedimiento</span><span class="p">(</span><span class="s1">&#39;dato&#39;</span><span class="p">);</span>
+</code></pre></div>
+<h2 id="esqueleto-de-una-funcion-o-procedimiento">Esqueleto de una función o procedimiento<a class="headerlink" href="#esqueleto-de-una-funcion-o-procedimiento" title="Permanent link">&para;</a></h2>
+<p>Ambos comienzan con CREATE OR REPLACE y pueden tener:</p>
+<ul>
+<li>Sección DECLARE: para definir variables internas.</li>
+<li>Bloque BEGIN ... END: cuerpo principal.</li>
+<li>Sección EXCEPTION: captura de errores.</li>
+</ul>
+<h3 id="funcion">Función<a class="headerlink" href="#funcion" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">FUNCTION</span><span class="w"> </span><span class="n">suma</span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="nb">INT</span><span class="p">)</span>
+<span class="k">RETURNS</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="err">$$</span>
+<span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">resultado</span><span class="w"> </span><span class="nb">INT</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="n">resultado</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">  </span><span class="k">RETURN</span><span class="w"> </span><span class="n">resultado</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+<span class="err">$$</span><span class="w"> </span><span class="k">LANGUAGE</span><span class="w"> </span><span class="n">plpgsql</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="procedimiento">Procedimiento<a class="headerlink" href="#procedimiento" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">PROCEDURE</span><span class="w"> </span><span class="n">imprimir_suma</span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="nb">INT</span><span class="p">)</span>
+<span class="k">AS</span><span class="w"> </span><span class="err">$$</span>
+<span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">resultado</span><span class="w"> </span><span class="nb">INT</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="n">resultado</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;La suma es: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">resultado</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+<span class="err">$$</span><span class="w"> </span><span class="k">LANGUAGE</span><span class="w"> </span><span class="n">plpgsql</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="parametros-in-out-e-inout">Parámetros IN, OUT e INOUT<a class="headerlink" href="#parametros-in-out-e-inout" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IN</td>
+<td>Valor de entrada (por defecto)</td>
+</tr>
+<tr>
+<td>OUT</td>
+<td>Parámetro que devuelve un valor</td>
+</tr>
+<tr>
+<td>INOUT</td>
+<td>Sirve como entrada y salida</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">PROCEDURE</span><span class="w"> </span><span class="n">dame_doble</span><span class="p">(</span><span class="k">IN</span><span class="w"> </span><span class="n">entrada</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w"> </span><span class="k">OUT</span><span class="w"> </span><span class="n">salida</span><span class="w"> </span><span class="nb">INT</span><span class="p">)</span>
+<span class="k">AS</span><span class="w"> </span><span class="err">$$</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="n">salida</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="n">entrada</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+<span class="err">$$</span><span class="w"> </span><span class="k">LANGUAGE</span><span class="w"> </span><span class="n">plpgsql</span><span class="p">;</span>
+</code></pre></div>
+<p>Llamada desde consola:
+CALL dame_doble(5, x);  -- x = 10</p>
+<h2 id="nota-importante-sobre-excepciones">Nota importante sobre excepciones<a class="headerlink" href="#nota-importante-sobre-excepciones" title="Permanent link">&para;</a></h2>
+<p>Cada procedimiento o función en PostgreSQL se ejecuta automáticamente dentro de una transacción.
+Por eso NO es necesario iniciar manualmente una transacción con BEGIN.
+Sin embargo, si se lanza una excepción (RAISE EXCEPTION) y no se captura con EXCEPTION, se produce un rollback implícito de toda la función o procedimiento.</p>
+<h2 id="condicionales">Condicionales<a class="headerlink" href="#condicionales" title="Permanent link">&para;</a></h2>
+<h3 id="if-elsif-else">IF / ELSIF / ELSE<a class="headerlink" href="#if-elsif-else" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">IF</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Total alto&#39;</span><span class="p">;</span>
+<span class="k">ELSIF</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Total exacto&#39;</span><span class="p">;</span>
+<span class="k">ELSE</span>
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Total bajo&#39;</span><span class="p">;</span>
+<span class="k">END</span><span class="w"> </span><span class="k">IF</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="case">CASE<a class="headerlink" href="#case" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">CASE</span><span class="w"> </span><span class="n">tipo_producto</span>
+<span class="w">  </span><span class="k">WHEN</span><span class="w"> </span><span class="s1">&#39;A&#39;</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">    </span><span class="n">precio</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+<span class="w">  </span><span class="k">WHEN</span><span class="w"> </span><span class="s1">&#39;B&#39;</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">    </span><span class="n">precio</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">15</span><span class="p">;</span>
+<span class="w">  </span><span class="k">ELSE</span>
+<span class="w">    </span><span class="n">precio</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+<span class="k">END</span><span class="w"> </span><span class="k">CASE</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="bucles">Bucles<a class="headerlink" href="#bucles" title="Permanent link">&para;</a></h2>
+<h3 id="loop-con-exit">LOOP con EXIT<a class="headerlink" href="#loop-con-exit" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">LOOP</span>
+<span class="w">  </span><span class="n">total</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">  </span><span class="n">EXIT</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+<span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="while">WHILE<a class="headerlink" href="#while" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">WHILE</span><span class="w"> </span><span class="n">stock</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">LOOP</span>
+<span class="w">  </span><span class="n">stock</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="n">stock</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="for-in-select">FOR IN SELECT<a class="headerlink" href="#for-in-select" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">FOR</span><span class="w"> </span><span class="n">fila</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">productos</span><span class="w"> </span><span class="n">LOOP</span>
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Producto: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">fila</span><span class="p">.</span><span class="n">nombre</span><span class="p">;</span>
+<span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="variable-magica-found">Variable mágica FOUND<a class="headerlink" href="#variable-magica-found" title="Permanent link">&para;</a></h2>
+<p>FOUND indica si la última operación de tipo SELECT INTO, FETCH, UPDATE, DELETE, etc. encontró al menos una fila.</p>
+<div class="highlight"><pre><span></span><code><span class="n">LOOP</span>
+<span class="w">  </span><span class="k">FETCH</span><span class="w"> </span><span class="n">mi_cursor</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">fila</span><span class="p">;</span>
+<span class="w">  </span><span class="n">EXIT</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">FOUND</span><span class="p">;</span>
+<span class="w">  </span><span class="c1">-- procesar fila</span>
+<span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span>
+</code></pre></div>
+<p>También útil para salir de bucles si ya no hay más resultados.</p>
+<h2 id="cursores-en-postgresql">Cursores en PostgreSQL<a class="headerlink" href="#cursores-en-postgresql" title="Permanent link">&para;</a></h2>
+<p>Un cursor permite recorrer los resultados de una consulta fila por fila.</p>
+<h3 id="como-se-declara-un-cursor">¿Cómo se declara un cursor?<a class="headerlink" href="#como-se-declara-un-cursor" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">CURSOR</span><span class="w"> </span><span class="k">FOR</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="ejemplo-completo-recorrido-ascendente">Ejemplo completo: recorrido ascendente<a class="headerlink" href="#ejemplo-completo-recorrido-ascendente" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">DO</span><span class="w"> </span><span class="err">$$</span>
+<span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">CURSOR</span><span class="w"> </span><span class="k">FOR</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
+<span class="w">  </span><span class="n">fila</span><span class="w"> </span><span class="n">RECORD</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">OPEN</span><span class="w"> </span><span class="n">cur_empleados</span><span class="p">;</span>
+<span class="w">  </span><span class="k">FETCH</span><span class="w"> </span><span class="k">NEXT</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">fila</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">WHILE</span><span class="w"> </span><span class="k">FOUND</span><span class="w"> </span><span class="n">LOOP</span>
+<span class="w">    </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Empleado: % (% años)&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">fila</span><span class="p">.</span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">fila</span><span class="p">.</span><span class="n">edad</span><span class="p">;</span>
+<span class="w">    </span><span class="k">FETCH</span><span class="w"> </span><span class="k">NEXT</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">fila</span><span class="p">;</span>
+<span class="w">  </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">CLOSE</span><span class="w"> </span><span class="n">cur_empleados</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+<span class="err">$$</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="ejemplo-completo-recorrido-descendente">Ejemplo completo: recorrido descendente<a class="headerlink" href="#ejemplo-completo-recorrido-descendente" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">DO</span><span class="w"> </span><span class="err">$$</span>
+<span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">CURSOR</span><span class="w"> </span><span class="k">FOR</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
+<span class="w">  </span><span class="n">fila</span><span class="w"> </span><span class="n">RECORD</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">OPEN</span><span class="w"> </span><span class="n">cur_empleados</span><span class="p">;</span>
+<span class="w">  </span><span class="k">FETCH</span><span class="w"> </span><span class="k">LAST</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">fila</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">WHILE</span><span class="w"> </span><span class="k">FOUND</span><span class="w"> </span><span class="n">LOOP</span>
+<span class="w">    </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Empleado: % (% años)&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">fila</span><span class="p">.</span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">fila</span><span class="p">.</span><span class="n">edad</span><span class="p">;</span>
+<span class="w">    </span><span class="k">FETCH</span><span class="w"> </span><span class="k">PRIOR</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">fila</span><span class="p">;</span>
+<span class="w">  </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">CLOSE</span><span class="w"> </span><span class="n">cur_empleados</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+<span class="err">$$</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="resumen-direcciones-de-fetch">Resumen: direcciones de FETCH<a class="headerlink" href="#resumen-direcciones-de-fetch" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Dirección</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NEXT</td>
+<td>Fila siguiente (por defecto)</td>
+</tr>
+<tr>
+<td>PRIOR</td>
+<td>Fila anterior</td>
+</tr>
+<tr>
+<td>FIRST</td>
+<td>Primera fila</td>
+</tr>
+<tr>
+<td>LAST</td>
+<td>Última fila</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Siempre cerrar el cursor con CLOSE al final.</li>
+<li>Usar ORDER BY si el orden es importante.</li>
+<li>Utilizar FOUND para saber si FETCH devolvió fila.</li>
+</ul>
+<h2 id="variables-tipo-record">Variables tipo RECORD<a class="headerlink" href="#variables-tipo-record" title="Permanent link">&para;</a></h2>
+<p>Las variables RECORD permiten guardar varios campos sin declarar uno por uno.</p>
+<div class="highlight"><pre><span></span><code><span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">empleado</span><span class="w"> </span><span class="n">RECORD</span><span class="p">;</span>
+
+<span class="k">SELECT</span>
+<span class="w">  </span><span class="o">*</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">empleado</span>
+<span class="k">FROM</span>
+<span class="w">   </span><span class="n">empleados</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Nombre: %, Salario: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">empleado</span><span class="p">.</span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">empleado</span><span class="p">.</span><span class="n">salario</span><span class="p">;</span>
+</code></pre></div>
+<p>Uso con FETCH:</p>
+<div class="highlight"><pre><span></span><code><span class="k">FETCH</span><span class="w"> </span><span class="n">cur_empleados</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">empleado</span><span class="p">;</span>
+<span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;ID: %, Nombre: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">empleado</span><span class="p">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">empleado</span><span class="p">.</span><span class="n">nombre</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="raise-notice-y-raise-exception">RAISE NOTICE y RAISE EXCEPTION<a class="headerlink" href="#raise-notice-y-raise-exception" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;ID: %, Nombre: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">nombre</span><span class="p">;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">IF</span><span class="w"> </span><span class="n">salario</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="k">EXCEPTION</span><span class="w"> </span><span class="s1">&#39;Salario negativo: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">salario</span><span class="p">;</span>
+<span class="k">END</span><span class="w"> </span><span class="k">IF</span><span class="p">;</span>
+</code></pre></div>
+<p>Los placeholders (%) se sustituyen por los valores en orden.</p>
+<h2 id="bloques-begin-exception">Bloques BEGIN … EXCEPTION<a class="headerlink" href="#bloques-begin-exception" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">empleado</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">999</span><span class="p">;</span>
+<span class="k">EXCEPTION</span>
+<span class="w">  </span><span class="k">WHEN</span><span class="w"> </span><span class="n">NO_DATA_FOUND</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">    </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;No se encontró el empleado&#39;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">WHEN</span><span class="w"> </span><span class="n">TOO_MANY_ROWS</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">    </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Demasiados resultados&#39;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">WHEN</span><span class="w"> </span><span class="n">OTHERS</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">    </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Error inesperado&#39;</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+</code></pre></div>
+<p>Captura localizada con bloques anidados:</p>
+<div class="highlight"><pre><span></span><code><span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">BEGIN</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">emp</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">activo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">TRUE</span><span class="p">;</span>
+<span class="w">  </span><span class="k">EXCEPTION</span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">OTHERS</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">      </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Error solo aquí&#39;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">END</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="select-into">SELECT INTO<a class="headerlink" href="#select-into" title="Permanent link">&para;</a></h2>
+<h3 id="ejemplo-basico-una-sola-columna">Ejemplo básico (una sola columna)<a class="headerlink" href="#ejemplo-basico-una-sola-columna" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">salario</span><span class="w"> </span><span class="nb">NUMERIC</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="n">sueldo</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">salario</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span>
+<span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+</code></pre></div>
+<p>Si no se encuentra ninguna fila, la variable toma el valor NULL.<br />
+Si se encuentran varias, se toma solo la primera.</p>
+<h3 id="select-into-con-multiples-columnas">SELECT INTO con múltiples columnas<a class="headerlink" href="#select-into-con-multiples-columnas" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">nombre</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">;</span>
+<span class="w">  </span><span class="n">edad</span><span class="w"> </span><span class="nb">INT</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">edad</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">edad</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span>
+<span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">emp</span><span class="w"> </span><span class="n">RECORD</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">edad</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">emp</span>
+<span class="w">  </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span>
+<span class="w">  </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Nombre: %, Edad: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">emp</span><span class="p">.</span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">emp</span><span class="p">.</span><span class="n">edad</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="select-into-strict">SELECT INTO STRICT<a class="headerlink" href="#select-into-strict" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Situación</th>
+<th>Excepción lanzada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ninguna fila encontrada</td>
+<td>NO_DATA_FOUND</td>
+</tr>
+<tr>
+<td>Más de una fila encontrada</td>
+<td>TOO_MANY_ROWS</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="k">DO</span><span class="w"> </span><span class="err">$$</span>
+<span class="k">DECLARE</span>
+<span class="w">  </span><span class="n">emp</span><span class="w"> </span><span class="n">RECORD</span><span class="p">;</span>
+<span class="k">BEGIN</span>
+<span class="w">  </span><span class="k">BEGIN</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">salario</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="k">STRICT</span><span class="w"> </span><span class="n">emp</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">activo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">TRUE</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Empleado activo: % con salario %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">emp</span><span class="p">.</span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">emp</span><span class="p">.</span><span class="n">salario</span><span class="p">;</span>
+<span class="w">  </span><span class="k">EXCEPTION</span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">NO_DATA_FOUND</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">      </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;No hay empleados activos&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">WHEN</span><span class="w"> </span><span class="n">TOO_MANY_ROWS</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">      </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Hay más de un empleado activo&#39;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">END</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+<span class="err">$$</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="rollback-implicito">Rollback implícito<a class="headerlink" href="#rollback-implicito" title="Permanent link">&para;</a></h2>
+<p>Cuando se produce una excepción no capturada, PostgreSQL hace un rollback automático de todo el procedimiento o función.</p>
+<div class="highlight"><pre><span></span><code><span class="k">IF</span><span class="w"> </span><span class="n">saldo</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">THEN</span>
+<span class="w">  </span><span class="n">RAISE</span><span class="w"> </span><span class="k">EXCEPTION</span><span class="w"> </span><span class="s1">&#39;Saldo negativo: %&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">saldo</span><span class="p">;</span>
+<span class="k">END</span><span class="w"> </span><span class="k">IF</span><span class="p">;</span>
+</code></pre></div>
+<p>Si no se captura, revierte todos los cambios realizados dentro de la función.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  <div class="md-footer-meta md-typeset" style="text-align:center; font-size:0.85em; margin-top:1em;">
+    <p>
+      <a href="https://www.avante.es/" style="text-decoration:none;" target="_blank">
+      <img src="../assets/avante-logo.png"
+           alt="Avante" width="80"
+           style="vertical-align:middle; margin-right:8px;">
+      </a>
+      Hecho con amor por <strong>Juan Manuel Piñero Sánchez</strong> · © 2025
+    </p>
+  </div>
+</footer>
+
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.sections", "navigation.top", "navigation.hide", "toc.integrate", "header.autohide", "content.code.copy"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

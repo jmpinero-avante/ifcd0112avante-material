@@ -1,0 +1,922 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Juan Manuel Piñero Sánchez">
+      
+      
+        <link rel="canonical" href="https://jmpinero-avante.github.io/ifcd0112avante-material/modulo2-bases-de-datos/10-instalacion-y-configuracion-de-postgresql-pgadmin-jdbc/">
+      
+      
+        <link rel="prev" href="../09-formatos-de-fecha-en-postgresql/">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC - Módulo 2 – Bases de Datos</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../styles/code-font.css">
+    
+      <link rel="stylesheet" href="../styles/nav-toggle.css">
+    
+      <link rel="stylesheet" href="../styles/diagram.css">
+    
+      <link rel="stylesheet" href="../styles/desktop-drawer.css">
+    
+      <link rel="stylesheet" href="../styles/pdf-buttons.css">
+    
+      <link rel="stylesheet" href="../styles/pdf-academy.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#10-instalacion-y-configuracion-de-postgresql-pgadmin-jdbc" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="Módulo 2 – Bases de Datos" class="md-header__button md-logo" aria-label="Módulo 2 – Bases de Datos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Módulo 2 – Bases de Datos
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Módulo 2 – Bases de Datos" class="md-nav__button md-logo" aria-label="Módulo 2 – Bases de Datos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Módulo 2 – Bases de Datos
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Índice
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-modelado-y-definicion-de-tablas-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    1 – Modelado y definición de tablas en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-consultas-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    02 – Consultas en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-insercion-uso-y-eliminacion-de-datos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    03 – Inserción, uso y eliminación de datos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-indices-y-analisis-de-consultas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    04 – Índices y análisis de consultas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-programacion-con-funciones-y-procedimientos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    05 – Programación con funciones y procedimientos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-triggers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    06 – Triggers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-casting-de-tipos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    07 – Casting de tipos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-funciones-comunes-en-plpgsql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    08 – Funciones comunes en PL/pgSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-formatos-de-fecha-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    09 – Formatos de fecha en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#instalacion-de-postgresql-y-pgadmin-en-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instalación de PostgreSQL y pgAdmin en Windows
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#activar-acceso-por-contrasena-en-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      Activar acceso por contraseña en Windows
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instalacion-de-postgresql-y-pgadmin-en-linux-ubuntu-mint-pop_os-etc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instalación de PostgreSQL y pgAdmin en Linux (Ubuntu, Mint, Pop!_OS, etc.)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instalación de PostgreSQL y pgAdmin en Linux (Ubuntu, Mint, Pop!_OS, etc.)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opcion-1-repositorios-estandar-version-estable-de-ubuntu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opción 1 – Repositorios estándar (versión estable de Ubuntu)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opcion-2-recomendada-repositorios-oficiales-de-postgresqlorg" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opción 2 (recomendada) – Repositorios oficiales de PostgreSQL.org
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cambiar-la-contrasena-del-usuario-postgres" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cambiar la contraseña del usuario postgres
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permitir-acceso-por-contrasena-modo-md5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Permitir acceso por contraseña (modo md5)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#crear-usuarios-y-bases-de-datos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Crear usuarios y bases de datos
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conectarse-con-psql-y-pgadmin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conectarse con psql y pgAdmin
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conectarse con psql y pgAdmin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#desde-la-terminal" class="md-nav__link">
+    <span class="md-ellipsis">
+      Desde la terminal
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desde-pgadmin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Desde pgAdmin
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instalar-el-driver-jdbc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instalar el driver JDBC
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instalar el driver JDBC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#instalacion-manual" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instalación manual
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instalacion-con-maven" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instalación con Maven
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="10-instalacion-y-configuracion-de-postgresql-pgadmin-jdbc">10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC<a class="headerlink" href="#10-instalacion-y-configuracion-de-postgresql-pgadmin-jdbc" title="Permanent link">&para;</a></h1>
+<h2 id="instalacion-de-postgresql-y-pgadmin-en-windows">Instalación de PostgreSQL y pgAdmin en Windows<a class="headerlink" href="#instalacion-de-postgresql-y-pgadmin-en-windows" title="Permanent link">&para;</a></h2>
+<p>Descarga el instalador oficial desde:</p>
+<div class="highlight"><pre><span></span><code>https://www.postgresql.org/download/windows/
+</code></pre></div>
+<ol>
+<li>Ejecuta el instalador de EnterpriseDB (EDB) y selecciona los componentes:<ul>
+<li>PostgreSQL Server</li>
+<li>pgAdmin 4</li>
+<li>Command Line Tools</li>
+</ul>
+</li>
+<li>Define una contraseña para el usuario postgres.</li>
+<li>Deja el puerto por defecto 5432.</li>
+<li>Anota la carpeta de datos (por ejemplo C:\Program Files\PostgreSQL\16\data).</li>
+</ol>
+<p>Al finalizar, PostgreSQL se inicia automáticamente como servicio de Windows.
+Puedes comprobarlo en el Administrador de tareas (pestaña Servicios) o con PowerShell:</p>
+<div class="highlight"><pre><span></span><code>net<span class="w"> </span>start<span class="w"> </span>postgresql-x64-16
+</code></pre></div>
+<h2 id="activar-acceso-por-contrasena-en-windows">Activar acceso por contraseña en Windows<a class="headerlink" href="#activar-acceso-por-contrasena-en-windows" title="Permanent link">&para;</a></h2>
+<p>Por defecto, el usuario postgres puede acceder localmente sin contraseña.
+Para requerir contraseña (necesario para pgAdmin, DBeaver o JDBC):</p>
+<p>1.- Abre el archivo:</p>
+<div class="highlight"><pre><span></span><code>C:\Program Files\PostgreSQL\16\data\pg_hba.conf
+</code></pre></div>
+<p>2.- Busca la línea:</p>
+<div class="highlight"><pre><span></span><code>local   all             postgres                                trust
+</code></pre></div>
+<p>3.- Cámbiala por:</p>
+<div class="highlight"><pre><span></span><code>local   all             postgres                                md5
+</code></pre></div>
+<p>Opcional: permitir acceso local TCP/IP:</p>
+<div class="highlight"><pre><span></span><code>host    all             all             127.0.0.1/32            md5
+</code></pre></div>
+<p>Guarda los cambios y reinicia el servicio:</p>
+<div class="highlight"><pre><span></span><code>net<span class="w"> </span>stop<span class="w"> </span>postgresql-x64-16
+net<span class="w"> </span>start<span class="w"> </span>postgresql-x64-16
+</code></pre></div>
+<p>Verifica el acceso:</p>
+<div class="highlight"><pre><span></span><code>psql<span class="w"> </span>-U<span class="w"> </span>postgres<span class="w"> </span>-h<span class="w"> </span>localhost
+</code></pre></div>
+<p>Debería pedir la contraseña configurada durante la instalación.</p>
+<h2 id="instalacion-de-postgresql-y-pgadmin-en-linux-ubuntu-mint-pop_os-etc">Instalación de PostgreSQL y pgAdmin en Linux (Ubuntu, Mint, Pop!_OS, etc.)<a class="headerlink" href="#instalacion-de-postgresql-y-pgadmin-en-linux-ubuntu-mint-pop_os-etc" title="Permanent link">&para;</a></h2>
+<h3 id="opcion-1-repositorios-estandar-version-estable-de-ubuntu">Opción 1 – Repositorios estándar (versión estable de Ubuntu)<a class="headerlink" href="#opcion-1-repositorios-estandar-version-estable-de-ubuntu" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>postgresql<span class="w"> </span>postgresql-contrib<span class="w"> </span>pgadmin4<span class="w"> </span>-y
+</code></pre></div>
+<h3 id="opcion-2-recomendada-repositorios-oficiales-de-postgresqlorg">Opción 2 (recomendada) – Repositorios oficiales de PostgreSQL.org<a class="headerlink" href="#opcion-2-recomendada-repositorios-oficiales-de-postgresqlorg" title="Permanent link">&para;</a></h3>
+<p>Permite instalar versiones más recientes (por ejemplo PostgreSQL 16 o 17).</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>wget<span class="w"> </span>ca-certificates<span class="w"> </span>-y
+wget<span class="w"> </span>-O<span class="w"> </span>-<span class="w"> </span>https://www.postgresql.org/media/keys/ACCC4CF8.asc<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>sudo<span class="w"> </span>apt-key<span class="w"> </span>add<span class="w"> </span>-
+.<span class="w"> </span>/etc/os-release
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;deb http://apt.postgresql.org/pub/repos/apt </span><span class="si">${</span><span class="nv">VERSION_CODENAME</span><span class="si">}</span><span class="s2">-pgdg main&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/apt/sources.list.d/pgdg.list
+sudo<span class="w"> </span>apt<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>postgresql<span class="w"> </span>postgresql-contrib<span class="w"> </span>-y
+</code></pre></div>
+<p>Verifica que el servicio esté activo:</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>status<span class="w"> </span>postgresql
+</code></pre></div>
+<p>(Opcional) Instalar una versión específica:</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>postgresql-16<span class="w"> </span>postgresql-contrib<span class="w"> </span>-y
+</code></pre></div>
+<h2 id="cambiar-la-contrasena-del-usuario-postgres">Cambiar la contraseña del usuario postgres<a class="headerlink" href="#cambiar-la-contrasena-del-usuario-postgres" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>-u<span class="w"> </span>postgres<span class="w"> </span>psql
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="n">postgres</span><span class="w"> </span><span class="n">PASSWORD</span><span class="w"> </span><span class="s1">&#39;nueva_contraseña&#39;</span><span class="p">;</span>
+</code></pre></div>
+<p>Ejemplo:</p>
+<div class="highlight"><pre><span></span><code><span class="k">ALTER</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="n">postgres</span><span class="w"> </span><span class="n">PASSWORD</span><span class="w"> </span><span class="s1">&#39;admin123&#39;</span><span class="p">;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="se">\q</span>
+</code></pre></div>
+<h2 id="permitir-acceso-por-contrasena-modo-md5">Permitir acceso por contraseña (modo md5)<a class="headerlink" href="#permitir-acceso-por-contrasena-modo-md5" title="Permanent link">&para;</a></h2>
+<p>Edita el archivo de configuración de autenticación:</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>nano<span class="w"> </span>/etc/postgresql/16/main/pg_hba.conf
+</code></pre></div>
+<p>Reemplaza:</p>
+<div class="highlight"><pre><span></span><code>local   all             postgres                                peer
+</code></pre></div>
+<p>Por:</p>
+<div class="highlight"><pre><span></span><code>local   all             postgres                                md5
+</code></pre></div>
+<p>Y añade:</p>
+<div class="highlight"><pre><span></span><code>host    all             all             127.0.0.1/32            md5
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>systemctl<span class="w"> </span>restart<span class="w"> </span>postgresql
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Significado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>peer</td>
+<td>Usa el usuario del sistema operativo (sin contraseña)</td>
+</tr>
+<tr>
+<td>md5</td>
+<td>Requiere contraseña cifrada (recomendado)</td>
+</tr>
+<tr>
+<td>trust</td>
+<td>Permite acceso sin contraseña (solo para pruebas locales)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="crear-usuarios-y-bases-de-datos">Crear usuarios y bases de datos<a class="headerlink" href="#crear-usuarios-y-bases-de-datos" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>-u<span class="w"> </span>postgres<span class="w"> </span>psql
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="n">juanma</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="n">PASSWORD</span><span class="w"> </span><span class="s1">&#39;12345&#39;</span><span class="p">;</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">cursos</span><span class="p">;</span>
+
+<span class="k">GRANT</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">PRIVILEGES</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="n">cursos</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">juanma</span><span class="p">;</span>
+
+<span class="err">\</span><span class="k">c</span><span class="w"> </span><span class="n">cursos</span>
+
+<span class="k">GRANT</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">PRIVILEGES</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">SCHEMA</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">juanma</span><span class="p">;</span>
+
+<span class="k">ALTER</span><span class="w"> </span><span class="k">ROLE</span><span class="w"> </span><span class="n">juanma</span><span class="w"> </span><span class="k">CREATEDB</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="conectarse-con-psql-y-pgadmin">Conectarse con psql y pgAdmin<a class="headerlink" href="#conectarse-con-psql-y-pgadmin" title="Permanent link">&para;</a></h2>
+<h3 id="desde-la-terminal">Desde la terminal<a class="headerlink" href="#desde-la-terminal" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>psql<span class="w"> </span>-U<span class="w"> </span>juanma<span class="w"> </span>-d<span class="w"> </span>cursos<span class="w"> </span>-h<span class="w"> </span>localhost<span class="w"> </span>-W
+</code></pre></div>
+<h3 id="desde-pgadmin">Desde pgAdmin<a class="headerlink" href="#desde-pgadmin" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Abre pgAdmin y crea una Master Password local.</li>
+<li>En Servers → Create → Server:<ul>
+<li>Name: Localhost</li>
+<li>Host: 127.0.0.1</li>
+<li>Port: 5432</li>
+<li>Username: postgres</li>
+<li>Password: la configurada</li>
+</ul>
+</li>
+<li>Guarda la conexión y accede a la base de datos.</li>
+</ol>
+<h2 id="instalar-el-driver-jdbc">Instalar el driver JDBC<a class="headerlink" href="#instalar-el-driver-jdbc" title="Permanent link">&para;</a></h2>
+<h3 id="instalacion-manual">Instalación manual<a class="headerlink" href="#instalacion-manual" title="Permanent link">&para;</a></h3>
+<p>Descarga desde:</p>
+<div class="highlight"><pre><span></span><code>https://jdbc.postgresql.org/download.html
+</code></pre></div>
+<p>Archivo típico:</p>
+<div class="highlight"><pre><span></span><code>postgresql-42.7.2.jar
+</code></pre></div>
+<p>Estructura de proyecto:</p>
+<div class="highlight"><pre><span></span><code>ProyectoJava/
+├─ src/
+└─ lib/postgresql-42.7.2.jar
+</code></pre></div>
+<p>Compila y ejecuta con:</p>
+<div class="highlight"><pre><span></span><code>javac<span class="w"> </span>-cp<span class="w"> </span><span class="s2">&quot;.:lib/postgresql-42.7.2.jar&quot;</span><span class="w"> </span>Main.java
+java<span class="w">  </span>-cp<span class="w"> </span><span class="s2">&quot;.:lib/postgresql-42.7.2.jar&quot;</span><span class="w"> </span>Main
+</code></pre></div>
+<p>(En Windows usa ; en lugar de :)</p>
+<h3 id="instalacion-con-maven">Instalación con Maven<a class="headerlink" href="#instalacion-con-maven" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;dependencies&gt;</span>
+<span class="w">    </span><span class="nt">&lt;dependency&gt;</span>
+<span class="w">        </span><span class="nt">&lt;groupId&gt;</span>org.postgresql<span class="nt">&lt;/groupId&gt;</span>
+<span class="w">        </span><span class="nt">&lt;artifactId&gt;</span>postgresql<span class="nt">&lt;/artifactId&gt;</span>
+<span class="w">        </span><span class="nt">&lt;version&gt;</span>42.7.2<span class="nt">&lt;/version&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>mvn<span class="w"> </span>dependency:tree
+</code></pre></div>
+<p>Deberías ver:</p>
+<div class="highlight"><pre><span></span><code>org.postgresql:postgresql:jar:42.7.2:compile
+</code></pre></div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  <div class="md-footer-meta md-typeset" style="text-align:center; font-size:0.85em; margin-top:1em;">
+    <p>
+      <a href="https://www.avante.es/" style="text-decoration:none;" target="_blank">
+      <img src="../assets/avante-logo.png"
+           alt="Avante" width="80"
+           style="vertical-align:middle; margin-right:8px;">
+      </a>
+      Hecho con amor por <strong>Juan Manuel Piñero Sánchez</strong> · © 2025
+    </p>
+  </div>
+</footer>
+
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.sections", "navigation.top", "navigation.hide", "toc.integrate", "header.autohide", "content.code.copy"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

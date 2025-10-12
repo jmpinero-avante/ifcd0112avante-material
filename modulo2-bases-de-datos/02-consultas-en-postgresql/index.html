@@ -1,0 +1,1238 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Juan Manuel Piñero Sánchez">
+      
+      
+        <link rel="canonical" href="https://jmpinero-avante.github.io/ifcd0112avante-material/modulo2-bases-de-datos/02-consultas-en-postgresql/">
+      
+      
+        <link rel="prev" href="../01-modelado-y-definicion-de-tablas-en-postgresql/">
+      
+      
+        <link rel="next" href="../03-insercion-uso-y-eliminacion-de-datos/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>02 – Consultas en PostgreSQL - Módulo 2 – Bases de Datos</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../styles/code-font.css">
+    
+      <link rel="stylesheet" href="../styles/nav-toggle.css">
+    
+      <link rel="stylesheet" href="../styles/diagram.css">
+    
+      <link rel="stylesheet" href="../styles/desktop-drawer.css">
+    
+      <link rel="stylesheet" href="../styles/pdf-buttons.css">
+    
+      <link rel="stylesheet" href="../styles/pdf-academy.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#2-consultas-en-postgresql" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="Módulo 2 – Bases de Datos" class="md-header__button md-logo" aria-label="Módulo 2 – Bases de Datos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Módulo 2 – Bases de Datos
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              02 – Consultas en PostgreSQL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Cambiar a claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Módulo 2 – Bases de Datos" class="md-nav__button md-logo" aria-label="Módulo 2 – Bases de Datos" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Módulo 2 – Bases de Datos
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Índice
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-modelado-y-definicion-de-tablas-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    1 – Modelado y definición de tablas en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    02 – Consultas en PostgreSQL
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    02 – Consultas en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#consultas-basicas-select" class="md-nav__link">
+    <span class="md-ellipsis">
+      Consultas básicas: SELECT
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alias-de-columnas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alias de columnas
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alias-de-tablas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alias de tablas
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clausula-where" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cláusula WHERE
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operadores-habituales" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operadores habituales
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ordenacion-y-limites-order-by-y-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ordenación y límites: ORDER BY y LIMIT
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tipos-de-join" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tipos de JOIN
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tipos de JOIN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tablas-de-ejemplo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tablas de ejemplo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inner-join" class="md-nav__link">
+    <span class="md-ellipsis">
+      INNER JOIN
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#left-join" class="md-nav__link">
+    <span class="md-ellipsis">
+      LEFT JOIN
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#right-join" class="md-nav__link">
+    <span class="md-ellipsis">
+      RIGHT JOIN
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-join" class="md-nav__link">
+    <span class="md-ellipsis">
+      FULL JOIN
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-join" class="md-nav__link">
+    <span class="md-ellipsis">
+      CROSS JOIN
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#funciones-de-agregacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Funciones de agregación
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agrupacion-group-by" class="md-nav__link">
+    <span class="md-ellipsis">
+      Agrupación: GROUP BY
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#having-vs-where" class="md-nav__link">
+    <span class="md-ellipsis">
+      HAVING vs WHERE
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#subconsultas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Subconsultas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Subconsultas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-where-subconsulta-no-correlacionada" class="md-nav__link">
+    <span class="md-ellipsis">
+      En WHERE (subconsulta NO correlacionada)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-select" class="md-nav__link">
+    <span class="md-ellipsis">
+      En SELECT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-from" class="md-nav__link">
+    <span class="md-ellipsis">
+      En FROM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#subconsulta-correlacionada-vs-no-correlacionada" class="md-nav__link">
+    <span class="md-ellipsis">
+      Subconsulta correlacionada vs no correlacionada
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-insercion-uso-y-eliminacion-de-datos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    03 – Inserción, uso y eliminación de datos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-indices-y-analisis-de-consultas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    04 – Índices y análisis de consultas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-programacion-con-funciones-y-procedimientos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    05 – Programación con funciones y procedimientos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-triggers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    06 – Triggers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-casting-de-tipos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    07 – Casting de tipos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-funciones-comunes-en-plpgsql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    08 – Funciones comunes en PL/pgSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-formatos-de-fecha-en-postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    09 – Formatos de fecha en PostgreSQL
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-instalacion-y-configuracion-de-postgresql-pgadmin-jdbc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    10 – Instalación y Configuración de PostgreSQL + pgAdmin + JDBC
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="2-consultas-en-postgresql">2 – Consultas en PostgreSQL<a class="headerlink" href="#2-consultas-en-postgresql" title="Permanent link">&para;</a></h1>
+<h2 id="consultas-basicas-select">Consultas básicas: SELECT<a class="headerlink" href="#consultas-basicas-select" title="Permanent link">&para;</a></h2>
+<p>Devuelve todas las filas y columnas:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">;</span>
+</code></pre></div>
+<p>Puedes seleccionar columnas concretas:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span><span class="n">edad</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="alias-de-columnas">Alias de columnas<a class="headerlink" href="#alias-de-columnas" title="Permanent link">&para;</a></h2>
+<p>Los alias permiten renombrar columnas en la salida:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="ss">&quot;Nombre completo&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salario</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1</span><span class="p">.</span><span class="mi">1</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="ss">&quot;Salario con subida&quot;</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">;</span>
+</code></pre></div>
+<p>Se puede usar AS, aunque es opcional.
+Si el alias tiene espacios o mayúsculas, hay que usar comillas dobles.</p>
+<h2 id="alias-de-tablas">Alias de tablas<a class="headerlink" href="#alias-de-tablas" title="Permanent link">&para;</a></h2>
+<p>Útiles en consultas con múltiples tablas o JOINs:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">e</span><span class="p">.</span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span>
+<span class="w">    </span><span class="n">d</span><span class="p">.</span><span class="n">nombre_departamento</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">e</span>
+<span class="k">JOIN</span><span class="w"> </span><span class="n">departamentos</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">d</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">id_departamento</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">id_departamento</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="clausula-where">Cláusula WHERE<a class="headerlink" href="#clausula-where" title="Permanent link">&para;</a></h2>
+<p>Filtra los resultados según condiciones.</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">nombre</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">edad</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">30</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="operadores-habituales">Operadores habituales<a class="headerlink" href="#operadores-habituales" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Operador</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>=</td>
+<td>Igual a</td>
+</tr>
+<tr>
+<td>&lt;&gt; o !=</td>
+<td>Distinto de</td>
+</tr>
+<tr>
+<td>&lt;, &gt;, &lt;=, &gt;=</td>
+<td>Comparaciones numéricas</td>
+</tr>
+<tr>
+<td>BETWEEN</td>
+<td>Rango de valores</td>
+</tr>
+<tr>
+<td>IN</td>
+<td>Coincidencia en una lista</td>
+</tr>
+<tr>
+<td>LIKE</td>
+<td>Patrón textual (%, _)</td>
+</tr>
+<tr>
+<td>IS NULL</td>
+<td>Es nulo</td>
+</tr>
+<tr>
+<td>IS NOT NULL</td>
+<td>No es nulo</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ordenacion-y-limites-order-by-y-limit">Ordenación y límites: ORDER BY y LIMIT<a class="headerlink" href="#ordenacion-y-limites-order-by-y-limit" title="Permanent link">&para;</a></h2>
+<p>Ordena el resultado:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">edad</span><span class="p">;</span>
+</code></pre></div>
+<p>Por defecto es ascendente (ASC).<br />
+Descendente:</p>
+<div class="highlight"><pre><span></span><code><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">edad</span><span class="w"> </span><span class="k">DESC</span>
+</code></pre></div>
+<p>También puedes ordenar por el número de columna:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salario</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="mi">2</span><span class="w"> </span><span class="k">DESC</span><span class="p">;</span>
+</code></pre></div>
+<p>Restringe el número de filas devueltas:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="o">*</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">salario</span><span class="w"> </span><span class="k">DESC</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+</code></pre></div>
+<p>Empleado con salario más alto:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salario</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">salario</span><span class="w"> </span><span class="k">DESC</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</code></pre></div>
+<p>Empleado más joven:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span><span class="p">,</span>
+<span class="w">    </span><span class="n">edad</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">edad</span><span class="w"> </span><span class="k">ASC</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="tipos-de-join">Tipos de JOIN<a class="headerlink" href="#tipos-de-join" title="Permanent link">&para;</a></h2>
+<h3 id="tablas-de-ejemplo">Tablas de ejemplo<a class="headerlink" href="#tablas-de-ejemplo" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>id_producto</th>
+<th>nombre_producto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Camiseta</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Pantalón</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Zapatos</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>id_color</th>
+<th>nombre_color</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Rojo</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Azul</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inner-join">INNER JOIN<a class="headerlink" href="#inner-join" title="Permanent link">&para;</a></h3>
+<p>Solo coincidencias.</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="o">*</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">productos</span>
+<span class="w">    </span><span class="k">INNER</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">colores</span>
+<span class="w">        </span><span class="k">ON</span><span class="w"> </span><span class="n">productos</span><span class="p">.</span><span class="n">id_producto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">colores</span><span class="p">.</span><span class="n">id_color</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="left-join">LEFT JOIN<a class="headerlink" href="#left-join" title="Permanent link">&para;</a></h3>
+<p>Muestra todos los productos, aunque no tengan color asociado.</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="o">*</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">productos</span>
+<span class="w">    </span><span class="k">LEFT</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">colores</span>
+<span class="w">        </span><span class="k">ON</span><span class="w"> </span><span class="n">productos</span><span class="p">.</span><span class="n">id_producto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">colores</span><span class="p">.</span><span class="n">id_color</span><span class="p">;</span>
+</code></pre></div>
+<p>Filtrar productos sin color asignado:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="o">*</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">productos</span>
+<span class="w">    </span><span class="k">LEFT</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">colores</span>
+<span class="w">        </span><span class="k">ON</span><span class="w"> </span><span class="n">productos</span><span class="p">.</span><span class="n">id_producto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">colores</span><span class="p">.</span><span class="n">id_color</span>
+<span class="k">WHERE</span>
+<span class="w">    </span><span class="n">colores</span><span class="p">.</span><span class="n">id_color</span><span class="w"> </span><span class="k">IS</span><span class="w"> </span><span class="k">NULL</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="right-join">RIGHT JOIN<a class="headerlink" href="#right-join" title="Permanent link">&para;</a></h3>
+<p>Muestra todos los colores, aunque no tengan producto asociado.</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="o">*</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">productos</span>
+<span class="w">    </span><span class="k">RIGHT</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">colores</span>
+<span class="w">        </span><span class="k">ON</span><span class="w"> </span><span class="n">productos</span><span class="p">.</span><span class="n">id_producto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">colores</span><span class="p">.</span><span class="n">id_color</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="full-join">FULL JOIN<a class="headerlink" href="#full-join" title="Permanent link">&para;</a></h3>
+<p>Devuelve todas las filas de ambas tablas, coincidan o no.</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="o">*</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">productos</span>
+<span class="w">    </span><span class="k">FULL</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">colores</span>
+<span class="w">        </span><span class="k">ON</span><span class="w"> </span><span class="n">productos</span><span class="p">.</span><span class="n">id_producto</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">colores</span><span class="p">.</span><span class="n">id_color</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="cross-join">CROSS JOIN<a class="headerlink" href="#cross-join" title="Permanent link">&para;</a></h3>
+<p>Producto cartesiano: todas las combinaciones posibles (3 × 2 = 6 filas).</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="o">*</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">productos</span>
+<span class="w">    </span><span class="k">CROSS</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">colores</span><span class="p">;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>JOIN</th>
+<th>¿Qué hace?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FULL JOIN</td>
+<td>Une filas coincidentes y muestra también las no relacionadas</td>
+</tr>
+<tr>
+<td>CROSS JOIN</td>
+<td>Todas las combinaciones posibles (producto cartesiano)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="funciones-de-agregacion">Funciones de agregación<a class="headerlink" href="#funciones-de-agregacion" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>nombre</th>
+<th>edad</th>
+<th>salario</th>
+<th>departamento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Ana</td>
+<td>25</td>
+<td>1200</td>
+<td>Ventas</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Luis</td>
+<td>45</td>
+<td>1800</td>
+<td>Marketing</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Marta</td>
+<td>30</td>
+<td>1500</td>
+<td>Ventas</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Pedro</td>
+<td>50</td>
+<td>2200</td>
+<td>Marketing</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Clara</td>
+<td>29</td>
+<td>1600</td>
+<td>Ventas</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">;</span><span class="w">             </span><span class="c1">-- 5</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="k">SUM</span><span class="p">(</span><span class="n">salario</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">;</span><span class="w">         </span><span class="c1">-- 8300</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="k">AVG</span><span class="p">(</span><span class="n">salario</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">;</span><span class="w">         </span><span class="c1">-- 1660</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="k">MIN</span><span class="p">(</span><span class="n">edad</span><span class="p">),</span><span class="w"> </span><span class="k">MAX</span><span class="p">(</span><span class="n">edad</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">;</span><span class="w"> </span><span class="c1">-- 25 y 50</span>
+</code></pre></div>
+<h2 id="agrupacion-group-by">Agrupación: GROUP BY<a class="headerlink" href="#agrupacion-group-by" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">departamento</span><span class="p">,</span>
+<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span><span class="w"> </span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">departamento</span><span class="p">;</span>
+</code></pre></div>
+<p>Regla: todos los campos que están en GROUP BY deben aparecer en el SELECT, salvo funciones de agregación.</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">departamento</span><span class="p">,</span>
+<span class="w">    </span><span class="k">AVG</span><span class="p">(</span><span class="n">salario</span><span class="p">)</span><span class="w"> </span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span><span class="w"> </span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">departamento</span><span class="p">;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>departamento</th>
+<th>AVG(salario)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ventas</td>
+<td>1433.33</td>
+</tr>
+<tr>
+<td>Marketing</td>
+<td>2000.00</td>
+</tr>
+</tbody>
+</table>
+<h2 id="having-vs-where">HAVING vs WHERE<a class="headerlink" href="#having-vs-where" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Cláusula</th>
+<th>Filtra…</th>
+<th>Cuándo se aplica</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WHERE</td>
+<td>Filas individuales</td>
+<td>Antes del GROUP BY</td>
+</tr>
+<tr>
+<td>HAVING</td>
+<td>Grupos agregados</td>
+<td>Después del GROUP BY</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salario</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">WHERE</span>
+<span class="w">    </span><span class="n">salario</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1500</span><span class="p">;</span>
+</code></pre></div>
+<p>Filtra empleados individuales cuyo salario es mayor a 1500.</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">departamento</span><span class="p">,</span>
+<span class="w">    </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">empleados</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">    </span><span class="n">departamento</span>
+<span class="k">HAVING</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+</code></pre></div>
+<p>Filtra grupos (departamentos) que tienen más de 2 empleados.</p>
+<h2 id="subconsultas">Subconsultas<a class="headerlink" href="#subconsultas" title="Permanent link">&para;</a></h2>
+<h3 id="en-where-subconsulta-no-correlacionada">En WHERE (subconsulta NO correlacionada)<a class="headerlink" href="#en-where-subconsulta-no-correlacionada" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">WHERE</span>
+<span class="w">    </span><span class="n">salario</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">SELECT</span><span class="w"> </span><span class="k">AVG</span><span class="p">(</span><span class="n">salario</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span>
+<span class="p">);</span>
+</code></pre></div>
+<p>Compara con el promedio general.</p>
+<h3 id="en-select">En SELECT<a class="headerlink" href="#en-select" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span><span class="p">,</span><span class="w"> </span>
+<span class="w">    </span><span class="p">(</span>
+<span class="w">        </span><span class="k">SELECT</span>
+<span class="w">            </span><span class="k">AVG</span><span class="p">(</span><span class="n">edad</span><span class="p">)</span>
+<span class="w">        </span><span class="k">FROM</span>
+<span class="w">            </span><span class="n">empleados</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">edad_media</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span><span class="p">;</span>
+</code></pre></div>
+<p>Agrega la media a cada fila.</p>
+<h3 id="en-from">En FROM<a class="headerlink" href="#en-from" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">departamento</span><span class="p">,</span>
+<span class="w">    </span><span class="n">total</span>
+<span class="k">FROM</span>
+<span class="w">  </span><span class="p">(</span>
+<span class="w">      </span><span class="k">SELECT</span>
+<span class="w">          </span><span class="n">departamento</span><span class="p">,</span>
+<span class="w">          </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">total</span>
+<span class="w">      </span><span class="k">FROM</span>
+<span class="w">          </span><span class="n">empleados</span>
+<span class="w">      </span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span>
+<span class="w">          </span><span class="n">departamento</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">resumen</span>
+<span class="k">WHERE</span>
+<span class="w">    </span><span class="n">total</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="subconsulta-correlacionada-vs-no-correlacionada">Subconsulta correlacionada vs no correlacionada<a class="headerlink" href="#subconsulta-correlacionada-vs-no-correlacionada" title="Permanent link">&para;</a></h3>
+<p>No correlacionada:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">nombre</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span>
+<span class="k">WHERE</span>
+<span class="w">    </span><span class="n">salario</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="k">SELECT</span><span class="w"> </span><span class="k">AVG</span><span class="p">(</span><span class="n">salario</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">empleados</span><span class="p">);</span>
+</code></pre></div>
+<p>No depende de la fila externa.</p>
+<p>Correlacionada:</p>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">e</span><span class="p">.</span><span class="n">nombre</span>
+<span class="k">FROM</span>
+<span class="w">    </span><span class="n">empleados</span><span class="w"> </span><span class="n">e</span>
+<span class="k">WHERE</span>
+<span class="w">    </span><span class="n">salario</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="k">SELECT</span>
+<span class="w">            </span><span class="k">AVG</span><span class="p">(</span><span class="n">salario</span><span class="p">)</span>
+<span class="w">        </span><span class="k">FROM</span>
+<span class="w">            </span><span class="n">empleados</span>
+<span class="w">        </span><span class="k">WHERE</span>
+<span class="w">            </span><span class="n">departamento</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">departamento</span>
+<span class="p">);</span>
+</code></pre></div>
+<p>Compara con el promedio del mismo departamento.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  <div class="md-footer-meta md-typeset" style="text-align:center; font-size:0.85em; margin-top:1em;">
+    <p>
+      <a href="https://www.avante.es/" style="text-decoration:none;" target="_blank">
+      <img src="../assets/avante-logo.png"
+           alt="Avante" width="80"
+           style="vertical-align:middle; margin-right:8px;">
+      </a>
+      Hecho con amor por <strong>Juan Manuel Piñero Sánchez</strong> · © 2025
+    </p>
+  </div>
+</footer>
+
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.sections", "navigation.top", "navigation.hide", "toc.integrate", "header.autohide", "content.code.copy"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
