@@ -38,6 +38,7 @@ mi-proyecto/
 ```
 
 **Descripción de carpetas:**
+
 - `src/main/java`: contiene el código fuente principal.  
 - `src/main/resources`: archivos de configuración y recursos (como `.properties`, imágenes, etc.).  
 - `src/test/java`: pruebas unitarias (JUnit u otras librerías).  
@@ -49,6 +50,7 @@ mi-proyecto/
 
 **Maven** es una herramienta de **gestión y construcción de proyectos** desarrollada por Apache.  
 Su objetivo principal es **automatizar el ciclo de vida del proyecto**, incluyendo:
+
 - Compilación del código fuente
 - Ejecución de pruebas
 - Empaquetado en `.jar` o `.war`
@@ -126,10 +128,41 @@ Ejemplo básico:
 ```
 
 **Campos importantes:**
-- `groupId`: identifica el grupo o empresa (ej. dominio invertido).  
+
+*--> Campos de mi proyecto:*
+
+- `groupId`: identifica el grupo o empresa (ej. dominio invertido).
 - `artifactId`: nombre del proyecto o módulo.  
 - `version`: versión del artefacto.  
 - `packaging`: tipo de paquete (normalmente `jar`).
+- `name`: el nombre del proyecto.
+- `description`: la descripción del proyecto.
+
+*--> Nodos que contienen la estructura de las fases de ejecución:*
+
+- `<build>;`: configuración del workflow (pasos a seguir para llegar a buen término cada una de las fases de ejecución).
+- `<plugins>`: lista de plugins que intervienen en las fases de ejecución.
+- `<plugin>`: un plugin específico que interviene en las fases de ejecución.
+
+*Notas:*
+
+- Si la lista está vacia (no hay nodos `plugin`), no hace falta poner el elemento `plugins`.
+- De igual forma, si el elemento `build` está vacío, no hace falta ponerlo.
+
+*--> Plugin maven.compiler-plugin:*
+
+- `org.apache.maven.plugins`: el grupo o empresa del plugin.
+- `maven-compiler-plugin`: el nombre del plugin.
+- `3.10.1`: Versión del plugin maven-compiler-plugin a usar.
+- `<source>17</source>`: Versión de Java que se va a usar para compilar.
+- `<target>17</target>`: Versión mínima de JVM (Java) que será capaz de ejecutar el código compilado.
+
+*Notas:*
+
+- El plugin es identificado por la combinacion del grupo y el nombre: `org.apache.maven.plugins.maven-compiler-plugin`.
+- Este plugin compila el código de nuestro proyecto.
+- No hace falta indicarlo, maven siempre usa este plugin para compilar.
+- Pero si lo indicamos podemos establecer una versión específica de este plugin, así como las versiones de Java para compilar y para ejecutar nuestro proyecto.
 
 ---
 
@@ -153,7 +186,9 @@ Para indicar a Maven qué clase debe ejecutarse al ejecutar el `.jar`, se añade
 </plugin>
 ```
 
-Con esto, al generar el `.jar`, se incluirá el atributo `Main-Class` en el manifiesto, permitiendo ejecutar el proyecto con:
+El `<manifest>` indica que la `<mainClass>` es `com.ejemplo.App`.
+
+Con esto, al generar el `.jar`, se incluirá el atributo `Main-Class` en el manifiesto, estableciendo el punto de entrada de la apliación en la clase `com.ejemplo.App` al ejecutar el proyecto con:
 
 ```bash
 java -jar target/mi-proyecto-1.0-SNAPSHOT.jar
@@ -177,7 +212,7 @@ Maven genera el `.jar` automáticamente al ejecutar:
 mvn package
 ```
 
-El archivo final se guarda dentro de `target/`.
+El archivo final se guarda en la raíz del directorio `target/`.
 
 ---
 

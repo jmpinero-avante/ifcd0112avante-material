@@ -206,8 +206,9 @@ System.out.println(factorial(5)); // 120
 
 ### Importante
 - Toda función recursiva debe tener un **caso base** que detenga las llamadas.  
-- Una recursión sin caso base provoca un **StackOverflowError**.  
+- Si las llamadas no se detienen, la recursión puede ser infinita y en algún momento provocará un **StackOverflowError**.  
 - Casi cualquier algoritmo recursivo puede expresarse mediante bucles iterativos, aunque no siempre con igual claridad.
+
 
 ---
 

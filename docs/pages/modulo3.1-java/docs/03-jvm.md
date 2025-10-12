@@ -7,10 +7,27 @@ description: Explicación del funcionamiento de la JVM, la compilación, el byte
 
 ## 3.1. Qué es la JVM y cómo funciona
 
-La **JVM (Java Virtual Machine)** es el componente central de la plataforma Java.  
-Su función principal es **ejecutar el bytecode** generado por el compilador Java, garantizando que un mismo programa pueda ejecutarse en distintos sistemas operativos.
+La **JVM (Java Virtual Machine)** (Máquina Virtual de Java) es el componente central de la plataforma Java.
+Su función principal es **ejecutar el bytecode** generado por el compilador Java, independientemente del sistema operativo en el que se haya instalado la JVM.
 
-El lema de Java, *"Write once, run anywhere"*, se cumple gracias a la JVM.
+Esto garantiza que un mismo programa pueda ejecutarse en distintos sistemas operativos. La única condición es que exista una versión de la JVM instalada.
+
+El bytecode es el código máquina o código binario que resulta al compilar código fuente.
+
+El bytecode es distinto dependiendo de la máquina y el sistema operativo para el que se haya compilado. Esto ocurre porque el bytecode es un código a bajo nivel que trata directamente con elementos del sistema operativo y del procesador de la maquina donde se ejecuta. Cada sistema operativo tiene sus formas de usar sus elementos, y cada procesador tiene su propio juego de instrucciones y sus propios elementos físicos (como los registros).
+
+Por ello la JVM que instalamos en Windows no es la misma que la que instalamos en Linux o en Mac. El bytecode de la JVM será el que tenga que ser para cada máquina.
+
+Pero un programa Java no se ejecuta directamente sobre la máquina física, si no sobre la JVM. Y los elementos y operaciones que ofrece una JVM de una versión númerica determinada (ej. JVM 25) para un sistema son exactamente los mismos que los que ofrezca otra JVM con la misma versión numérica en otro sistema. O lo que es lo mismo, que todas las JVM con la misma versión númerica son compatibles entre sí.
+
+Por tanto, el ejecutable de un programa Java que se ejecute en una versión numérica determinada de JVM para un sistema, se ejecutará sin problemas en cualquier JVM de cualquier sistema con el mismo número de versión.
+
+**Un programa Java compilado funciona igual en cualquier dispositivo que tenga una JVM instalada, siempre que sean de la misma versión numérica.**
+
+**Por tanto podemos copiar un programa Java compilado (un archivo `.jar` por ejemplo) de un Windows a un Linux o Mac y funcionarán igual.**
+
+De hecho, el lema de Java es: *"Write once, run anywhere"* (*"Escribe [el código] una vez, ejecútalo en cualquier sitio"*).
+
 
 ### Componentes principales de la plataforma Java
 
@@ -108,7 +125,9 @@ La JVM no carga todas las clases al inicio. Utiliza un sistema dinámico llamado
 Todo programa Java comienza su ejecución en el método `main`:
 
 ```java
-public static void main(String[] args)
+public static void main(String[] args) {
+    ...
+}
 ```
 
 ### Significado de cada parte:
@@ -119,6 +138,7 @@ public static void main(String[] args)
 
 ### Ejemplo con argumentos
 
+Argumentos.java
 ```java
 public class Argumentos {
     public static void main(String[] args) {
@@ -128,6 +148,13 @@ public class Argumentos {
     }
 }
 ```
+
+Compilar con con:
+```bash
+javac ./Argumentos.java
+```
+_(produce un archivo Argumentos.class con el código compilado)._
+
 
 Ejecutar con:
 ```bash
