@@ -1,0 +1,58 @@
+# ===========================================================
+# Ignorar artefactos de desarrollo y build de plugins locales de MkDocs
+# Contexto: este archivo está en docs/plugins/
+# Cada subcarpeta es un plugin Python (por ejemplo: mermaid-xform-plugin)
+# ===========================================================
+
+# -----------------------------------------------------------
+# 🧱 Archivos de compilación y empaquetado Python
+# -----------------------------------------------------------
+*/build/
+*/dist/
+*/.eggs/
+*/.pytest_cache/
+*/.mypy_cache/
+*/.ruff_cache/
+*/.tox/
+*/.nox/
+*/.coverage
+*/*.egg-info/
+*.egg
+*.whl
+
+# -----------------------------------------------------------
+# 🧩 Archivos de bytecode y caché de Python
+# -----------------------------------------------------------
+*/__pycache__/
+*.pyc
+*.pyo
+
+# -----------------------------------------------------------
+# 🧰 Entornos virtuales locales
+# -----------------------------------------------------------
+*/.venv/
+*/venv/
+*/env/
+.venv/
+venv/
+env/
+
+# -----------------------------------------------------------
+# 📂 Archivos temporales o logs de test
+# -----------------------------------------------------------
+*.log
+*.tmp
+*.bak
+*.swp
+*.old
+*~
+*.orig
+
+# -----------------------------------------------------------
+# ⚙️ Archivos de IDEs o herramientas locales
+# -----------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

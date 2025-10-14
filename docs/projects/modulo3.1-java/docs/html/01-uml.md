@@ -20,20 +20,39 @@ UML no es un lenguaje de programación, sino una **herramienta de diseño y comu
 En UML, una **clase** se representa mediante un **rectángulo dividido en tres secciones**:
 
 
-<div class="diagram-block" align="center">
-```mermaid
-classDiagram
-    class NombreDeLaClase {
-        - atributoPrivado: Tipo
-        + atributoPublico: Tipo
-        + metodoPublico(): TipoRet
-        - metodoPrivado(): void
-    }
+```mermaid-xform-class
+direction TB
+class NombreDeLaClase:::publicClass {
+    -Tipo atributoPrivado
+    +Tipo atributoPublico
+    #Tipo atributoProtected
+    ~Tipo atributoPackage
+     Tipo atributoDefecto
+    +void metodoPublico()
+    -void metodoPrivado()
+    #void metodoProtected()
+    ~void metodoPackage()
+     void metodoDefecto()
+}
 ```
-</div>
 
+
+<!--<[CDATA[
+
+    Las clases de Mermaid son:
+    
+    %% 
+    %% publicClass
+    %% packageClass %% la por defecto, la package-private
+    %% protectedClass
+    %% privateClass
+    %% abstractClass
+    %% 
+
+]]> -->
 
 **Convenciones:**
+
 - `+` indica **visibilidad pública** (`public`)
 - `-` indica **visibilidad privada** (`private`)
 - `#` indica **visibilidad protegida** (`protected`)

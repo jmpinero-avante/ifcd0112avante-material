@@ -1,23 +1,39 @@
-site_name: "Módulo 2 – Bases de Datos"
+site_name: "Módulo 3.1 – Java"
 site_author: "Juan Manuel Piñero Sánchez"
-site_url: "https://jmpinero-avante.github.io/ifcd0112avante-material/modulo2-bases-de-datos"
+site_url: "https://jmpinero-avante.github.io/ifcd0112avante-material/modulo31-java"
 
 nav:
-  - index.md
-  - 01-modelado-y-definicion-de-tablas-en-postgresql.md
-  - 02-consultas-en-postgresql.md
-  - 03-insercion-uso-y-eliminacion-de-datos.md
-  - 04-indices-y-analisis-de-consultas.md
-  - 05-programacion-con-funciones-y-procedimientos.md
-  - 06-triggers.md
-  - 07-casting-de-tipos.md
-  - 08-funciones-comunes-en-plpgsql.md
-  - 09-formatos-de-fecha-en-postgresql.md
-  - 10-instalacion-y-configuracion-de-postgresql-pgadmin-jdbc.md
+  - html/index.md
+
+  - "Fundamentos del lenguaje":
+    - html/01-uml.md
+    - html/02-maven.md
+    - html/03-jvm.md
+    - html/04-tipos-de-datos.md
+    - html/05-arrays-matrices.md
+    - html/06-estructuras-control.md
+
+  - "Programación Orientada a Objetos":
+    - html/07-clases-objetos.md
+    - html/08-tipos-especiales.md
+    - html/09-clases-genericas.md
+    - html/10-utilidades-lenguaje.md
+    - html/11-interfaces.md
+    - html/12-excepciones.md
+
+  - "Programación avanzada y diseño de software":
+    - html/13-io.md
+    - html/14-lambdas.md
+    - html/15-colecciones-streams.md
+    - html/16-jdbc.md
+    - html/17-patrones-diseno.md
+    - html/18-hilos-concurrencia.md
+    - html/19-conclusiones.md
+
 
 theme:
   name: material
-  custom_dir: overrides
+  custom_dir: common/overrides
   language: es
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -30,6 +46,8 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Cambiar a claro
+
+
   features:
     # Navegación principal
     - navigation.expand       # permite expandir las secciones
@@ -40,15 +58,23 @@ theme:
 
     # Interacción y usabilidad
     - header.autohide         # esconde el header al avanzar hacia abajo
+    - content.code.annonate   # para anotar el código (lo usa mermaid)
     - content.code.copy       # botón de copiar en bloques de código
 
+
+  mermaid:
+    version: "10.9.0"
+
+
 extra_css:
-  - styles/code-font.css
-  - styles/nav-toggle.css
-  - styles/diagram.css
-  - styles/desktop-drawer.css
-  - styles/pdf-buttons.css
-  - styles/pdf-academy.css
+  - assets/common/css/code-font.css
+  - assets/common/css/nav-toggle.css
+  - assets/common/css/diagram.css
+  - assets/common/css/mermaid-xform.css
+  - assets/common/css/desktop-drawer.css
+  - assets/common/css/pdf-buttons.css
+  - assets/common/css/pdf-academy.css
+
 
 markdown_extensions:
   - admonition
@@ -61,6 +87,9 @@ markdown_extensions:
       custom_fences:
         - name: plantuml
           class: plantuml
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: mermaid
+          class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.snippets
   - pymdownx.highlight
@@ -77,16 +106,19 @@ markdown_extensions:
   - toc:
       permalink: true
 
+
 plugins:
   - search
+  - mermaid-xform
   - with-pdf:
       author: "Juan Manuel Piñero Sánchez"
       enabled_if_env: ENABLE_PDF_EXPORT
-      output_path: pdf/modulo2-bases-de-datos.pdf
-      cover_title: "MF0226_3 – Programación de Bases de Datos Relacionales"
+      output_path: assets/pdf/modulo3_01-java.pdf
+      cover_title: "Java"
       cover_subtitle: "IFCD0112 - Programación Orientada a Objetos y Bases de Datos Relacionales"
       copyright: "2025"
       toc_level: 3
+
 
 extra:
   generators: false
