@@ -4,8 +4,11 @@ site_url: "https://jmpinero-avante.github.io/ifcd0112avante-material"
 
 nav:
   - Inicio: index.md
-  - Módulos:
-    - "Módulo 2 - Bases de Datos": ./modulo2-bases-de-datos/index.html
+  - Módulo 2:
+    - "Bases de Datos con postgresql": ./modulo2-bases-de-datos/index.html
+  - Módulo 3:
+    - "JAVA": ./modulo3-java/index.html
+    - "Guia de APP JDBC -> SpringBoot": ./modulo3-app-springboot/index.html
 
 theme:
   name: material

@@ -22,13 +22,16 @@ Documentación, ejercicios y ejemplos prácticos de los tres módulos formativos
 
 ## Contenidos
 
-**Módulo 1 – Infraestructura**
-:octicons-arrow-right-16: *Entornos de desarrollo, Markdown, Git, HTML, CSS, Bootstrap y Contenedores Docker.*
+### Módulo 1
 
+**Infraestructura**
+:octicons-arrow-right-16: *Entornos de desarrollo, Markdown, Git, HTML, CSS, Bootstrap y Contenedores Docker.*
 
 ---
 
-[:material-database-outline:{ .lg .middle } **Módulo 2 – Bases de Datos**](./modulo2-bases-de-datos/index.html)
+### Módulo 2
+
+[:material-database-outline:{ .lg .middle } **Bases de Datos**](./modulo2-bases-de-datos/index.html)
 :octicons-arrow-right-16: *Diseño de Bases de Datos en PostgreSQL, consultas y programación en la Base de Datos.*
 
 [Descargar PDF :material-file-pdf-box:](./pdfs/modulo2-bases-de-datos.pdf){ .pdf-button }
@@ -37,7 +40,15 @@ Documentación, ejercicios y ejemplos prácticos de los tres módulos formativos
 
 ---
 
-**Módulo 3 – Programación en Java**
+### Módulo 3 – Programación en Java**
+[:material-database-outline:{ .lg .middle } JAVA](./modulo3-java/index.html)
 :octicons-arrow-right-16: *Programación estructurada, clases y objetos, interfaces, colecciones, streams, JDBC.*
 
+[Descargar PDF :material-file-pdf-box:](./pdfs/modulo3-java.pdf){ .pdf-button }
+
+
+[:material-database-outline:{ .lg .middle } Guía de APP JDBC -> SpringBoot](./modulo3-app-springboot/index.html)
+:octicons-arrow-right-16: *Iteraciones para crear una App que conecte con una base de datos en postgre.*
+
+[Descargar PDF :material-file-pdf-box:](./pdfs/modulo3-app-springboot.pdf){ .pdf-button }
 
