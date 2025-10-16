@@ -42,8 +42,6 @@ Thumbs.db
 # 📦 Archivos y carpetas de salida de MkDocs globales
 # -----------------------------------------------------------
 site/
-site-root/
-site-root/site/
 *.log
 *.tmp
 *.bak
