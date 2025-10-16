@@ -119,23 +119,20 @@
 
             echo "Construyendo sitio..."
             ENABLE_PDF_EXPORT=1 mkdocs build --clean
-
-            echo "Preparando PDFs..."
-            mkdir -p pdf
-            cp -r ${commonPkg}/assets/common/pdf/* pdf/ 2>/dev/null || true
-
-            echo "Combinando sitio y PDFs..."
-            mkdir -p webpdf/site/assets
-            cp -r site/* webpdf/site/
-            mkdir -p webpdf/site/assets/pdf
-            ln -sf ../../../pdf/* webpdf/site/assets/pdf/ 2>/dev/null || true
           '';
 
           installPhase = ''
-            mkdir -p $out $pdf $webpdf
-            cp -r site/* $out/
-            cp -r pdf/* $pdf/ 2>/dev/null || true
-            cp -r webpdf/* $webpdf/
+            mkdir -p $out $pdf $webpdf/pdf
+
+            echo "Instalando website"
+            cp -r site/* $out/ 2>/dev/null || true
+
+            echo "Instalando pdfs"
+            cp -r site/assets/pdf/* $pdf/ 2>/dev/null || true
+
+            echo "Combinando sitio y PDFs..."
+            cp -r site $webpdf/ 2>/dev/null || true
+            ln -s $webpdf/site/assets/pdf/*.pdf $webpdf/pdf/ 2>/dev/null || true
           '';
         };
 
