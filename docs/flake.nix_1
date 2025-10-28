@@ -1,0 +1,131 @@
+{
+  description = "Documentación modular MkDocs con integración de subproyectos, assets comunes y múltiples outputs";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+
+    # Plugin local
+    mermaid-xform-plugin.url = "path:./plugins/mermaid-xform-plugin";
+  };
+
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    mermaid-xform-plugin,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {inherit system;};
+      python = pkgs.python312;
+
+      projects = (import ./nix/generateAllDerivations.nix) {
+        inherit pkgs;
+        dir=./projects;
+        root=./site-root;
+        version="3.0";
+      };
+
+      inherit (projects.extra) mkdocsWithPdf pluginPkg commonPkg;
+
+    in {
+      # --- EXPORTS ---
+      packages = rec{
+        site-db = projects.projects.module2-db.der-site;
+        site-java = projects.projects.module3-java.der-site;
+        site-app-springboot = projects.projects.module3-app-springboot.der-site;
+        site = projects.all.der-site;
+        default = site;
+      };
+
+      # --- DEV SHELL ---
+      devShells.default = pkgs.mkShell {
+        name = "mkdocs-dev-shell";
+
+        # Herramientas incluidas en el entorno
+        packages = with pkgs;
+          [
+            zsh
+            neovim
+            python3
+            fontconfig.bin
+            fontconfig.out
+            pkgs.nodePackages.mermaid-cli
+            pkgs.google-fonts
+            pkgs.dejavu_fonts
+            pkgs.inkscape
+            (python3.withPackages (ps:
+              with ps; [
+                pip
+                setuptools
+                wheel
+                mkdocs
+                mkdocs-material
+                pymdown-extensions
+                weasyprint
+                beautifulsoup4
+                lxml
+                mkdocsWithPdf
+                pluginPkg
+              ]))
+          ]
+          ## Chromium solo en linux
+          ++ pkgs.lib.optionals pkgs.stdenv.isLinux [pkgs.chromium];
+
+        # Configuración al entrar en el entorno
+
+        shellHook = let
+          chromePath =
+            if pkgs.stdenv.isDarwin
+            then "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            else "${pkgs.chromium}/bin/chromium";
+        in ''
+          echo ""
+          echo "Entorno IFCD0112 Avante activado para ${system}"
+          echo "----------------------------------------------------"
+          echo "  Shell   : Zsh disponible"
+          echo "  Editor  : Neovim instalado"
+          echo "  Python  : $(python3 --version)"
+          echo "  MkDocs  : $(mkdocs --version)"
+          echo ""
+          echo "Creando enlaces simbólicos a recursos comunes..."
+
+          export FONTCONFIG_FILE=${pkgs.fontconfig.out}/etc/fonts/fonts.conf
+          export EDITOR=nvim
+
+          export PUPPETEER_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          echo "Puppeteer usará el Chrome del sistema en: $PUPPETEER_EXECUTABLE_PATH"
+
+          alias ls='command ls --color=auto -Ah'
+          alias l='command ls --color=auto -Ah'
+          alias ll='l -l'
+          alias vi=vim
+          alias vim='command nvim'
+
+          echo "Aliases disponibles: l, ll, vi, mdserve, mdbuild"
+
+          for proj in projects/*; do
+            if [ -d "$proj" ]; then
+              echo "→ Configurando $proj"
+              mkdir -p "$proj/docs/assets"
+
+              # Limpiar y enlazar root común
+              rm "$proj/common" 2> /dev/null
+              ln -sf ../../common/root "$proj/common"
+
+              # Limpiar y enlazar assets comunes (4 niveles arriba)
+              rm "$proj/docs/assets/common" 2> /dev/null
+              ln -sf ../../../../common/assets "$proj/docs/assets/common"
+            fi
+          done
+
+          ## ACTUALIZA EL PYTHONPATH
+          export PYTHONPATH="$PWD/plugins/mermaid-xform-plugin:$PYTHONPATH"
+
+          # FIN
+          echo "Listo. Entra en un subproyecto y ejecuta: mkdocs serve"
+        '';
+      };
+    });
+}

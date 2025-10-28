@@ -1,0 +1,324 @@
+{
+  description = "Documentación modular MkDocs con integración de subproyectos, assets comunes y múltiples outputs";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+
+    # Plugin local
+    mermaid-xform-plugin.url = "path:./plugins/mermaid-xform-plugin";
+  };
+
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    mermaid-xform-plugin,
+    ...
+  }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {inherit system;};
+      python = pkgs.python312;
+
+      # mkdocs-with-pdf desde PyPI (no está en nixpkgs)
+      mkdocsWithPdf = pkgs.python3Packages.buildPythonPackage rec {
+        pname = "mkdocs-with-pdf";
+        version = "0.9.3";
+        src = pkgs.fetchPypi {
+          inherit pname version;
+          sha256 = "sha256-vaM3XXBA0biHHaF8bXHqc2vcpsZpYI8o7WJ3EDHS4MY=";
+        };
+        pyproject = true;
+        build-system = [pkgs.python3Packages.setuptools pkgs.python3Packages.wheel];
+        propagatedBuildInputs = with pkgs.python3Packages; [
+          mkdocs
+          mkdocs-material
+          weasyprint
+          lxml
+          pyyaml
+          markdown
+          beautifulsoup4
+          libsass
+        ];
+        doCheck = false;
+      };
+
+      # --- COMMON PACKAGE ---
+      commonPkg = pkgs.stdenv.mkDerivation {
+        pname = "mkdocs-common";
+        version = "1.0";
+        src = ./common;
+        installPhase = ''
+          mkdir -p $out/root
+          mkdir -p $out/assets/common
+          cp -r root/* $out/root/ 2>/dev/null || true
+          cp -r assets/* $out/assets/common/ 2>/dev/null || true
+        '';
+      };
+
+      # --- PLUGIN PACKAGE ---
+      pluginPkg = pkgs.python3Packages.buildPythonPackage {
+        pname = "mkdocs-mermaid-xform-plugin";
+        version = "1.0.0";
+        src = ./plugins/mermaid-xform-plugin;
+
+        format = "setuptools";
+        propagatedBuildInputs = with pkgs.python3Packages; [
+          mkdocs
+          mkdocs-material
+        ];
+
+        # Durante el desarrollo no necesitamos instalarlo en el store, sino compilarlo localmente
+        doCheck = false;
+      };
+
+      # --- FUNCIÓN PARA PROYECTOS MKDOCS ---
+      mkdocsProject = name: path:
+        pkgs.stdenv.mkDerivation rec {
+          pname = "mkdocs-site-${name}";
+          version = "1.0";
+          src = path;
+          outputs = ["out" "pdf" "webpdf"];
+
+          buildInputs = with pkgs;
+            [
+              python3
+              fontconfig.bin
+              fontconfig.out
+              pkgs.nodePackages.mermaid-cli
+              pkgs.google-fonts
+              pkgs.dejavu_fonts
+              pkgs.inkscape
+              commonPkg
+              (python3.withPackages (ps:
+                with ps; [
+                  pip
+                  setuptools
+                  wheel
+                  mkdocs
+                  mkdocs-material
+                  pymdown-extensions
+                  weasyprint
+                  beautifulsoup4
+                  lxml
+                  mkdocsWithPdf
+                  pluginPkg
+                ]))
+            ]
+            ## Dependencia con chromium en linux
+            ++ pkgs.lib.optionals pkgs.stdenv.isLinux [pkgs.chromium];
+
+          #propagatedBuildInputs = [commonPkg];
+
+          buildPhase = ''
+            echo "Preparando enlaces comunes para ${name}..."
+
+            ln -sf ${commonPkg}/root common 2>/dev/null || true
+
+            mkdir -p docs/assets
+            ln -sf ${commonPkg}/assets/common docs/assets/common 2>/dev/null || null
+
+            echo "Construyendo sitio..."
+            ENABLE_PDF_EXPORT=1 mkdocs build --clean
+          '';
+
+          installPhase = ''
+            mkdir -p $out $pdf $webpdf/pdf
+
+            echo "Instalando website"
+            cp -r site $out/ 2>/dev/null || true
+
+            echo "Instalando pdfs"
+            cp -r $out/site/assets/pdf/*.pdf $pdf/ 2>/dev/null || true
+
+            echo "Combinando sitio y PDFs..."
+            cp -r $out/site $webpdf/ 2>/dev/null || true
+            ln -s $webpdf/site/assets/pdf/*.pdf $webpdf/pdf/ 2>/dev/null || true
+          '';
+        };
+
+      # --- PROYECTOS INDIVIDUALES ---
+      module2 =
+        mkdocsProject "module2-bases-de-datos"
+        ./projects/modulo2-bases-de-datos;
+      module3-java = mkdocsProject "module3-java" ./projects/modulo3-java;
+      module3-app-springboot =
+        mkdocsProject "module3-app-springboot"
+        ./projects/modulo3-app-springboot;
+
+      siteRoot = pkgs.stdenv.mkDerivation {
+        pname = "mkdocs-site-root";
+        version = "1.0";
+        src = ./projects/site-root;
+        outputs = ["out"];
+
+        buildInputs = [python python.pkgs.mkdocs python.pkgs.mkdocs-material pluginPkg];
+
+        propagatedBuildInputs = [commonPkg];
+
+        buildPhase = ''
+          mkdir $out
+
+          echo "Enlazando recursos comunes (site-root)..."
+          ln -sf ${commonPkg}/root common
+          mkdir -p docs/assets
+          ln -sf ${commonPkg}/assets/common docs/assets/common
+
+          echo "Construyendo sitio raíz..."
+          mkdocs build --clean
+        '';
+
+        installPhase = ''
+          mkdir -p $out/site
+          cp -r site $out/
+        '';
+      };
+
+      # --- SITIO GLOBAL ---
+      mkdocsAll = pkgs.stdenv.mkDerivation {
+        pname = "mkdocs-site-all";
+        version = "1.0";
+        src = ./projects;
+        outputs = ["out" "pdf" "webpdf"];
+        buildInputs = [pkgs.coreutils pkgs.findutils];
+        propagatedBuildInputs = [commonPkg module2 module3-java module3-app-springboot siteRoot];
+
+        buildPhase = ''
+          ## raiz
+          echo "Construyendo sitio raíz (site-root)..."
+          mkdir -p $out
+          cp -r ${siteRoot.out}/site $out/
+
+          ## proyectos
+          echo "Integrando subproyectos dentro del site raíz..."
+
+          cp -r ${module2.out}/site/module2-db $out/site/ 2>/dev/null || true
+          # cp -r ${module3-java.out}/* $out/module3-java/
+          # cp -r ${module3-app-springboot.out}/* $out/module3-app-springboot/
+
+          ## assets
+          mkdir -p $out/site/assets
+          echo "Fusionando assets de subproyectos..."
+          #for assetsDir in ${module2.out}/site/assets ${module3-java.out}/assets ${module3-app-springboot.out}/assets; do
+          for assetsDir in ${module2.out}/site/assets; do
+            if [ -d "$assetsDir" ]; then
+              echo "copiando assets de $assetsDir"
+              cp -rn $assetsDir/* $out/site/assets/ 2>/dev/null || true
+            fi
+          done
+
+          ## pdfs
+          echo "Creando enlaces simbólicos a los PDFs..."
+          mkdir -p $pdf/pdf
+          cp $out/site/assets/pdf/*.pdf $pdf/pdf 2>/dev/null || true
+
+          ## final site
+          echo "Preparando outputs finales..."
+          
+          mkdir -p $webpdf/pdf
+          cp -r $out/site $webpdf/ 2>/dev/null || true
+
+          ln -s $webpdf/site/assets/pdf/*.pdf $webpdf/pdf/ 2>/dev/null || true
+        '';
+      };
+    in {
+      # --- EXPORTS ---
+      packages = {
+        mkdocs-plugin-mermaid-xform = pluginPkg;
+        site-db = module2;
+        site-java = module3-java;
+        site-app-springboot = module3-app-springboot;
+        site = mkdocsAll;
+        default = mkdocsAll;
+      };
+
+      # --- DEV SHELL ---
+      devShells.default = pkgs.mkShell {
+        name = "mkdocs-dev-shell";
+
+        # 📦 Herramientas incluidas en el entorno
+        packages = with pkgs;
+          [
+            zsh
+            neovim
+            python3
+            fontconfig.bin
+            fontconfig.out
+            pkgs.nodePackages.mermaid-cli
+            pkgs.google-fonts
+            pkgs.dejavu_fonts
+            pkgs.inkscape
+            (python3.withPackages (ps:
+              with ps; [
+                pip
+                setuptools
+                wheel
+                mkdocs
+                mkdocs-material
+                pymdown-extensions
+                weasyprint
+                beautifulsoup4
+                lxml
+                mkdocsWithPdf
+                pluginPkg
+              ]))
+          ]
+          ## Chromium solo en linux
+          ++ pkgs.lib.optionals pkgs.stdenv.isLinux [pkgs.chromium];
+
+        # Configuración al entrar en el entorno
+
+        shellHook = let
+          chromePath =
+            if pkgs.stdenv.isDarwin
+            then "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            else "${pkgs.chromium}/bin/chromium";
+        in ''
+          echo ""
+          echo "Entorno IFCD0112 Avante activado para ${system}"
+          echo "----------------------------------------------------"
+          echo "  Shell   : Zsh disponible"
+          echo "  Editor  : Neovim instalado"
+          echo "  Python  : $(python3 --version)"
+          echo "  MkDocs  : $(mkdocs --version)"
+          echo ""
+          echo "Creando enlaces simbólicos a recursos comunes..."
+
+          export FONTCONFIG_FILE=${pkgs.fontconfig.out}/etc/fonts/fonts.conf
+          export EDITOR=nvim
+
+          export PUPPETEER_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+          echo "Puppeteer usará el Chrome del sistema en: $PUPPETEER_EXECUTABLE_PATH"
+
+          alias ls='command ls --color=auto -Ah'
+          alias l='command ls --color=auto -Ah'
+          alias ll='l -l'
+          alias vi=vim
+          alias vim='command nvim'
+
+          echo "Aliases disponibles: l, ll, vi, mdserve, mdbuild"
+
+          for proj in projects/*; do
+            if [ -d "$proj" ]; then
+              echo "→ Configurando $proj"
+              mkdir -p "$proj/docs/assets"
+
+              # Limpiar y enlazar root común
+              rm "$proj/common" 2> /dev/null
+              ln -sf ../../common/root "$proj/common"
+
+              # Limpiar y enlazar assets comunes (4 niveles arriba)
+              rm "$proj/docs/assets/common" 2> /dev/null
+              ln -sf ../../../../common/assets "$proj/docs/assets/common"
+            fi
+          done
+
+          ## ACTUALIZA EL PYTHONPATH
+          export PYTHONPATH="$PWD/plugins/mermaid-xform-plugin:$PYTHONPATH"
+
+          # FIN
+          echo "Listo. Entra en un subproyecto y ejecuta: mkdocs serve"
+        '';
+      };
+    });
+}

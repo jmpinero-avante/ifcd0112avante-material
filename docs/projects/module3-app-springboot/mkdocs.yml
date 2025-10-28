@@ -1,0 +1,109 @@
+site_name: "Módulo 3 – Guía JDBC -> Spring Boot MVC"
+site_author: "Juan Manuel Piñero Sánchez"
+site_url: "https://jmpinero-avante.github.io/ifcd0112avante-material/module3-app-springboot"
+
+nav:
+  - module3-app-springboot/index.md
+  - module3-app-springboot/010-introduccion-http.md
+  - module3-app-springboot/020-arranque-springboot.md
+  - module3-app-springboot/030-mvc-thymeleaf.md
+  - module3-app-springboot/040-api-rest.md
+  - module3-app-springboot/050-reflexion-final.md
+
+
+theme:
+  name: material
+  custom_dir: common/overrides
+  language: es
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a claro
+
+
+  features:
+    # Navegación principal
+    - navigation.expand       # permite expandir las secciones
+    - navigation.sections     # muestra jerarquías en el menú lateral
+    - navigation.top          # vuelve arriba con clic en el encabezado
+    - navigation.hide         # muestra el botón ☰ para ocultar el menú lateral
+    - toc.integrate           # integra el índice dentro del menú lateral
+
+    # Interacción y usabilidad
+    - header.autohide         # esconde el header al avanzar hacia abajo
+    - content.code.annonate   # para anotar el código (lo usa mermaid)
+    - content.code.copy       # botón de copiar en bloques de código
+
+
+  mermaid:
+    version: "10.9.0"
+
+
+extra_css:
+  - assets/common/css/code-font.css
+  - assets/common/css/nav-toggle.css
+  - assets/common/css/diagram.css
+  - assets/common/css/mermaid-xform.css
+  - assets/common/css/desktop-drawer.css
+  - assets/common/css/pdf-buttons.css
+  - assets/common/css/pdf-academy.css
+
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: plantuml
+          class: plantuml
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg  
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+
+plugins:
+  - search
+  - mermaid-xform
+  - with-pdf:
+      author: "Juan Manuel Piñero Sánchez"
+      enabled_if_env: ENABLE_PDF_EXPORT
+      output_path: assets/pdf/module3-app-springboot.pdf
+      cover_title: "Guía APP JDBC -> SpringBoot"
+      cover_subtitle: "IFCD0112 - Programación Orientada a Objetos y Bases de Datos Relacionales"
+      copyright: "2025"
+      toc_level: 3
+
+
+extra:
+  generators: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jmpinero-avante/ifcd0112avante-material
+      name: "Repositorio en GitHub"
+

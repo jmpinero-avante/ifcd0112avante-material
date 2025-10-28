@@ -1,0 +1,129 @@
+site_name: "Módulo 3 – Java"
+site_author: "Juan Manuel Piñero Sánchez"
+site_url: "https://jmpinero-avante.github.io/ifcd0112avante-material/module3-java"
+
+nav:
+  - module3-java/index.md
+
+  - "Fundamentos del lenguaje":
+    - module3-java/01-uml.md
+    - module3-java/02-maven.md
+    - module3-java/03-jvm.md
+    - module3-java/04-tipos-de-datos.md
+    - module3-java/05-arrays-matrices.md
+    - module3-java/06-estructuras-control.md
+
+  - "Programación Orientada a Objetos":
+    - module3-java/07-clases-objetos.md
+    - module3-java/08-tipos-especiales.md
+    - module3-java/09-clases-genericas.md
+    - module3-java/10-utilidades-lenguaje.md
+    - module3-java/11-interfaces.md
+    - module3-java/12-excepciones.md
+
+  - "Programación avanzada y diseño de software":
+    - module3-java/13-io.md
+    - module3-java/14-lambdas.md
+    - module3-java/15-colecciones-streams.md
+    - module3-java/16-jdbc.md
+    - module3-java/17-patrones-diseno.md
+    - module3-java/18-hilos-concurrencia.md
+    - module3-java/19-conclusiones.md
+
+
+theme:
+  name: material
+  custom_dir: common/overrides
+  language: es
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a claro
+
+
+  features:
+    # Navegación principal
+    - navigation.expand       # permite expandir las secciones
+    - navigation.sections     # muestra jerarquías en el menú lateral
+    - navigation.top          # vuelve arriba con clic en el encabezado
+    - navigation.hide         # muestra el botón ☰ para ocultar el menú lateral
+    - toc.integrate           # integra el índice dentro del menú lateral
+
+    # Interacción y usabilidad
+    - header.autohide         # esconde el header al avanzar hacia abajo
+    - content.code.annonate   # para anotar el código (lo usa mermaid)
+    - content.code.copy       # botón de copiar en bloques de código
+
+
+  mermaid:
+    version: "10.9.0"
+
+
+extra_css:
+  - assets/common/css/code-font.css
+  - assets/common/css/nav-toggle.css
+  - assets/common/css/diagram.css
+  - assets/common/css/mermaid-xform.css
+  - assets/common/css/desktop-drawer.css
+  - assets/common/css/pdf-buttons.css
+  - assets/common/css/pdf-academy.css
+
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: plantuml
+          class: plantuml
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg  
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+
+plugins:
+  - search
+  - mermaid-xform
+  - with-pdf:
+      author: "Juan Manuel Piñero Sánchez"
+      enabled_if_env: ENABLE_PDF_EXPORT
+      output_path: assets/pdf/module3-java.pdf
+      cover_title: "Java"
+      cover_subtitle: "IFCD0112 - Programación Orientada a Objetos y Bases de Datos Relacionales"
+      copyright: "2025"
+      toc_level: 3
+
+
+extra:
+  generators: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jmpinero-avante/ifcd0112avante-material
+      name: "Repositorio en GitHub"
+

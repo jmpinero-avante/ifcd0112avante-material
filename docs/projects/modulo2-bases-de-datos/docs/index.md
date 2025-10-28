@@ -1,6 +1,0 @@
----
-title: "Índice"
-hide:
-  - toc
----
-

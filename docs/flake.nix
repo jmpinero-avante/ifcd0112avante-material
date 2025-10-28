@@ -17,9 +17,14 @@
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
+      ## PACKAGES
       pkgs = import nixpkgs {inherit system;};
       python = pkgs.python312;
 
+      ## VERSION
+      defversion = "2.0";
+
+      ## DEPENDENCIAS
       # mkdocs-with-pdf desde PyPI (no está en nixpkgs)
       mkdocsWithPdf = pkgs.python3Packages.buildPythonPackage rec {
         pname = "mkdocs-with-pdf";
@@ -43,20 +48,7 @@
         doCheck = false;
       };
 
-      # --- COMMON PACKAGE ---
-      commonPkg = pkgs.stdenv.mkDerivation {
-        pname = "mkdocs-common";
-        version = "1.0";
-        src = ./common;
-        installPhase = ''
-          mkdir -p $out/root
-          mkdir -p $out/assets/common
-          cp -r root/* $out/root/ 2>/dev/null || true
-          cp -r assets/* $out/assets/common/ 2>/dev/null || true
-        '';
-      };
-
-      # --- PLUGIN PACKAGE ---
+      # pluginPkg
       pluginPkg = pkgs.python3Packages.buildPythonPackage {
         pname = "mkdocs-mermaid-xform-plugin";
         version = "1.0.0";
@@ -72,26 +64,63 @@
         doCheck = false;
       };
 
-      # --- FUNCIÓN PARA PROYECTOS MKDOCS ---
-      mkdocsProject = name: path:
-        pkgs.stdenv.mkDerivation rec {
-          pname = "mkdocs-site-${name}";
-          version = "1.0";
-          src = path;
-          outputs = ["out" "pdf" "webpdf"];
+      ## Common PKG
+      commonPkg = pkgs.stdenv.mkDerivation {
+        pname = "mkdocs-common";
+        version = "1.0";
+        src = ./common;
+        installPhase = ''
+          mkdir -p $out/root
+          mkdir -p $out/assets
+          cp -r root/* $out/root/ 2>/dev/null || true
+          cp -r assets/* $out/assets/ 2>/dev/null || true
+        '';
+      };
 
-          buildInputs = with pkgs;
+      ##  =====> FUNCION MKDOCS
+      buildMkDocs = {
+        basename,
+        version ? defversion,
+        src,
+        withPdf ? false,
+      }: let
+        pdf_env = withPdf:
+          if withPdf
+          then "ENABLE_PDF_EXPORT=1"
+          else "";
+
+        install_site = ''
+          ## Instalando el website
+          echo "\nInstalando website"
+          mkdir -p $out
+          cp -r site $out/ 2>/dev/null || true
+        '';
+
+        install_pdf =
+          if withPdf
+          then ''
+            ## Instalando pdfs
+            echo "\nInstalando pdfs"
+            mkdir -p $out/pdf
+            cp -r $out/site/assets/pdf/*.pdf $out/pdf/ 2>/dev/null || true
+          ''
+          else "";
+      in
+        pkgs.stdenv.mkDerivation rec {
+          inherit version src;
+
+          # package name
+          name =
+            if withPdf
+            then "${basename}-pdfsite"
+            else "${basename}-site";
+
+          ## build inputs
+          buildInputs =
             [
-              zsh
-              neovim
-              python3
-              fontconfig.bin
-              fontconfig.out
               pkgs.nodePackages.mermaid-cli
-              pkgs.google-fonts
-              pkgs.dejavu_fonts
-              pkgs.inkscape
-              (python3.withPackages (ps:
+              commonPkg
+              (python.withPackages (ps:
                 with ps; [
                   pip
                   setuptools
@@ -102,145 +131,177 @@
                   weasyprint
                   beautifulsoup4
                   lxml
-                  mkdocsWithPdf
                   pluginPkg
+                  mkdocsWithPdf
                 ]))
             ]
-            ## Dependencia con chromium en linux
-            ++ pkgs.lib.optionals pkgs.stdenv.isLinux [pkgs.chromium];
+            ++ (pkgs.lib.optionals pkgs.stdenv.isLinux [pkgs.chromium])
+            ++ (pkgs.lib.optionals withPdf [
+              pkgs.fontconfig.bin
+              pkgs.fontconfig.out
+              pkgs.google-fonts
+              pkgs.dejavu_fonts
+              pkgs.inkscape
+            ]);
 
-          propagatedBuildInputs = [commonPkg];
-
+          ## Build Phase
           buildPhase = ''
-            echo "Preparando enlaces comunes para ${name}..."
-            ln -sf ${commonPkg}/root common
+            ## Link common stuff
+            echo "\nLink common stuff"
+            ln -sf ${commonPkg.out}/root common 2>/dev/null || true;
             mkdir -p docs/assets
-            ln -sf ${commonPkg}/assets/common docs/assets/common
+            ln -sf ${commonPkg.out}/assets docs/assets/common 2>/dev/null || true;
 
-            echo "Construyendo sitio..."
-            ENABLE_PDF_EXPORT=1 mkdocs build --clean
+            ## Build site
+            echo "\nBuild Site"
+            ${pdf_env withPdf} mkdocs build --clean
           '';
 
+          # Install phase
           installPhase = ''
-            mkdir -p $out $pdf $webpdf/pdf
-
-            echo "Instalando website"
-            cp -r site/* $out/ 2>/dev/null || true
-
-            echo "Instalando pdfs"
-            cp -r site/assets/pdf/* $pdf/ 2>/dev/null || true
-
-            echo "Combinando sitio y PDFs..."
-            cp -r site $webpdf/ 2>/dev/null || true
-            ln -s $webpdf/site/assets/pdf/*.pdf $webpdf/pdf/ 2>/dev/null || true
+            ${install_site}
+            ${install_pdf}
           '';
         };
 
-      # --- PROYECTOS INDIVIDUALES ---
-      modulo2 =
-        mkdocsProject "modulo2-bases-de-datos"
-        ./projects/modulo2-bases-de-datos;
-      modulo3-java = mkdocsProject "modulo3-java" ./projects/modulo3-java;
-      modulo3-app-springboot =
-        mkdocsProject "modulo3-app-springboot"
-        ./projects/modulo3-app-springboot;
-
-      siteRoot = pkgs.stdenv.mkDerivation {
-        pname = "mkdocs-site-root";
-        version = "1.0";
-        src = ./projects/site-root;
-        outputs = ["out"];
-
-        buildInputs = [python python.pkgs.mkdocs python.pkgs.mkdocs-material pluginPkg];
-
-        propagatedBuildInputs = [commonPkg];
-
-        buildPhase = ''
-          echo "Enlazando recursos comunes (site-root)..."
-          ln -sf ${commonPkg}/root common
-          mkdir -p docs/assets
-          ln -sf ${commonPkg}/assets/common docs/assets/common
-
-          echo "Construyendo sitio raíz..."
-          mkdocs build --clean
-        '';
-
-        installPhase = ''
-          mkdir -p $out
-          cp -r site/* $out/
-        '';
+      buildMkDocsSitePdf = {
+        basename,
+        version ? defversion,
+        src,
+      }: let
+      in {
+        site = buildMkDocs {
+          inherit version src basename;
+          withPdf = false;
+        };
+        pdfsite = buildMkDocs {
+          inherit version src basename;
+          withPdf = true;
+        };
       };
 
-      # --- SITIO GLOBAL ---
-      mkdocsAll = pkgs.stdenv.mkDerivation {
-        pname = "mkdocs-site-all";
-        version = "1.0";
-        src = ./projects;
-        outputs = ["out" "pdf" "webpdf"];
-        buildInputs = [pkgs.coreutils pkgs.findutils];
-        propagatedBuildInputs = [commonPkg modulo2 modulo3-java modulo3-app-springboot siteRoot];
+      buildMkdocsAll = {
+        version ? defversion,
+        withPdf ? false,
+      }: let
+        copy_project_pdf = prj:
+          if withPdf
+          then ''
+            cp -rn ${prj.out}/pdf/*.pdf $out/pdf 2>/dev/null || true
+          ''
+          else "";
 
-        buildPhase = ''
-          echo "Construyendo sitio raíz (site-root)..."
-          cp -r ${siteRoot.out} ./site-root
-          cd site-root
-
-          echo "Integrando subproyectos dentro del site raíz..."
-          mkdir -p site/modulo2-bases-de-datos
-          mkdir -p site/modulo3-java
-          mkdir -p site/modulo3-app-springboot
-
-          cp -r ${modulo2.out}/* site/modulo2-bases-de-datos/
-          cp -r ${modulo3-java.out}/* site/modulo3-java/
-          cp -r ${modulo3-app-springboot.out}/* site/modulo3-app-springboot/
-
-          echo "Fusionando assets de subproyectos..."
-          for assetsDir in ${modulo2.out}/assets ${modulo3-java.out}/assets ${modulo3-app-springboot.out}/assets; do
-            if [ -d "$assetsDir" ]; then
-              echo "copiando assets de $assetsDir"
-              cp -rn $assetsDir/* site/assets/ 2>/dev/null || true
-            fi
-          done
-
-          echo "Copiando PDFs globales..."
-          mkdir -p pdf
-          cp -r ${commonPkg}/assets/common/pdf/* pdf/ 2>/dev/null || true
-          cp -r ${modulo2.pdf}/* pdf/ 2>/dev/null || true
-          cp -r ${modulo3-java.pdf}/* pdf/ 2>/dev/null || true
-          cp -r ${modulo3-app-springboot.pdf}/* pdf/ 2>/dev/null || true
-
-          echo "Creando enlaces simbólicos a los PDFs..."
-          mkdir -p site/assets/pdf
-          ln -sf ../../../pdf/* site/assets/pdf/ 2>/dev/null || true
-
-          echo "Preparando outputs finales..."
-          mkdir -p $out $pdf $webpdf
-          cp -r site/* $out/
-          cp -r pdf/* $pdf/ 2>/dev/null || true
-
-          echo "Creando webpdf (web + pdfs simbólicos)..."
-          cp -r site/* $webpdf/
-          mkdir -p $webpdf/assets/pdf
-          ln -sf ../../pdf/* $webpdf/assets/pdf/ 2>/dev/null || true
+        copy_project = prj: ''
+          cp -rn ${prj.out}/site/* $out/site/ 2>/dev/null || true
+          ${copy_project_pdf prj}
         '';
+
+        copy_all_projects =
+          builtins.concatStringsSep ""
+          (builtins.map (v: copy_project v) inputs);
+
+        create_output_pdf =
+          if withPdf
+          then ''
+            # create pdf output folder
+            echo "\n Create Pdf Output"
+            mkdir -p $out/pdf
+          ''
+          else "";
+
+        pkgKey =
+          if withPdf
+          then "pdfsite"
+          else "site";
+
+        project_inputs =
+          builtins.map (v: v."${pkgKey}") (builtins.attrValues projects);
+
+        inputs = [root-site] ++ project_inputs;
+      in
+        pkgs.stdenv.mkDerivation rec {
+          inherit version;
+          name =
+            if withPdf
+            then "allsite-pdfsite"
+            else "allsite-site";
+
+          buildInputs = inputs;
+
+          buildPhase = ''
+            # create site output folder
+            echo "\n Create Site Output"
+            mkdir -p $out/site
+
+            ${create_output_pdf}
+
+            # Copy details from the internal projects
+            echo "\nCopy Details from the internal projects"
+            ${copy_all_projects}
+          '';
+        };
+
+      ####### SITE ROOT
+      root-site = buildMkDocs {
+        basename = "root";
+        src = ./common;
+        withPdf = false;
       };
+
+      ###### PROJECTS
+      projects = {
+        module2-db = buildMkDocsSitePdf {
+          basename = "module2-db";
+          src = ./projects/module2-db;
+        };
+
+        module3-java = buildMkDocsSitePdf {
+          basename = "module3-java";
+          src = ./projects/module3-java;
+        };
+
+        module3-app-springboot = buildMkDocsSitePdf {
+          basename = "module3-app-springboot";
+          src = ./projects/module3-app-springboot;
+        };
+
+        module3-hibernate = buildMkDocsSitePdf {
+          basename = "module3-hibernate";
+          src = ./projects/module3-hibernate;
+        };
+      };
+
+      ### SITIO COMPLETO JUNTO
+      allsite = {
+        site = buildMkdocsAll {withPdf = false;};
+        pdfsite = buildMkdocsAll {withPdf = true;};
+      };
+
+      ### AGRUPANDO PAQUETES
+      exportpkgs_nested = {inherit allsite;} // projects;
+
+      exportpkgs = builtins.listToAttrs (builtins.concatLists
+        (builtins.attrValues (builtins.mapAttrs
+          (k: v: [
+            {
+              name = "${k}-site";
+              value = v.site;
+            }
+            {
+              name = "${k}-pdfsite";
+              value = v.pdfsite;
+            }
+          ])
+          exportpkgs_nested)));
     in {
       # --- EXPORTS ---
-      packages = {
-        mkdocs-common = commonPkg;
-        mkdocs-plugin-mermaid-xform = pluginPkg;
-        mkdocs-site-modulo2-bases-de-datos = modulo2;
-        mkdocs-site-modulo3-java = modulo3-java;
-        mkdocs-site-modulo3-app-springboot = modulo3-app-springboot;
-        mkdocs-site-root = siteRoot;
-        default = mkdocsAll;
-      };
+      packages = exportpkgs // {default = allsite.site;};
 
       # --- DEV SHELL ---
       devShells.default = pkgs.mkShell {
         name = "mkdocs-dev-shell";
 
-        # 📦 Herramientas incluidas en el entorno
+        # Herramientas incluidas en el entorno
         packages = with pkgs;
           [
             zsh
