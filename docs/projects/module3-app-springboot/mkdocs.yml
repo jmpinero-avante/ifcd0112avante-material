@@ -4,11 +4,12 @@ site_url: "https://jmpinero-avante.github.io/ifcd0112avante-material/module3-app
 
 nav:
   - module3-app-springboot/index.md
-  - module3-app-springboot/010-introduccion-http.md
-  - module3-app-springboot/020-arranque-springboot.md
-  - module3-app-springboot/030-mvc-thymeleaf.md
-  - module3-app-springboot/040-api-rest.md
-  - module3-app-springboot/050-reflexion-final.md
+  - module3-app-springboot/010-teoria-http-rest.md
+  - module3-app-springboot/020-iteracion-1-arranque-proyecto.md
+  - module3-app-springboot/030-iteracion-2-mvc-thymeleaf.md
+  - module3-app-springboot/040-iteracion-3-api-rest.md
+  - module3-app-springboot/050-thymeleaf-avanzado.md
+  - module3-app-springboot/060-anexos-lombok-y-plugins.md
 
 
 theme:

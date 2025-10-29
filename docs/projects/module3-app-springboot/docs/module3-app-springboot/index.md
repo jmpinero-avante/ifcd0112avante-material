@@ -1,13 +1,24 @@
-# Desarrollo Web con Spring Boot y Hibernate
+# Aplicación web con Spring Boot
 
-Esta mini–unidad presenta, en tres iteraciones progresivas, el desarrollo de una aplicación web completa conectada a una base de datos PostgreSQL usando Spring Boot, Hibernate y Thymeleaf.
+Esta documentación unifica, en un único itinerario didáctico y progresivo, todo lo necesario para construir una aplicación web completa con **Spring Boot 3.4.0**, **Java 21**, **Hibernate/JPA**, **Thymeleaf** y **PostgreSQL**. El ejemplo práctico es la **gestión de clientes y pedidos**. No incluye tareas ni entregables; está pensada para **explicar y construir**, con **código completo** y comentado.
 
-La secuencia culmina con la exposición de una API REST básica sobre los mismos datos.
+## Objetivos
+- Comprender HTTP y REST (métodos, cabeceras, cuerpos, tipos de contenido).
+- Crear y configurar un proyecto Spring Boot (NetBeans + Maven), con Lombok y PostgreSQL.
+- Modelar entidades JPA (Cliente, Pedido) y repositorios Spring Data.
+- Desarrollar una aplicación **MVC con Thymeleaf** (listado y formularios).
+- Exponer una **API REST JSON** con Spring Web y probarla con Postman/curl.
 
-## Iteraciones
+## Índice
+1. [Teoría HTTP y REST (GET/POST, JSON, x-www-form-urlencoded, multipart)](010-teoria-http-rest.md)
+2. [Iteración 1 — Arranque del proyecto, JPA, Lombok, conexión a PostgreSQL](020-iteracion-1-arranque-proyecto.md)
+3. [Iteración 2 — MVC con Thymeleaf (CRUD de clientes)](030-iteracion-2-mvc-thymeleaf.md)
+4. [Iteración 3 — API REST (CRUD JSON)](040-iteracion-3-api-rest.md)
+5. [Thymeleaf avanzado (fragmentos, layouts, validación, utilidades)](050-thymeleaf-avanzado.md)
+6. [Anexos (Lombok, maven-compiler-plugin, alternativas y buenas prácticas)](060-anexos-lombok-y-plugins.md)
 
-1. [Introducción HTTP y arquitectura web](010-introduccion-http.md)
-2. [Arranque del proyecto Spring Boot y conexión a PostgreSQL](020-arranque-springboot.md)
-3. [Aplicación MVC con Thymeleaf](030-mvc-thymeleaf.md)
-4. [API REST con Spring Boot](040-api-rest.md)
-5. [Reflexión y evaluación final](050-reflexion-final.md)
+## Prerrequisitos técnicos
+- **Java 21** (JDK 21)
+- **Apache NetBeans** (19/20 o superior)
+- **Maven 3.9+**
+- **PostgreSQL** 14+ y una base de datos por ejemplo `academia`
