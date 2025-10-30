@@ -1,8 +1,17 @@
 {
-  pkgs ? (import <nixpkgs>) {}
+  pkgs ? (import <nixpkgs>) {},
+  pythonPkg ? null,
+  version ? "1.0",
+  ...
 }: let
+  python_ =
+    if builtins.isNull pythonPkg
+    then pkgs.python3
+    else pythonPkg;
+  pythonPackages = python_.pkgs;
+
   # mkdocs-with-pdf desde PyPI (no está en nixpkgs)
-  mkdocsWithPdf = pkgs.python3Packages.buildPythonPackage rec {
+  mkdocsWithPdf = pythonPackages.buildPythonPackage rec {
     pname = "mkdocs-with-pdf";
     version = "0.9.3";
     src = pkgs.fetchPypi {
@@ -10,8 +19,8 @@
       sha256 = "sha256-vaM3XXBA0biHHaF8bXHqc2vcpsZpYI8o7WJ3EDHS4MY=";
     };
     pyproject = true;
-    build-system = [pkgs.python3Packages.setuptools pkgs.python3Packages.wheel];
-    propagatedBuildInputs = with pkgs.python3Packages; [
+    build-system = [pythonPackages.setuptools pythonPackages.wheel];
+    propagatedBuildInputs = with pythonPackages; [
       mkdocs
       mkdocs-material
       weasyprint
@@ -24,13 +33,13 @@
     doCheck = false;
   };
 
-  pluginPkg = pkgs.python3Packages.buildPythonPackage {
+  pluginPkg = pythonPackages.buildPythonPackage {
+    inherit version;
     pname = "mkdocs-mermaid-xform-plugin";
-    version = "1.0.0";
     src = ../plugins/mermaid-xform-plugin;
 
     format = "setuptools";
-    propagatedBuildInputs = with pkgs.python3Packages; [
+    propagatedBuildInputs = with pythonPackages; [
       mkdocs
       mkdocs-material
     ];
@@ -40,8 +49,8 @@
   };
 
   commonPkg = pkgs.stdenv.mkDerivation {
+    inherit version;
     pname = "mkdocs-common";
-    version = "1.0";
     src = ../common;
     installPhase = ''
       mkdir -p $out/root
@@ -50,6 +59,4 @@
       cp -r assets/* $out/assets/ 2>/dev/null || true
     '';
   };
-
-in
-  { inherit mkdocsWithPdf pluginPkg commonPkg; }
+in {inherit mkdocsWithPdf pluginPkg commonPkg;}

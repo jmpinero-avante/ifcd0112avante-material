@@ -1,10 +1,20 @@
 {
   pkgs ? (import <nixpkgs>) {},
+  pythonPkg ? null,
+  version ? "1.0",
   dir ? ../projects,
   root ? ../site-root,
-  version ? "1.0",
+  ...
 }: let
-  extra_pkgs = (import ./buildExtraPackages.nix) { inherit pkgs; };
+  python_ =
+    if builtins.isNull pythonPkg
+    then pkgs.python3
+    else pythonPkg;
+
+  extra_pkgs = (import ./buildExtraPackages.nix) {
+    inherit pkgs version;
+    pythonPkg = python_;
+  };
 
   fx = import ./buildMkdocsPackage.nix;
 
@@ -30,9 +40,10 @@
       inherit name src;
     }
     // fx {
-      inherit name pkgs version;
+      inherit pkgs version name;
+      pythonPkg = python_;
       withPdf = true;
-      src=builtins.toPath src;
+      src = builtins.toPath src;
     };
 
   projects = builtins.listToAttrs (builtins.map (v: {
@@ -49,7 +60,8 @@
       inherit name src version;
     }
     // fx {
-      inherit name src pkgs;
+      inherit pkgs version name src;
+      pythonPkg = python_;
       withPdf = false;
     };
 
@@ -71,7 +83,12 @@
       })
       projects);
 
-    root_der = site-root."${name}";
+    root_der = site-root.der-site;
+
+    root_der_list =
+      if name == "der-pdf"
+      then []
+      else [root_der];
 
     root_copy_site = copy_project_site root_der;
     root_copy =
@@ -83,7 +100,7 @@
       builtins.concatStringsSep ""
       ([root_copy] ++ (builtins.map (v: v.copy_site) project_data));
 
-    buildInputs = (builtins.map (v: v.der) project_data ) ++ [root_der];
+    buildInputs = (builtins.map (v: v.der) project_data) ++ root_der_list;
 
     make_site = "mkdir -p $out/site";
     make_pdf = "mkdir -p $out/pdf";
@@ -113,5 +130,5 @@
   };
 in {
   inherit site-root projects all;
-  extra=extra_pkgs;
+  extra = extra_pkgs;
 }

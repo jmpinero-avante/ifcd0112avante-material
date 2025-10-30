@@ -1,14 +1,23 @@
 {
   pkgs ? (import <nixpkgs>) {},
+  pythonPkg ? null,
+  version ? "1.0",
   name,
-  version ? "2.0",
   src,
   withPdf ? true,
+  ...
 }: let
-  extra_pkgs = (import ./buildExtraPackages.nix) { inherit pkgs; };
+  python_ =
+    if builtins.isNull pythonPkg
+    then pkgs.python3
+    else pythonPkg;
+
+  extra_pkgs = (import ./buildExtraPackages.nix) {
+    inherit pkgs version;
+    pythonPkg = python_;
+  };
 
   inherit (extra_pkgs) mkdocsWithPdf pluginPkg commonPkg;
-
 
   cmd_linkCommon = ''
     ln -sf ${commonPkg.out}/root common 2>/dev/null || true;
@@ -42,7 +51,7 @@
     cp -r ${sitepdf.out}/site/assets/pdf/*.pdf $out/pdf/ 2>/dev/null || true
   '';
 
-  deps_base_nopdf = with pkgs; [python3 nodePackages.mermaid-cli commonPkg];
+  deps_base_nopdf = [python_] ++ (with pkgs; [nodePackages.mermaid-cli commonPkg]);
 
   deps_base_pdf = with pkgs;
     [
@@ -69,7 +78,7 @@
       mkdocsWithPdf
     ];
 
-  build_deps_ = base: base ++ [(pkgs.python3.withPackages deps_python_nopdf)];
+  build_deps_ = base: base ++ [(python_.withPackages deps_python_nopdf)];
 
   deps_nopdf = build_deps_ deps_base_nopdf;
 
