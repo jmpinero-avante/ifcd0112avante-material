@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Empresa XYZ — Innovación y Tecnología</title>
+	<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+	<header>
+		<div class="nav">
+			<div class="brand">Empresa XYZ</div>
+			<nav class="menu">
+				<a href="#servicios">Servicios</a>
+				<a href="#clientes">Clientes</a>
+				<a href="#contacto">Contacto</a>
+				<a href="#" id="loginBtn" class="cta">Entrar</a>
+				<a href="#" id="accountBtn" class="cta" style="display:none;">Mi cuenta</a>
+				<a href="#" id="logoutBtn" class="cta" style="display:none;">Salir</a>
+			</nav>
+		</div>
+	</header>
+	
+	<main>
+		<section class="hero">
+			<div>
+				<h1>Impulsamos tu negocio con tecnología</h1>
+				<p>Soluciones de software a medida, integraciones robustas y soporte de primer nivel. Te ayudamos a pasar de la idea al producto.</p>
+				<div class="actions">
+					<a class="btn" href="#servicios">Ver servicios</a>
+					<a class="btn secondary" href="#contacto">Pedir demo</a>
+				</div>
+			</div>
+			<div class="illus">Tu producto, más rápido.</div>
+		</section>
+		
+		<section class="section" id="servicios">
+			<div class="features">
+				<div class="card">
+					<h3>Desarrollo a medida</h3>
+					<p>Backend y frontend modernos, APIs seguras y despliegues automatizados.</p>
+				</div>
+				<div class="card">
+					<h3>Integraciones</h3>
+					<p>Conecta tu ERP, CRM y analítica para tener una visión unificada.</p>
+				</div>
+				<div class="card">
+					<h3>Soporte y SRE</h3>
+					<p>Monitoreo, observabilidad y respuesta ante incidentes 24/7.</p>
+				</div>
+			</div>
+		</section>
+	</main>
+	
+	<footer>
+		<div class="foot">
+			<div>&copy; <span id="year"></span> Empresa XYZ</div>
+			<div>Sevilla — soporte@empresa.com</div>
+		</div>
+	</footer>
+	
+	<!-- Modal Login -->
+	<div class="modal-backdrop" id="backdrop">
+		<div class="modal">
+			<header><strong>Iniciar sesión</strong></header>
+			<div class="content">
+				<div class="form-row">
+					<label for="email">Email</label>
+					<input id="email" type="email" placeholder="tucorreo@empresa.com" />
+				</div>
+				<div class="form-row">
+					<label for="password">Contraseña</label>
+					<input id="password" type="password" placeholder="••••••••" />
+				</div>
+				<div class="error" id="error"></div>
+				<div style="display:flex; gap:10px; justify-content:flex-end;">
+					<button class="btn secondary" id="cancel">Cancelar</button>
+					<button class="btn" id="confirm">Entrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script>
+		const loginBtn = document.getElementById('loginBtn');
+		const accountBtn = document.getElementById('accountBtn');
+		const logoutBtn = document.getElementById('logoutBtn');
+		const backdrop = document.getElementById('backdrop');
+		const cancel = document.getElementById('cancel');
+		const confirmBtn = document.getElementById('confirm');
+		const errorEl = document.getElementById('error');
+		
+		const openModal = () => { backdrop.style.display = 'flex'; errorEl.textContent = ''; }
+		const closeModal = () => { backdrop.style.display = 'none'; }
+		
+		loginBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
+		cancel.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+		backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+		
+		async function fetchMe() {
+			const res = await fetch('/api/me', { credentials: 'same-origin' });
+			if (res.ok) {
+				const me = await res.json();
+				loggedInUI(me);
+			} else {
+				loggedOutUI();
+			}
+		}
+		
+		function loggedInUI(me) {
+			loginBtn.style.display = 'none';
+			accountBtn.style.display = 'inline-block';
+			logoutBtn.style.display = 'inline-block';
+			accountBtn.textContent = me.fullName ? `Hola, ${me.fullName}` : 'Mi cuenta';
+		}
+		
+		function loggedOutUI() {
+			loginBtn.style.display = 'inline-block';
+			accountBtn.style.display = 'none';
+			logoutBtn.style.display = 'none';
+		}
+		
+		confirmBtn.addEventListener('click', async () => {
+			const email = document.getElementById('email').value.trim();
+			const password = document.getElementById('password').value;
+			errorEl.textContent = '';
+			try {
+				const res = await fetch('/api/login', {
+					method: 'POST',
+					headers: { 'Content-Type':'application/json' },
+					credentials: 'same-origin',
+					body: JSON.stringify({ email, password })
+				});
+				if (res.ok) {
+					await fetchMe();
+					closeModal();
+				} else {
+					const err = await res.json().catch(() => ({}));
+					errorEl.textContent = err.error || 'Error de autenticación';
+				}
+			} catch (e) {
+				errorEl.textContent = 'No se pudo conectar con el servidor';
+			}
+		});
+		
+		logoutBtn.addEventListener('click', async (e) => {
+			e.preventDefault();
+			await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' });
+			loggedOutUI();
+		});
+		
+		document.getElementById('year').textContent = new Date().getFullYear();
+		fetchMe(); // estado inicial
+	</script>
+</body>
+</html>

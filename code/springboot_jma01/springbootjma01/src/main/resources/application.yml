@@ -38,10 +38,13 @@ spring:
       #          hibernate.cfg.xml se pueden poner aquí
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.POstgreSQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         use_sql_comments: true
         autocommit: false
-      
+
+# *** server --> Configuración del servidor web
+server:
+  port: 8080
 
 # *** logging -> configuración de logging de la aplicación
 logging:
@@ -107,8 +110,3 @@ logging:
 
     # para los logs que aparecen en archivo
     file: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
-
-
-
-
-    
