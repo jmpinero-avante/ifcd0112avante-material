@@ -1,21 +1,9 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout-error :: layoutError(
-	      title='Error 400 - Petición incorrecta',
-	      content=~{::main}
-      )}">
-<main>
-	<section class="error-container">
-		<h1>Error 400</h1>
-		<p>La solicitud enviada al servidor no es válida o está mal formada.</p>
-		<p>Por favor, revisa los datos del formulario o la URL e inténtalo de nuevo.</p>
-
-		<a th:href="@{/}" class="btn">Volver al inicio</a>
-	</section>
-</main>
-</html>
-
-<!--
-Este error se muestra cuando el cliente realiza una petición inválida,
-por ejemplo, al enviar un formulario sin datos requeridos o con parámetros incorrectos.
--->
+<!-- ==========================================================================
+ERROR 400 - SOLICITUD INCORRECTA
+========================================================================== -->
+<div th:replace="~{layout-error :: errorLayout('400', ~{::msg})}">
+	<p th:fragment="msg">
+		La solicitud no se pudo procesar. Revisa los datos enviados.
+	</p>
+</div>

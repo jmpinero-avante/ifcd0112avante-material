@@ -1,28 +1,9 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout-error :: layoutError(
-	      title='Error en la operación',
-	      content=~{::main}
-      )}">
-<main>
-	<section class="error-container">
-		<h1>Error en la operación</h1>
-		<p>La acción solicitada no se ha podido completar correctamente.</p>
-		<p th:if="${errorMessage}" th:text="${errorMessage}">
-			Por favor, revisa los datos o inténtalo de nuevo más tarde.
-		</p>
-
-		<div class="error-actions">
-			<a th:href="@{/}" class="btn">Volver al inicio</a>
-			<a href="javascript:history.back()" class="btn">Volver atrás</a>
-		</div>
-	</section>
-</main>
-</html>
-
-<!--
-Este error se muestra cuando una operación del sistema (editar, borrar,
-registrar, etc.) no puede completarse correctamente por un fallo lógico
-o de validación. Muestra el mensaje `errorMessage` si el controlador
-lo añade al modelo.
--->
+<!-- ==========================================================================
+ERROR DE OPERACIÓN (MENSAJE PERSONALIZADO)
+========================================================================== -->
+<div th:replace="~{layout-error :: errorLayout(${errorCode} ?: 'Error', ~{::msg})}">
+	<p th:fragment="msg" th:text="${errorMessage}">
+		Ha ocurrido un error al procesar la operación.
+	</p>
+</div>

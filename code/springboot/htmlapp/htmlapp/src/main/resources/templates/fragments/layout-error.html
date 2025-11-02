@@ -1,92 +1,53 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:fragment="layoutError(title, content)">
+<html xmlns:th="http://www.thymeleaf.org">
 
-<!-- ============================================================
-LAYOUT DE ERRORES (AUTOCONTENIDO)
-============================================================ -->
+<!-- ==========================================================================
+LAYOUT DE PÁGINAS DE ERROR (PARAMETRIZABLE Y LIMPIO)
+========================================================================== -->
 <!--
-Este archivo define la estructura completa de las páginas de error
-de la aplicación (400, 403, 404, 500, etc.).
+Este layout define un fragmento llamado `errorLayout(code, messageFrag)`.
 
-No depende de otros fragmentos del layout principal, salvo el footer.
-Incorpora directamente el <head> con su propia hoja de estilo.
+- code → código o título del error (por ejemplo, "404", "403", "500").
+- messageFrag → referencia a un fragmento que contiene el mensaje específico
+                de la vista hija (por ejemplo, ~{::msg}).
+
+La estructura (HTML, botones, pie, etc.) permanece fija.
+Solo cambia el contenido del mensaje y el código del error.
 -->
+
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title th:text="${title}">HtmlApp - Error</title>
+	<title th:text="${title} ?: 'HtmlApp - Error'">HtmlApp - Error</title>
 	<link rel="stylesheet" th:href="@{/css/error.css}" />
 </head>
 
 <body>
-	<!-- Contenido principal del error -->
-	<main class="error-main" th:replace="${content}"></main>
+	<main>
+		<!-- Fragmento parametrizable que reciben las vistas hijas -->
+		<div class="error-container"
+		     th:fragment="errorLayout(code, messageFrag)">
 
-	<!-- Pie de página reutilizado del layout normal -->
-	<footer th:replace="~{fragments/footer :: footer}"></footer>
+			<!-- Código del error (número o texto) -->
+			<h1 class="error-code" th:text="${code}">Error</h1>
+
+			<!-- Mensaje del error dinámico -->
+			<p class="error-message" th:insert="${messageFrag}">
+				<!-- Aquí Thymeleaf insertará el fragmento del mensaje -->
+			</p>
+
+			<!-- Bloque de acciones común a todas las páginas de error -->
+			<div class="error-actions">
+				<a class="error-link" th:href="@{/}">Volver al inicio</a>
+				<a class="btn" href="javascript:history.back()">Volver atrás</a>
+			</div>
+		</div>
+	</main>
+
+	<!-- Pie de página simple -->
+	<footer>
+		<p>&copy; 2025 HtmlApp. Todos los derechos reservados.</p>
+	</footer>
 </body>
 </html>
-
-<!-- ============================================================
-NOTAS DE DISEÑO Y FUNCIONAMIENTO
-============================================================ -->
-<!--
-1. ESTRUCTURA GENERAL
-----------------------
-Este layout recibe dos parámetros:
- - `title`   → Título mostrado en la pestaña del navegador.
- - `content` → Contenido HTML principal, generalmente el bloque <main>
-               definido en la plantilla específica del error.
-
-Ejemplo de uso desde una plantilla de error:
-
-<html th:replace="~{fragments/layout-error :: layoutError(
-	title='Error 404 - Página no encontrada',
-	content=~{::main}
-)}">
-<main>
-  <h1>Error 404</h1>
-  <p>La página solicitada no existe o ha sido movida.</p>
-  <a th:href="@{/}" class="btn">Volver al inicio</a>
-</main>
-</html>
-
-2. DIFERENCIAS CON EL LAYOUT NORMAL
-------------------------------------
- - No incluye cabecera superior ni menú lateral.
- - Usa una hoja de estilo independiente: `/css/error.css`.
- - Es completamente autocontenido, sin dependencias de layout.html.
-
-Esto garantiza que incluso si la aplicación falla en componentes
-de la interfaz principal, las páginas de error podrán mostrarse.
-
-3. ESTILO Y APARIENCIA
-------------------------
-El archivo `/css/error.css` define un diseño centrado y minimalista,
-con tipografía legible, mensajes claros y colores acordes a la
-naturaleza del error. Por ejemplo:
-
-.error-main {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	min-height: 80vh;
-	text-align: center;
-}
-
-.error-main h1 {
-	font-size: 2rem;
-	color: var(--color-error);
-}
-
-4. OBJETIVO PEDAGÓGICO
-------------------------
-Este layout permite mostrar a los alumnos:
- - Cómo definir un layout autocontenido.
- - Cómo pasar parámetros (`title`, `content`) a un fragmento.
- - Cómo aislar visualmente las páginas de error sin romper
-   la coherencia general del sitio.
--->

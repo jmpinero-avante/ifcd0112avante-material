@@ -1,21 +1,9 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout-error :: layoutError(
-	      title='Error 404 - Página no encontrada',
-	      content=~{::main}
-      )}">
-<main>
-	<section class="error-container">
-		<h1>Error 404</h1>
-		<p>La página solicitada no existe o ha sido movida.</p>
-		<p>Verifica la dirección URL o usa el menú de navegación.</p>
-
-		<a th:href="@{/}" class="btn">Volver al inicio</a>
-	</section>
-</main>
-</html>
-
-<!--
-El servidor no ha encontrado la ruta solicitada.
-Este error se usa cuando el usuario introduce una URL inexistente.
--->
+<!-- ==========================================================================
+ERROR 404 - PÁGINA NO ENCONTRADA
+========================================================================== -->
+<div th:replace="~{layout-error :: errorLayout('404', ~{::msg})}">
+	<p th:fragment="msg">
+		La página que estás buscando no existe o ha sido movida.
+	</p>
+</div>

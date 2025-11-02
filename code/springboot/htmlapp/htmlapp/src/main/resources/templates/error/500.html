@@ -1,21 +1,9 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout-error :: layoutError(
-	      title='Error 500 - Error interno del servidor',
-	      content=~{::main}
-      )}">
-<main>
-	<section class="error-container">
-		<h1>Error 500</h1>
-		<p>Ha ocurrido un error inesperado en el servidor.</p>
-		<p>Intenta volver más tarde o contacta con el soporte técnico.</p>
-
-		<a th:href="@{/}" class="btn">Volver al inicio</a>
-	</section>
-</main>
-</html>
-
-<!--
-Este error indica que se produjo una excepción no controlada en el servidor.
-Puede deberse a un fallo en el código, la base de datos o la configuración.
--->
+<!-- ==========================================================================
+ERROR 500 - ERROR INTERNO DEL SERVIDOR
+========================================================================== -->
+<div th:replace="~{layout-error :: errorLayout('500', ~{::msg})}">
+	<p th:fragment="msg">
+		Ha ocurrido un error interno. Inténtalo de nuevo más tarde.
+	</p>
+</div>
