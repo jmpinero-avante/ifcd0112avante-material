@@ -1,0 +1,176 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+
+<!--
+===============================================================================
+PLANTILLA: LISTADO ADMINISTRATIVO DE USUARIOS
+===============================================================================
+Página destinada al rol de administrador para listar, ordenar y gestionar
+usuarios en bloque (otorgar/revocar permisos o eliminar).
+===============================================================================
+-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+        title='Gestión de usuarios',
+        content=~{::main},
+        scripts=~{::script}
+      )}">
+
+<main>
+	<section class="text-center mb-2">
+		<h1>Gestión de usuarios</h1>
+		<p>
+			Selecciona uno o varios usuarios para realizar acciones administrativas.
+		</p>
+	</section>
+
+	<!-- Mensaje dinámico (confirmación o error) -->
+	<div class="alert"
+	     th:if="${message}"
+	     th:text="${message}"
+	     style="background-color: #e9f7ef; color: #155724; padding: 1rem; border-radius: 8px;">
+		Operación realizada correctamente.
+	</div>
+
+	<form th:action="@{/admin/users/bulk}" method="post">
+		<table>
+			<thead>
+				<tr>
+					<th><input type="checkbox" id="selectAll" /></th>
+					<th>
+						<a th:href="@{'/admin/users?orderBy=EMAIL&direction=' + 
+						             (${direction.name() == 'ASC'} ? 'DESC' : 'ASC')}">
+							Email
+						</a>
+					</th>
+					<th>
+						<a th:href="@{'/admin/users?orderBy=FULL_NAME&direction=' + 
+						             (${direction.name() == 'ASC'} ? 'DESC' : 'ASC')}">
+							Nombre completo
+						</a>
+					</th>
+					<th>Administrador</th>
+					<th>Fecha de creación</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				<tr th:each="u : ${users}">
+					<td>
+						<!-- Checkbox deshabilitado si es el propio usuario logado -->
+						<input type="checkbox" name="ids"
+						       th:value="${u.id}"
+						       th:disabled="${u.id == loggedUser.id}" />
+					</td>
+					<td th:text="${u.email}">usuario@example.com</td>
+					<td th:text="${u.fullName}">Nombre Apellido</td>
+					<td>
+						<span th:if="${u.isAdmin}" class="badge-admin">Sí</span>
+						<span th:if="${!u.isAdmin}" class="badge-normal">No</span>
+					</td>
+					<td th:text="${#temporals.format(u.creationTimestamp, 'yyyy-MM-dd HH:mm')}">
+						2025-01-01 12:00
+					</td>
+					<td class="table-actions">
+						<!-- Botones de acción individuales -->
+						<a th:href="@{'/user/details/' + ${u.id}}" class="icon-btn"
+						   title="Ver detalles">
+							<i class="fas fa-eye"></i>
+						</a>
+						<a th:if="${u.id != loggedUser.id}"
+						   th:href="@{'/user/edit/' + ${u.id}}" class="icon-btn"
+						   title="Editar usuario">
+							<i class="fas fa-edit"></i>
+						</a>
+						<button th:if="${u.id != loggedUser.id}"
+						        type="submit" name="action" value="delete"
+						        th:formaction="@{/admin/users/bulk(ids=${u.id},action='delete')}"
+						        class="icon-btn" title="Eliminar usuario">
+							<i class="fas fa-trash-alt"></i>
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<!-- Sección de acciones en bloque -->
+		<div class="mt-4 text-center">
+			<button type="submit" name="action" value="grant" class="btn">
+				Conceder admin
+			</button>
+			<button type="submit" name="action" value="revoke" class="btn">
+				Revocar admin
+			</button>
+			<button type="submit" name="action" value="delete"
+			        class="btn btn-danger">
+				Eliminar seleccionados
+			</button>
+		</div>
+	</form>
+</main>
+
+<!-- =======================
+     BLOQUE DE SCRIPTS INYECTABLE
+     ======================= -->
+<script>
+/**
+ * Selecciona o deselecciona todos los checkboxes.
+ * Deshabilita el propio usuario logado.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+	const selectAll = document.getElementById("selectAll");
+	const checkboxes = document.querySelectorAll("input[name='ids']");
+
+	selectAll.addEventListener("change", () => {
+		checkboxes.forEach(cb => {
+			if (!cb.disabled) cb.checked = selectAll.checked;
+		});
+	});
+});
+</script>
+
+</html>
+
+<!--
+===============================================================================
+NOTAS PEDAGÓGICAS
+===============================================================================
+1. CONTROL DE SESIÓN
+--------------------
+El controlador solo permite el acceso a esta vista si el usuario logado
+tiene privilegios de administrador. Si no, se muestra un error 403.
+
+2. RENDERIZADO CONDICIONAL
+---------------------------
+- El checkbox del usuario actual está deshabilitado (`th:disabled`).
+- Los botones "Editar" y "Eliminar" tampoco aparecen para el propio usuario.
+
+3. ACCIONES EN BLOQUE
+----------------------
+El formulario principal envía la lista de IDs seleccionados a `/admin/users/bulk`.
+Los valores del parámetro `action` corresponden al enum `BulkAction`:
+   - GRANT_ADMIN
+   - REVOKE_ADMIN
+   - DELETE
+
+4. ORDENACIÓN DINÁMICA
+------------------------
+Cada cabecera de columna es un enlace que cambia el campo de orden (`orderBy`)
+y alterna la dirección (`ASC` ↔ `DESC`).
+
+5. INTEGRACIÓN VISUAL
+----------------------
+El layout principal añade cabecera, barra lateral, mensajes y pie de página.
+Los estilos se heredan de `base.css`.
+
+6. OBJETIVO PEDAGÓGICO
+------------------------
+Esta vista enseña cómo:
+ - Crear listados dinámicos con Thymeleaf.
+ - Usar formularios con acciones múltiples.
+ - Implementar validación visual y condicional.
+ - Aplicar el patrón MVC de manera clara y modular.
+===============================================================================
+-->

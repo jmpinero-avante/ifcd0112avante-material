@@ -3,75 +3,50 @@
 package com.example.htmlapp.model.logic.exceptions;
 
 /**
- * Excepción personalizada para indicar que una operación
- * de negocio ha fallado.
+ * Excepción personalizada para operaciones fallidas dentro de la lógica
+ * de negocio o de controladores.
  *
- * Se utiliza en lugar de RuntimeException genérica cuando
- * se quiere informar de un error funcional (no técnico)
- * al usuario o a la capa de presentación.
- *
- * ----------------------------------------------------------------------------
- * EJEMPLOS DE USO
- * ----------------------------------------------------------------------------
- *   throw new OperationFailedException("No se pudo enviar el correo");
- *
- *   throw new OperationFailedException(
- *       "El saldo es insuficiente para realizar la compra.", 409);
+ * Se utiliza para capturar errores de alto nivel (operaciones que no se
+ * pudieron completar correctamente) y mostrarlos mediante el manejador
+ * global de errores (ErrorControllerAdvice).
  *
  * ----------------------------------------------------------------------------
- * SOBRE EL STATUS CODE
+ * USO TÍPICO
  * ----------------------------------------------------------------------------
- * Aunque esta excepción usa HTTP 500 por defecto, puede incluir un
- * código numérico alternativo (409, 422, etc.) para representar
- * errores específicos de negocio. Esto permite mostrar diferentes
- * códigos en la interfaz sin cambiar el comportamiento HTTP.
+ * throw new OperationFailedException("No se pudo actualizar el usuario.");
+ * throw new OperationFailedException("Error de validación.", 400);
+ * throw new OperationFailedException("Error en base de datos.", 500, ex);
  */
 public class OperationFailedException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
-	private final int statusCode;
+	private final int errorCode;
 
-	/**
-	 * Constructor con solo mensaje.
-	 *
-	 * @param message Mensaje descriptivo del error.
-	 */
+	// Constructor básico con mensaje (usa código 500 por defecto)
 	public OperationFailedException(String message) {
 		super(message);
-		this.statusCode = 0; // Valor por defecto (se tratará como 500)
+		this.errorCode = 500;
 	}
 
-	/**
-	 * Constructor con mensaje y código de estado.
-	 *
-	 * @param message    Descripción del error.
-	 * @param statusCode Código HTTP o semántico asociado.
-	 */
-	public OperationFailedException(String message, int statusCode) {
+	// Constructor con mensaje y código personalizado
+	public OperationFailedException(String message, int errorCode) {
 		super(message);
-		this.statusCode = statusCode;
+		this.errorCode = errorCode;
 	}
 
-	/**
-	 * Devuelve el código de estado asociado al error.
-	 *
-	 * Si el valor es 0, el ErrorControllerAdvice mostrará 500.
-	 *
-	 * @return Código numérico del error.
-	 */
-	public int getStatusCode() {
-		return statusCode;
+	// NUEVO: Constructor con mensaje y causa (usa código 500 por defecto)
+	public OperationFailedException(String message, Throwable cause) {
+		super(message, cause);
+		this.errorCode = 500;
+	}
+
+	// NUEVO: Constructor con mensaje, código y causa
+	public OperationFailedException(String message, int errorCode, Throwable cause) {
+		super(message, cause);
+		this.errorCode = errorCode;
+	}
+
+	public int getErrorCode() {
+		return errorCode;
 	}
 }
-
-/*
- * ----------------------------------------------------------------------------
- * SOBRE SU USO EN SPRING
- * ----------------------------------------------------------------------------
- * Las excepciones de este tipo son capturadas por el controlador
- * global de errores (ErrorControllerAdvice), que mostrará la
- * plantilla error/operation-error.html.
- *
- * En producción, el usuario solo verá un mensaje amigable.
- * En los logs, sin embargo, se registrará el error completo.
- */

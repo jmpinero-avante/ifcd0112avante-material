@@ -7,29 +7,31 @@ LAYOUT PRINCIPAL DE LA APLICACIÓN
 Este archivo define la estructura base reutilizable para todas las páginas
 de la aplicación (tanto públicas como privadas, excepto las de error).
 
-Recibe dos parámetros:
+Recibe tres parámetros:
  - `title`   → el título que se mostrará en la pestaña del navegador.
  - `content` → el bloque principal de contenido (la sección o main de la vista hija).
+ - `scripts` → bloque opcional con scripts específicos para esa vista.
 
 Se usa en cada plantilla de la siguiente forma:
 
 <html th:replace="~{fragments/layout :: layout(
     title='Título de la página',
-    content=~{::main}
+    content=~{::main},
+    scripts=~{::script}
 )}">
 
-De esta forma, el contenido de la página hija se insertará dinámicamente en
-el bloque <main> de este layout, mientras que la cabecera, menú lateral y pie
-se mantienen comunes para todo el sitio.
+Si la plantilla hija no define un bloque <script>, el parámetro `scripts`
+será null y el layout no insertará nada en su lugar.
 -->
 
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:fragment="layout(title, content)">
+      th:fragment="layout(title, content, scripts)">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <!--
   Si la variable `title` no está definida en la plantilla hija,
   se usará el valor por defecto "HtmlApp".
@@ -68,6 +70,11 @@ se mantienen comunes para todo el sitio.
   PIE DE PÁGINA
   ============================================================ -->
   <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+  <!-- ============================================================
+  BLOQUE OPCIONAL DE SCRIPTS ESPECÍFICOS
+  ============================================================ -->
+  <div th:if="${scripts != null}" th:replace="${scripts}"></div>
 </body>
 </html>
 
@@ -98,12 +105,19 @@ La expresión `th:text="${title} ?: 'HtmlApp'"` usa el operador Elvis (`?:`)
 para establecer un valor por defecto. Si no se pasa ningún título,
 se mostrará "HtmlApp" en la pestaña del navegador.
 
-5. OBJETIVO PEDAGÓGICO
+5. BLOQUE OPCIONAL DE SCRIPTS
+------------------------------
+El parámetro `scripts` permite que las plantillas hijas inyecten
+código JavaScript específico al final del body. Si no se define,
+el layout no renderiza nada en esa posición.
+
+6. OBJETIVO PEDAGÓGICO
 ------------------------
 Este layout enseña cómo:
- - Crear un layout base con parámetros (title, content).
+ - Crear un layout base con parámetros (title, content, scripts).
  - Reutilizar fragmentos con `th:replace`.
  - Controlar la visibilidad de elementos según la sesión.
  - Definir valores por defecto en Thymeleaf.
+ - Inyectar fragmentos opcionales de scripts.
  - Separar estructura HTML del contenido dinámico.
 -->

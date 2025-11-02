@@ -108,13 +108,8 @@ public class AuthService {
 
 		User user = userOpt.get();
 
-		boolean ok = passwordService.verifyPassword(
-			password,
-			user.getSalt(),
-			user.getPasswordHash()
-		);
-
-		if (ok) {
+		// Utiliza verifyPassword para validar las credenciales.
+		if (verifyPassword(user.getId(), password)) {
 			session.setAttribute(SESSION_USER_ID, user.getId());
 			return true;
 		}
@@ -148,6 +143,28 @@ public class AuthService {
 	 */
 	public boolean isLogged() {
 		return session.getAttribute(SESSION_USER_ID) != null;
+	}
+
+	/**
+	 * Comprueba si la contraseña introducida coincide con la registrada
+	 * en la base de datos para el usuario con el ID especificado.
+	 *
+	 * Este método no tiene efectos secundarios (no inicia sesión ni
+	 * modifica el estado de HttpSession).
+	 *
+	 * @param id          ID del usuario que se desea verificar.
+	 * @param rawPassword Contraseña en texto plano introducida.
+	 * @return true si la contraseña coincide; false si no coincide o
+	 *         el usuario no existe.
+	 */
+	public boolean verifyPassword(int id, String rawPassword) {
+		return userRepository.findById(id)
+			.map(user -> passwordService.verifyPassword(
+				rawPassword,
+				user.getSalt(),
+				user.getPasswordHash()
+			))
+			.orElse(false);
 	}
 }
 
@@ -193,4 +210,18 @@ public class AuthService {
  *
  * Esta forma es la recomendada actualmente: limpia, inmutable
  * y totalmente compatible con el sistema de inyección de Spring.
+ *
+ * ----------------------------------------------------------------------------
+ * SOBRE verifyPassword(int, String)
+ * ----------------------------------------------------------------------------
+ *
+ * Este método realiza una comprobación directa de contraseña
+ * sin efectos secundarios, ideal para validar la contraseña actual
+ * antes de permitir un cambio de contraseña o una operación sensible.
+ *
+ * Internamente busca al usuario por su ID en la base de datos y
+ * compara el hash resultante del texto plano con el hash almacenado.
+ *
+ * A diferencia de login(), no modifica la sesión ni crea variables
+ * en HttpSession, garantizando que solo actúa como verificador puro.
  */

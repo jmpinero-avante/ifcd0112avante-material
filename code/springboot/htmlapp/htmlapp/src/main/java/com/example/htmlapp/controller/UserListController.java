@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.htmlapp.model.db.User;
 import com.example.htmlapp.model.enums.SortDirection;
 import com.example.htmlapp.model.enums.UserOrderField;
+import com.example.htmlapp.model.enums.BulkActionType;
 import com.example.htmlapp.model.logic.UserListService;
+import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,6 +43,10 @@ public class UserListController {
 
 	private final UserListService userListService;
 
+	// -------------------------------------------------------------------------
+	// LISTADO DE USUARIOS
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Muestra la página de listado de usuarios.
 	 *
@@ -66,44 +72,63 @@ public class UserListController {
 				orderBy != null ? orderBy : UserOrderField.CREATION_DATETIME,
 				direction != null ? direction : SortDirection.DESC
 			);
+
 			model.addAttribute("users", users);
 			model.addAttribute("orderBy",
 				orderBy != null ? orderBy : UserOrderField.CREATION_DATETIME);
 			model.addAttribute("direction",
 				direction != null ? direction : SortDirection.DESC);
-			return "admin/user-list";
+
+			return "html/admin/user-list";
+
 		} catch (SecurityException ex) {
 			model.addAttribute("errorMessage", ex.getMessage());
 			return "error/403";
 		}
 	}
 
+	// -------------------------------------------------------------------------
+	// OPERACIONES EN BLOQUE
+	// -------------------------------------------------------------------------
+
 	/**
 	 * Procesa una operación en bloque (otorgar admin, quitar admin o borrar).
 	 *
-	 * @param action Tipo de acción: "grant", "revoke" o "delete".
+	 * @param action Tipo de acción masiva (GRANT_ADMIN, REVOKE_ADMIN o DELETE_USERS).
 	 * @param ids    Lista de IDs seleccionados en el formulario.
 	 * @param model  Modelo de datos para la vista de confirmación o error.
 	 * @return Redirección o plantilla según el resultado.
+	 *
+	 * ----------------------------------------------------------------------------
+	 * CONVERSIÓN AUTOMÁTICA DE ENUMS
+	 * ----------------------------------------------------------------------------
+	 * Spring convierte el parámetro "action" recibido (por GET o POST)
+	 * en un valor de BulkActionType automáticamente.
+	 *
+	 * Si el valor no coincide con ninguno de los definidos en el enum,
+	 * lanzará MethodArgumentTypeMismatchException antes de ejecutar el método,
+	 * que será gestionada por ErrorControllerAdvice → plantilla error/400.html.
 	 */
 	@PostMapping("/admin/users/bulk")
 	public String bulkAction(
-		@RequestParam("action") String action,
+		@RequestParam("action") BulkActionType action,
 		@RequestParam("ids") List<Integer> ids,
 		Model model
 	) {
 		try {
 			switch (action) {
-				case "grant" -> userListService.setAdminStatusBulk(ids, true);
-				case "revoke" -> userListService.setAdminStatusBulk(ids, false);
-				case "delete" -> userListService.deleteUsersBulk(ids);
-				default -> throw new IllegalArgumentException("Acción no válida.");
+				case GRANT_ADMIN -> userListService.setAdminStatusBulk(ids, true);
+				case REVOKE_ADMIN -> userListService.setAdminStatusBulk(ids, false);
+				case DELETE_USERS -> userListService.deleteUsersBulk(ids);
 			}
+
 			model.addAttribute("message", "Operación realizada correctamente.");
-			return "admin/user-bulk-success";
-		} catch (IllegalArgumentException ex) {
+			return "html/admin/user-bulk-success";
+
+		} catch (OperationFailedException ex) {
 			model.addAttribute("errorMessage", ex.getMessage());
 			return "error/operation-error";
+
 		} catch (SecurityException ex) {
 			model.addAttribute("errorMessage", ex.getMessage());
 			return "error/403";
@@ -128,8 +153,14 @@ public class UserListController {
  * excepciones anotado con @ControllerAdvice para mostrar una página de error
  * personalizada (por ejemplo, 400 Bad Request o una plantilla Thymeleaf).
  *
- * De esta forma se mantiene la filosofía de Spring:
- *   - Los controladores permanecen limpios.
- *   - La validación y manejo de errores se centraliza.
- *   - El framework gestiona automáticamente la conversión de tipos.
+ * ----------------------------------------------------------------------------
+ * SOBRE EL USO DE ENUMS PARA ACCIONES MASIVAS
+ * ----------------------------------------------------------------------------
+ * Usar el enum BulkActionType mejora la seguridad y legibilidad:
+ *   - Evita errores por cadenas mal escritas.
+ *   - Centraliza las operaciones válidas.
+ *   - Permite autocompletado y validación en tiempo de compilación.
+ *
+ * Además, mantiene el código alineado con la filosofía de Spring Boot:
+ * validación declarativa y conversión de tipos automática.
  */
