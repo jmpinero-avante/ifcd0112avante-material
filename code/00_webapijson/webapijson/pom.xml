@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.avante</groupId>
-	<artifactId>springbootjma01</artifactId>
+	<artifactId>webapijson</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Spring Boot Blank Project</name>
+	<name>Web Con API JSON</name>
 
 	<properties>
 		<!-- VERSIONES -->
