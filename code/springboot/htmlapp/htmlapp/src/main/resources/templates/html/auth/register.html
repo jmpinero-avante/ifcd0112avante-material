@@ -15,6 +15,10 @@
 			Rellena los siguientes campos para registrarte.
 		</p>
 
+		<!-- Mensajes de error o éxito -->
+		<div th:replace="fragments/auth-message :: message(${errorMessage}, 'error')"></div>
+		<div th:replace="fragments/auth-message :: message(${successMessage}, 'success')"></div>
+
 		<form method="post" th:action="@{/register}" th:object="${userForm}"
 		      novalidate>
 
@@ -37,9 +41,6 @@
 			<input type="password" id="passwordConfirm" name="passwordConfirm"
 			       placeholder="Repite la contraseña" minlength="6"
 			       required />
-
-			<p class="mt-2" style="color: var(--color-error);" th:if="${errorMessage}"
-			   th:text="${errorMessage}"></p>
 
 			<input type="submit" value="Crear cuenta" class="btn"
 			       style="width: 100%;" />

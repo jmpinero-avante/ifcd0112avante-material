@@ -1,0 +1,31 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+	FRAGMENTO: auth-message
+	-----------------------------------------------------------
+	Se usa para mostrar mensajes de información, éxito o error
+	en las páginas de autenticación (login, registro, etc.).
+	El fragmento puede recibir dos variables:
+
+	- message: texto del mensaje (String)
+	- type: tipo de mensaje (info, success, error)
+
+	Ejemplo de uso:
+	  <div th:replace="fragments/auth-message :: message(
+	         'Registro completado correctamente', 'success')"></div>
+
+	  <div th:replace="fragments/auth-message :: message(
+	         ${errorMessage}, 'error')"></div>
+-->
+
+<div th:fragment="message(message, type)"
+     th:if="${message}"
+     th:class="'auth-message ' + ${type}">
+	<p th:text="${message}"></p>
+</div>
+
+</body>
+</html>
