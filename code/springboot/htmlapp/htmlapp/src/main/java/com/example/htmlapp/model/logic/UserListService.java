@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.example.htmlapp.model.db.User;
 import com.example.htmlapp.model.db.UserRepository;
+import com.example.htmlapp.model.enums.SortDirection;
+import com.example.htmlapp.model.enums.UserOrderField;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -45,37 +47,38 @@ public class UserListService {
 	/**
 	 * Devuelve una lista de todos los usuarios, con orden dinámico.
 	 *
-	 * El usuario logado (si es admin) también se devuelve en el listado.
-	 * En caso de que se quiera excluir, puede filtrarse en el controlador.
-	 *
-	 * @param orderBy   Campo por el que ordenar (email, fullName, creationDatetime...).
+	 * @param orderBy   Campo por el que ordenar (EMAIL, FULL_NAME o null).
 	 * @param direction Dirección del orden (ASC o DESC).
 	 * @return Lista ordenada de usuarios.
+	 * @throws SecurityException si el usuario actual no tiene privilegios de administrador.
 	 */
-	public List<User> listAllUsers(String orderBy, String direction) {
-		// Solo verifica que el usuario actual sea administrador.
+	public List<User> listAllUsers(UserOrderField orderBy, SortDirection direction)
+		throws SecurityException {
+
+		// Verifica que el usuario actual sea administrador antes de continuar.
 		permissionsService.checkAdminPermission();
 
 		List<User> users = userRepository.findAll();
 
-		Comparator<User> comparator;
+		/*
+		 * Selección del comparador en función del campo de ordenación.
+		 * Si el valor es null o no coincide con ningún caso, se aplicará el
+		 * bloque 'default', que ordena por la fecha de creación (creationTimestamp).
+		 */
+		Comparator<User> comparator = switch (orderBy) {
+			case EMAIL -> Comparator.comparing(
+				User::getEmail, String.CASE_INSENSITIVE_ORDER);
+			case FULL_NAME -> Comparator.comparing(
+				User::getFullName, String.CASE_INSENSITIVE_ORDER);
+			default -> Comparator.comparing(User::getCreationTimestamp);
+		};
 
-		switch (orderBy != null ? orderBy : "") {
-			case "email" -> comparator =
-				Comparator.comparing(User::getEmail, String.CASE_INSENSITIVE_ORDER);
-			case "fullName" -> comparator =
-				Comparator.comparing(User::getFullName,
-					String.CASE_INSENSITIVE_ORDER);
-			case "creationDatetime" -> comparator =
-				Comparator.comparing(User::getCreationTimestamp);
-			default -> comparator =
-				Comparator.comparing(User::getCreationTimestamp);
-		}
-
-		if ("DESC".equalsIgnoreCase(direction)) {
+		// Si la dirección de orden es descendente, invierte el comparador.
+		if (direction == SortDirection.DESC) {
 			comparator = comparator.reversed();
 		}
 
+		// Devuelve la lista de usuarios ordenada.
 		return users.stream().sorted(comparator).collect(Collectors.toList());
 	}
 
@@ -85,19 +88,21 @@ public class UserListService {
 	 * Ignora al usuario actualmente logado para evitar que se
 	 * elimine o modifique a sí mismo.
 	 *
+	 * Si, tras excluir al usuario actual, no queda ningún ID válido
+	 * en la lista, se lanza una IllegalArgumentException.
+	 *
 	 * @param ids     Lista de IDs de usuario.
 	 * @param isAdmin Nuevo valor para el campo isAdmin.
+	 * @throws SecurityException         si el usuario no tiene permisos de administrador.
+	 * @throws IllegalArgumentException  si no hay usuarios válidos para modificar.
 	 */
 	@Transactional
-	public void setAdminStatusBulk(List<Integer> ids, boolean isAdmin) {
-		User admin = permissionsService.checkAdminPermission();
-		Integer currentUserId = admin.getId();
+	public void setAdminStatusBulk(List<Integer> ids, boolean isAdmin)
+		throws SecurityException, IllegalArgumentException {
 
-		List<Integer> filteredIds = ids.stream()
-			.filter(id -> !id.equals(currentUserId))
-			.collect(Collectors.toList());
+		List<Integer> targetIds = getFilteredUserIds(ids);
 
-		filteredIds.forEach(id -> userRepository.findById(id).ifPresent(user -> {
+		targetIds.forEach(id -> userRepository.findById(id).ifPresent(user -> {
 			user.setIsAdmin(isAdmin);
 			userRepository.save(user);
 		}));
@@ -108,10 +113,37 @@ public class UserListService {
 	 *
 	 * Este método no permite borrar al usuario logado.
 	 *
+	 * Si, tras excluir al usuario actual, no queda ningún ID válido
+	 * en la lista, se lanza una IllegalArgumentException.
+	 *
 	 * @param ids Lista de IDs de usuario a eliminar.
+	 * @throws SecurityException         si el usuario no tiene permisos de administrador.
+	 * @throws IllegalArgumentException  si no hay usuarios válidos para borrar.
 	 */
 	@Transactional
-	public void deleteUsersByIds(List<Integer> ids) {
+	public void deleteUsersBulk(List<Integer> ids)
+		throws SecurityException, IllegalArgumentException {
+
+		List<Integer> targetIds = getFilteredUserIds(ids);
+
+		targetIds.forEach(userRepository::deleteById);
+	}
+
+	/**
+	 * Método auxiliar que filtra la lista de IDs recibida,
+	 * excluyendo siempre al usuario logado (para impedir que se
+	 * modifique o borre a sí mismo).
+	 *
+	 * Si tras el filtrado no queda ningún ID válido, lanza una excepción.
+	 *
+	 * @param ids Lista original de IDs recibida en la operación bulk.
+	 * @return Lista de IDs válidos tras excluir al usuario actual.
+	 * @throws SecurityException         si el usuario actual no tiene permisos.
+	 * @throws IllegalArgumentException  si la lista queda vacía tras el filtrado.
+	 */
+	private List<Integer> getFilteredUserIds(List<Integer> ids)
+		throws SecurityException, IllegalArgumentException {
+
 		User admin = permissionsService.checkAdminPermission();
 		Integer currentUserId = admin.getId();
 
@@ -119,7 +151,14 @@ public class UserListService {
 			.filter(id -> !id.equals(currentUserId))
 			.collect(Collectors.toList());
 
-		filteredIds.forEach(userRepository::deleteById);
+		if (filteredIds.isEmpty()) {
+			throw new IllegalArgumentException(
+				"No hay usuarios válidos para procesar la operación. " +
+				"El usuario actual no puede modificarse ni eliminarse a sí mismo."
+			);
+		}
+
+		return filteredIds;
 	}
 }
 
@@ -147,4 +186,20 @@ public class UserListService {
  * Si el usuario no tiene privilegios de administrador, se lanza una
  * SecurityException que puede ser capturada por el controlador para
  * mostrar una página de error 403 (Forbidden).
+ *
+ * Además, se excluye siempre al usuario logado de las operaciones en bloque.
+ * Si no queda ningún usuario tras esa exclusión, se lanza una excepción
+ * IllegalArgumentException para notificarlo explícitamente.
+ *
+ * Las cláusulas "throws" se incluyen explícitamente para documentar que
+ * estos métodos pueden lanzar tanto errores de permisos (SecurityException)
+ * como errores de validación de datos (IllegalArgumentException).
+ *
+ * ----------------------------------------------------------------------------
+ * NOTA SOBRE LAS EXCEPCIONES NO COMPROBADAS (RuntimeException)
+ * ----------------------------------------------------------------------------
+ * Aunque SecurityException e IllegalArgumentException son excepciones
+ * no comprobadas (unchecked), se declaran explícitamente en los métodos
+ * para documentar claramente los posibles puntos de fallo y mejorar la
+ * legibilidad del código, especialmente en entornos educativos.
  */
