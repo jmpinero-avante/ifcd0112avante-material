@@ -1,0 +1,49 @@
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
+
+/* ==========================================================================
+CLASES DE UTILIDAD GLOBAL
+========================================================================== */
+/*
+Este archivo define clases pequeñas y reutilizables que permiten
+ajustar el espaciado, el texto o la alineación sin crear estilos
+nuevos en cada hoja.
+
+Se usa en toda la aplicación, especialmente en base.css y error.css.
+*/
+
+/* Alineación */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* Colores de texto */
+.text-error   { color: var(--color-error); }
+.text-success { color: var(--color-success); }
+.text-info    { color: var(--color-accent); }
+.text-muted   { color: var(--color-muted); }
+
+/* Márgenes */
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+/* Espaciado horizontal */
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* Ocultar elementos */
+.hidden { display: none !important; }
+
+/* ==========================================================================
+OBJETIVO PEDAGÓGICO
+========================================================================== */
+/*
+Estas clases permiten demostrar:
+ - Cómo aplicar utilidades CSS reutilizables sin duplicar reglas.
+ - Cómo adoptar convenciones similares a frameworks como Bootstrap.
+ - Cómo separar estilos de estructura (base.css) de pequeños ajustes
+   visuales usados de forma puntual en las vistas.
+*/

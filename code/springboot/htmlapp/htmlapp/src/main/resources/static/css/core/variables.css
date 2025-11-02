@@ -1,0 +1,47 @@
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
+
+/* ==========================================================================
+VARIABLES GLOBALES DE ESTILO
+========================================================================== */
+/*
+Este archivo centraliza todas las variables CSS utilizadas por la
+aplicación: colores, tipografía, radios de borde, sombras, etc.
+
+Se importa desde base.css y error.css para mantener coherencia
+visual en toda la aplicación.
+*/
+
+:root {
+	/* Colores principales */
+	--color-bg: #f4f6f8;
+	--color-text: #222;
+	--color-accent: #0b5ed7;
+	--color-accent-hover: #0a53be;
+
+	/* Colores de estado */
+	--color-muted: #6c757d;
+	--color-error: #dc3545;
+	--color-success: #198754;
+
+	/* Colores de cabecera y footer */
+	--color-header-bg: #0d1b2a;
+	--color-header-text: #e0e0e0;
+
+	/* Propiedades de diseño */
+	--border-radius: 10px;
+	--max-width: 1200px;
+
+	/* Tipografía */
+	--font-family-base: 'Inter', system-ui, sans-serif;
+}
+
+/* ==========================================================================
+OBJETIVO PEDAGÓGICO
+========================================================================== */
+/*
+Este archivo permite enseñar cómo:
+ - Centralizar la configuración visual de una aplicación.
+ - Reutilizar variables CSS para mantener coherencia.
+ - Facilitar el mantenimiento: cambiar un color o tipografía
+   afecta a todas las vistas automáticamente.
+*/

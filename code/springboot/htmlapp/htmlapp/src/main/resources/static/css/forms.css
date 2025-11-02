@@ -1,10 +1,28 @@
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
+
+/* ==========================================================================
+ESTILOS PARA FORMULARIOS
+========================================================================== */
+
+@import url('core/variables.css');
+@import url('core/utilities.css');
+@import url('core/responsive.css');
+
+/*
+Diseña formularios uniformes para login, registro y edición de datos.
+Incluye validación visual, alineación coherente y botones consistentes.
+*/
+
+/* ------------------------------------------------------------
+FORMULARIOS GENERALES
+------------------------------------------------------------ */
 form {
-	max-width: 600px;
-	margin: 0 auto;
+	max-width: 500px;
+	margin: 2rem auto;
 	background: white;
 	padding: 2rem;
 	border-radius: var(--border-radius);
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 label {
@@ -15,8 +33,7 @@ label {
 
 input[type="text"],
 input[type="email"],
-input[type="password"],
-select {
+input[type="password"] {
 	width: 100%;
 	padding: 0.6rem;
 	border: 1px solid #ccc;
@@ -25,27 +42,53 @@ select {
 	margin-bottom: 1rem;
 }
 
-input:focus,
-select:focus {
+input:focus {
 	border-color: var(--color-accent);
 	outline: none;
 }
 
-input[type="submit"],
-button[type="submit"],
-.btn {
+/* ------------------------------------------------------------
+BOTONES
+------------------------------------------------------------ */
+button,
+input[type="submit"] {
 	background-color: var(--color-accent);
-	color: #fff;
+	color: white;
 	border: none;
+	padding: 0.7rem 1.2rem;
 	border-radius: var(--border-radius);
-	padding: 0.65rem 1.2rem;
 	font-size: 1rem;
 	cursor: pointer;
 	transition: background-color 0.3s ease;
 }
 
-input[type="submit"]:hover,
-button[type="submit"]:hover,
-.btn:hover {
+button:hover,
+input[type="submit"]:hover {
 	background-color: var(--color-accent-hover);
 }
+
+/* ------------------------------------------------------------
+MENSAJES DE ERROR Y VALIDACIÓN
+------------------------------------------------------------ */
+.error-message {
+	color: var(--color-error);
+	font-weight: 500;
+	margin-bottom: 1rem;
+	text-align: center;
+}
+
+/* ------------------------------------------------------------
+RESPONSIVE
+------------------------------------------------------------ */
+@media (max-width: 480px) {
+	form {
+		padding: 1.2rem;
+	}
+}
+
+/*
+OBJETIVO PEDAGÓGICO:
+ - Enseñar cómo crear formularios accesibles y consistentes.
+ - Reforzar el uso de variables globales para colores y bordes.
+ - Mostrar el equilibrio entre estética y usabilidad.
+*/

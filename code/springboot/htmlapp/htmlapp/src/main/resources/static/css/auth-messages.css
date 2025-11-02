@@ -1,26 +1,66 @@
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
+
+/* ==========================================================================
+ESTILOS PARA MENSAJES DE AUTENTICACIÓN (Login, Logout, Registro)
+========================================================================== */
+
+@import url('core/variables.css');
+@import url('core/utilities.css');
+@import url('core/responsive.css');
+
+/*
+Define la apariencia de los mensajes informativos mostrados
+tras acciones como iniciar o cerrar sesión, o tras registrar
+un usuario correctamente.
+*/
+
 .auth-message {
-	margin-top: 1.2rem;
-	padding: 1rem;
-	border-radius: 8px;
+	max-width: 500px;
+	margin: 2rem auto;
 	text-align: center;
-	font-weight: 500;
-	border: 1px solid transparent;
+	padding: 1.5rem;
+	border-radius: var(--border-radius);
+	background-color: #ffffff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.auth-message.info {
-	background-color: #f1f5f9;
-	color: #334155;
-	border-color: #cbd5e1;
+.auth-message p {
+	margin-bottom: 1rem;
+	color: var(--color-text);
 }
 
-.auth-message.success {
-	background-color: #ecfdf5;
-	color: #065f46;
-	border-color: #6ee7b7;
+.auth-message .success {
+	color: var(--color-success);
+	font-weight: 600;
 }
 
-.auth-message.error {
-	background-color: #fef2f2;
-	color: #991b1b;
-	border-color: #fecaca;
+.auth-message .info {
+	color: var(--color-accent);
+	font-weight: 600;
 }
+
+.auth-message .error {
+	color: var(--color-error);
+	font-weight: 600;
+}
+
+.auth-message a {
+	display: inline-block;
+	background-color: var(--color-accent);
+	color: white;
+	padding: 0.6rem 1.2rem;
+	border-radius: var(--border-radius);
+	text-decoration: none;
+	transition: background-color 0.3s ease;
+}
+
+.auth-message a:hover {
+	background-color: var(--color-accent-hover);
+}
+
+/*
+OBJETIVO PEDAGÓGICO:
+ - Enseñar cómo diseñar componentes visuales reutilizables.
+ - Diferenciar tipos de mensajes (éxito, error, información).
+ - Practicar la coherencia de estilos entre pantallas.
+*/

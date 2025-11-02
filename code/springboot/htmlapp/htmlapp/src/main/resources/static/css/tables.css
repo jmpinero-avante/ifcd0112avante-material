@@ -1,3 +1,20 @@
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
+
+/* ==========================================================================
+ESTILOS PARA TABLAS ADMINISTRATIVAS
+========================================================================== */
+
+@import url('core/variables.css');
+@import url('core/utilities.css');
+
+/*
+Define la apariencia de las tablas usadas en los listados de usuarios.
+Incluye filas alternas, iconos de acción y cabeceras ordenables.
+*/
+
+/* ------------------------------------------------------------
+TABLAS BÁSICAS
+------------------------------------------------------------ */
 table {
 	width: 100%;
 	border-collapse: collapse;
@@ -20,3 +37,30 @@ th {
 tr:hover {
 	background-color: #f1f3f5;
 }
+
+/* ------------------------------------------------------------
+ICONOS DE ACCIÓN
+------------------------------------------------------------ */
+.table-actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.icon-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--color-accent);
+	font-size: 1.1rem;
+}
+
+.icon-btn:hover {
+	color: var(--color-accent-hover);
+}
+
+/*
+OBJETIVO PEDAGÓGICO:
+ - Mostrar cómo construir tablas limpias y accesibles.
+ - Usar flexbox para organizar acciones.
+ - Mantener consistencia visual con los botones globales.
+*/

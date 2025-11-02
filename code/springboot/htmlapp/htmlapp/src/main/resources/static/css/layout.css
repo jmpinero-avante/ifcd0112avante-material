@@ -1,0 +1,109 @@
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
+
+/* ==========================================================================
+ESTILOS DE DISEÑO Y ESTRUCTURA GLOBAL
+========================================================================== */
+/*
+Este archivo define la disposición general de los elementos principales:
+cabecera, menú lateral, contenido central y pie de página.
+
+No define colores ni tipografía (eso pertenece a base.css y variables.css).
+Solo se encarga de la organización visual y la adaptabilidad de la interfaz.
+*/
+
+@import url('core/variables.css');
+@import url('core/responsive.css');
+
+/* ------------------------------------------------------------
+CONTENEDOR PRINCIPAL (Layout general)
+------------------------------------------------------------ */
+.layout {
+	display: flex;
+	min-height: 100vh;
+	flex-direction: row;
+}
+
+/* ------------------------------------------------------------
+MENÚ LATERAL
+------------------------------------------------------------ */
+.sidebar {
+	width: 250px;
+	background-color: var(--color-header-bg);
+	color: var(--color-header-text);
+	display: flex;
+	flex-direction: column;
+	padding: 1.5rem 1rem;
+	box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar a {
+	color: var(--color-header-text);
+	text-decoration: none;
+	padding: 0.5rem 0.75rem;
+	border-radius: var(--border-radius);
+	margin-bottom: 0.5rem;
+	transition: background-color 0.3s ease;
+}
+
+.sidebar a:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar a.active {
+	background-color: var(--color-accent);
+	color: white;
+}
+
+/* ------------------------------------------------------------
+ZONA DE CONTENIDO
+------------------------------------------------------------ */
+.main-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	background-color: var(--color-bg);
+}
+
+/* La barra superior (ya definida en base.css) */
+.main-header {
+	padding: 1rem;
+	background-color: var(--color-header-bg);
+	color: var(--color-header-text);
+	font-weight: 600;
+}
+
+/* ------------------------------------------------------------
+CONTENIDO CENTRAL
+------------------------------------------------------------ */
+.main-body {
+	flex: 1;
+	padding: 2rem;
+}
+
+/* ------------------------------------------------------------
+RESPONSIVE
+------------------------------------------------------------ */
+@media (max-width: 768px) {
+	.layout {
+		flex-direction: column;
+	}
+	.sidebar {
+		width: 100%;
+		flex-direction: row;
+		justify-content: space-around;
+		padding: 0.75rem;
+	}
+	.main-body {
+		padding: 1rem;
+	}
+}
+
+/* ------------------------------------------------------------
+OBJETIVO PEDAGÓGICO
+------------------------------------------------------------ */
+/*
+Este archivo muestra:
+ - Cómo separar la estructura (layout) del estilo visual.
+ - Cómo crear una distribución adaptable (sidebar + contenido).
+ - Cómo mantener un diseño profesional sin frameworks externos.
+*/
