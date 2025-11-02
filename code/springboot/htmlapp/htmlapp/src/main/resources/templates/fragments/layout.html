@@ -1,57 +1,73 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+
+<!--
+============================================================
+LAYOUT PRINCIPAL DE LA APLICACIÓN
+============================================================
+Este archivo define la estructura base reutilizable para todas las páginas
+de la aplicación (tanto públicas como privadas, excepto las de error).
+
+Recibe dos parámetros:
+ - `title`   → el título que se mostrará en la pestaña del navegador.
+ - `content` → el bloque principal de contenido (la sección o main de la vista hija).
+
+Se usa en cada plantilla de la siguiente forma:
+
+<html th:replace="~{fragments/layout :: layout(
+    title='Título de la página',
+    content=~{::main}
+)}">
+
+De esta forma, el contenido de la página hija se insertará dinámicamente en
+el bloque <main> de este layout, mientras que la cabecera, menú lateral y pie
+se mantienen comunes para todo el sitio.
+-->
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:fragment="layout(title, content)">
 
-<!-- ============================================================
-LAYOUT PRINCIPAL DE LA APLICACIÓN
-============================================================ -->
-<!--
-Este archivo define la estructura base para todas las páginas
-normales de la aplicación (no las de error).
-
-Recibe dos parámetros:
- - `title`   → el título de la página (aparece en la pestaña del navegador)
- - `content` → el contenido principal (generalmente el bloque <main> de la vista hija)
-
-Se incluye en las plantillas mediante:
-
-<html th:replace="~{fragments/layout :: layout(
-	title='Título de la página',
-	content=~{::main}
-)}">
-
-Este layout integra directamente el <head> y reutiliza los fragmentos
-`header` y `footer` definidos en archivos separados.
--->
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title th:text="${title}">HtmlApp</title>
-	<link rel="stylesheet" th:href="@{/css/base.css}" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--
+  Si la variable `title` no está definida en la plantilla hija,
+  se usará el valor por defecto "HtmlApp".
+  -->
+  <title th:text="${title} ?: 'HtmlApp'">HtmlApp</title>
+  <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
 
 <body>
-	<!-- Cabecera superior -->
-	<header th:replace="~{fragments/header :: header}"></header>
+  <!-- ============================================================
+  CABECERA SUPERIOR (solo si hay usuario logado)
+  ============================================================ -->
+  <header th:if="${session.userId}"
+          th:replace="~{fragments/header :: header}">
+  </header>
 
-	<!-- Contenedor principal -->
-	<div class="page-container">
+  <!-- ============================================================
+  CONTENEDOR PRINCIPAL
+  ============================================================ -->
+  <div class="page-container">
+    <!-- Menú lateral, visible solo con sesión activa -->
+    <aside th:if="${session.userId}"
+           th:replace="~{fragments/sidebar :: sidebar}">
+    </aside>
 
-		<!-- Menú lateral (solo si hay usuario logado) -->
-		<aside th:if="${session.userId}"
-		       th:replace="~{fragments/sidebar :: sidebar}">
-		</aside>
+    <!-- Contenido dinámico de la vista hija -->
+    <main th:replace="${content}"></main>
+  </div>
 
-		<!-- Contenido dinámico de la vista -->
-		<main th:replace="${content}"></main>
-	</div>
+  <!-- ============================================================
+  MENSAJES GLOBALES DE SESIÓN
+  ============================================================ -->
+  <div th:replace="~{fragments/auth-message :: authMessage}"></div>
 
-	<!-- Mensajes globales (login, logout, errores) -->
-	<div th:replace="~{fragments/auth-message :: authMessage}"></div>
-
-	<!-- Pie de página -->
-	<footer th:replace="~{fragments/footer :: footer}"></footer>
+  <!-- ============================================================
+  PIE DE PÁGINA
+  ============================================================ -->
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>
 
@@ -62,31 +78,32 @@ NOTAS DE DISEÑO Y FUNCIONAMIENTO
 1. ESTRUCTURA GENERAL
 ----------------------
 Este layout proporciona la estructura base del sitio:
-cabecera, menú lateral condicional, contenido y pie de página.
+cabecera condicional, menú lateral condicional, contenido y pie de página.
 
 2. FRAGMENTOS REUTILIZADOS
 ---------------------------
 - `fragments/header.html` → cabecera superior con nombre del usuario.
 - `fragments/sidebar.html` → menú lateral (solo visible con sesión activa).
-- `fragments/auth-message.html` → mensajes de autenticación.
+- `fragments/auth-message.html` → mensajes de autenticación o avisos globales.
 - `fragments/footer.html` → pie de página común.
 
-Esto permite mantener cada parte del diseño en su propio archivo
-y facilita su mantenimiento o modificación independiente.
+3. CONDICIONAL DE SESIÓN
+-------------------------
+Tanto el header como el sidebar se muestran únicamente cuando existe
+una sesión activa: `th:if="${session.userId}"`.
 
-3. ESTILO Y APARIENCIA
------------------------
-Usa la hoja de estilos `/css/base.css`, que define:
- - Tipografía, colores y espaciados globales.
- - Estilo del header, sidebar, botones, tablas y formularios.
- - Disposición responsive con media queries.
+4. VALOR POR DEFECTO DEL TÍTULO
+--------------------------------
+La expresión `th:text="${title} ?: 'HtmlApp'"` usa el operador Elvis (`?:`)
+para establecer un valor por defecto. Si no se pasa ningún título,
+se mostrará "HtmlApp" en la pestaña del navegador.
 
-4. OBJETIVO PEDAGÓGICO
+5. OBJETIVO PEDAGÓGICO
 ------------------------
-Este layout es ideal para enseñar cómo:
- - Dividir una interfaz web en fragmentos reutilizables.
- - Usar `th:replace` para incluir fragmentos con parámetros.
- - Controlar la visibilidad de elementos (como el sidebar)
-   en función del estado de sesión.
- - Separar estructura HTML (layout) de contenido dinámico (vistas).
+Este layout enseña cómo:
+ - Crear un layout base con parámetros (title, content).
+ - Reutilizar fragmentos con `th:replace`.
+ - Controlar la visibilidad de elementos según la sesión.
+ - Definir valores por defecto en Thymeleaf.
+ - Separar estructura HTML del contenido dinámico.
 -->

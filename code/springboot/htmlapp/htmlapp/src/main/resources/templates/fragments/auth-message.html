@@ -1,101 +1,90 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!-- ============================================================
-FRAGMENTO: AUTH-MESSAGE (MENSAJES GLOBALES DE AUTENTICACIÓN)
-============================================================ -->
+
 <!--
-Este archivo define un fragmento reutilizable que muestra mensajes
-informativos o de error relacionados con la autenticación de usuarios.
+============================================================
+FRAGMENTO: MENSAJES DE AUTENTICACIÓN Y ESTADO GLOBAL
+============================================================
 
-Se utiliza para mostrar avisos como:
- - “Has cerrado sesión correctamente.”
- - “Correo o contraseña incorrectos.”
- - “Error al registrarse.”
+Este fragmento muestra mensajes globales relacionados con la autenticación
+(login, logout, errores de credenciales) y con estados generales de la sesión.
 
-El layout principal (`fragments/layout.html`) lo incluye automáticamente
-debajo del contenido principal mediante:
+Puede incluirse en el layout base (`fragments/layout.html`) o directamente
+en cualquier plantilla, aunque normalmente se llama desde el layout con:
 
-    <div th:replace="~{fragments/auth-message :: authMessage}"></div>
+  <div th:replace="~{fragments/auth-message :: authMessage}"></div>
 
-De esta forma, cualquier vista puede mostrar mensajes basados en
-parámetros o atributos del modelo sin necesidad de duplicar código.
+Su función es ofrecer un punto centralizado para mostrar mensajes globales
+a los usuarios sin duplicar código en cada vista.
+
+FUNCIONAMIENTO:
+---------------
+ - Si el parámetro `logout` llega en la URL (por ejemplo, `/?logout`),
+   se muestra un aviso de cierre de sesión correcto.
+ - Si existe una variable `errorMessage` en el modelo, se muestra en rojo.
+ - Si existe una variable `successMessage`, se muestra en verde.
+
+OBJETIVO PEDAGÓGICO:
+---------------------
+Este fragmento enseña a los alumnos cómo mostrar mensajes dinámicos
+en función del modelo de Spring MVC, utilizando `th:if` y variables
+del controlador o de la sesión.
+
+Además, muestra cómo se pueden definir contenedores condicionales
+para mensajes globales dentro del diseño general de una aplicación.
 -->
+
+<!-- ============================================================
+HTML DEL FRAGMENTO (visible)
+============================================================ -->
 <div th:fragment="authMessage">
-	<!-- ============================================================
-	MENSAJES BASADOS EN PARÁMETROS DE LA PETICIÓN (REQUEST PARAMS)
-	============================================================ -->
-	<!--
-	El atributo `param.logout` es establecido por Spring al realizar
-	una redirección tras el logout. Si está presente, se muestra
-	un mensaje de confirmación.
-	-->
-	<div th:if="${param.logout}" class="text-center mt-2">
-		<p class="text-success">Has cerrado sesión correctamente.</p>
+	<!-- Mensaje de cierre de sesión correcto -->
+	<div class="message message-success"
+	     th:if="${param.logout}">
+		<p>Has cerrado sesión correctamente.</p>
 	</div>
 
-	<!--
-	El parámetro `param.error` indica un fallo en el login.
-	Esto puede deberse a credenciales incorrectas u otro error
-	de autenticación. Muestra un mensaje de error genérico.
-	-->
-	<div th:if="${param.error}" class="text-center mt-2">
-		<p class="text-error">Correo o contraseña incorrectos.</p>
+	<!-- Mensaje de error global (por ejemplo, fallo de login) -->
+	<div class="message message-error"
+	     th:if="${errorMessage}">
+		<p th:text="${errorMessage}">Error genérico</p>
 	</div>
 
-	<!-- ============================================================
-	MENSAJES BASADOS EN EL MODELO (ATRIBUTOS DEL CONTROLADOR)
-	============================================================ -->
-	<!--
-	Si el controlador añade un atributo `infoMessage` al modelo,
-	se muestra en formato de mensaje informativo.
-	-->
-	<div th:if="${infoMessage}" class="text-center mt-2">
-		<p class="text-info" th:text="${infoMessage}">Mensaje informativo.</p>
-	</div>
-
-	<!--
-	Si el controlador añade un atributo `errorMessage` al modelo,
-	se muestra como mensaje de error destacado.
-	-->
-	<div th:if="${errorMessage}" class="text-center mt-2">
-		<p class="text-error" th:text="${errorMessage}">
-			Ha ocurrido un error.
-		</p>
+	<!-- Mensaje de éxito global (opcional) -->
+	<div class="message message-success"
+	     th:if="${successMessage}">
+		<p th:text="${successMessage}">Operación completada con éxito.</p>
 	</div>
 </div>
 
 <!-- ============================================================
-NOTAS DE DISEÑO Y FUNCIONAMIENTO
+NOTAS DE ESTILO Y COMPORTAMIENTO
 ============================================================ -->
 <!--
-1. MECANISMO DE FUNCIONAMIENTO
--------------------------------
-Thymeleaf permite acceder tanto a parámetros GET como a
-atributos del modelo en las vistas.
+1. ESTILOS
+-----------
+Los estilos se definen en `base.css`:
+ - `.message` → contenedor general con padding y borde redondeado.
+ - `.message-success` → fondo verde claro y texto oscuro.
+ - `.message-error` → fondo rojo claro y texto oscuro.
 
- - `${param.nombre}`  → lee los parámetros de la URL (por ejemplo ?logout o ?error).
- - `${atributo}`      → lee los atributos añadidos por el controlador al modelo.
+2. FUNCIONAMIENTO DE `param.logout`
+-----------------------------------
+Spring MVC expone los parámetros de la URL (por ejemplo, `?logout`)
+como variables accesibles desde el modelo mediante `${param.nombre}`.
 
-Esto permite mostrar mensajes sin necesidad de lógica adicional
-en las plantillas.
+Así, `th:if="${param.logout}"` evalúa a `true` si la URL contiene `?logout`.
 
-2. ESTILOS
-----------
-Los estilos para los mensajes están definidos en `base.css`:
+3. USO DE VARIABLES DE MODELO
+------------------------------
+`errorMessage` y `successMessage` se pueden añadir desde cualquier controlador:
 
-.text-success { color: var(--color-success); }
-.text-error   { color: var(--color-error); }
-.text-info    { color: var(--color-accent); }
+    model.addAttribute("errorMessage", "Credenciales incorrectas");
+    model.addAttribute("successMessage", "Cuenta creada correctamente");
 
-.mt-2 añade un margen superior para separar los mensajes del contenido.
-
-3. OBJETIVO PEDAGÓGICO
+4. OBJETIVO PEDAGÓGICO
 ------------------------
-Este fragmento muestra cómo usar Thymeleaf para:
- - Acceder a parámetros de la request (`param.*`).
- - Mostrar mensajes condicionalmente (`th:if`).
- - Usar atributos del modelo desde el controlador.
-
-Es un ejemplo claro de cómo desacoplar la lógica del controlador
-de la presentación, centralizando la visualización de mensajes
-en un único punto de la aplicación.
+Este fragmento demuestra cómo:
+ - Utilizar `th:if` para mostrar u ocultar mensajes dinámicos.
+ - Aprovechar los parámetros de petición (`param`) en Thymeleaf.
+ - Mantener un único punto de mensajes globales reutilizable.
 -->
