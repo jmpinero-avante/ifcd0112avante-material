@@ -1,32 +1,30 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
+<html th:replace="~{fragments/layout :: layout(
+	title='Inicio - HtmlApp',
+	content=~{::main}
+)}">
 
-<head th:replace="layout :: head('HtmlApp - Inicio')"></head>
+<!-- ============================================================
+PÁGINA INICIAL (PÚBLICA)
+============================================================ -->
+<!--
+Esta página se muestra a los usuarios no autenticados.
+Permite elegir entre iniciar sesión o registrarse.
 
-<body>
-<header th:replace="layout :: header"></header>
+Si el usuario ya está logado, el controlador redirige
+automáticamente a /main.
+-->
 
-<main th:replace="layout :: body">
-	<section class="text-center" style="margin-top: 5rem;">
+<main>
+	<section class="text-center">
 		<h1>Bienvenido a HtmlApp</h1>
-
-		<p class="lead">
-			Aplicación educativa para practicar desarrollo web con Spring Boot,
-			Thymeleaf y arquitectura MVC.
-		</p>
+		<p>Accede o crea una cuenta para continuar.</p>
 
 		<div class="mt-4">
 			<a class="btn" th:href="@{/login}">Iniciar sesión</a>
-			<a class="btn" th:href="@{/register}">Crear cuenta nueva</a>
+			<a class="btn" th:href="@{/register}">Registrarse</a>
 		</div>
-
-		<p class="mt-4" th:if="${param.logout}">
-			Has cerrado sesión correctamente.
-		</p>
 	</section>
 </main>
 
-<footer th:replace="layout :: footer"></footer>
-</body>
 </html>

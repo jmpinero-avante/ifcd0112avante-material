@@ -1,99 +1,79 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
+c<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<html th:replace="~{fragments/layout :: layout(
+	title='Página principal - HtmlApp',
+	content=~{::main}
+)}">
 
-<head th:replace="layout :: head('HtmlApp - Página principal')"></head>
+<!-- ============================================================
+PÁGINA PRINCIPAL (PRIVADA)
+============================================================ -->
+<!--
+Esta página es accesible únicamente para usuarios autenticados.
 
-<body>
-<header th:replace="layout :: header"></header>
+Muestra un texto largo con un efecto Parallax, que se implementa
+mediante la librería externa Rellax.js y el script local
+parallax-init.js (ubicado en /static/js).
 
-<main th:replace="layout :: body">
+La barra superior y el menú lateral se renderizan automáticamente
+desde el layout (fragments/layout.html) cuando hay sesión activa.
+-->
 
-	<!-- Menú lateral -->
-	<aside style="float: left; width: 230px; padding: 1rem; background: #fff;
-	              border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-	              margin-right: 2rem; position: sticky; top: 2rem;">
-		<h3>Menú</h3>
-		<ul style="list-style: none; padding-left: 0;">
-			<li style="margin: 0.75rem 0;">
-				<a th:href="@{/user/profile}" class="btn" style="width: 100%;">Datos personales</a>
-			</li>
-			<li style="margin: 0.75rem 0;">
-				<a th:href="@{/sql/users.sql}" class="btn" style="width: 100%;"
-				   download>Descargar esquema SQL</a>
-			</li>
-			<li style="margin: 0.75rem 0;">
-				<a th:href="@{/logout}" class="btn" style="width: 100%;">Salir</a>
-			</li>
-			<li style="margin: 0.75rem 0;" th:if="${loggedUserAdmin}">
-				<a th:href="@{/admin/users}" class="btn" style="width: 100%;">
-					Listar usuarios
-				</a>
-			</li>
-		</ul>
-	</aside>
+<main>
+	<!-- ============================================================
+	FONDO PARALLAX
+	============================================================ -->
+	<!--
+	El elemento con clase "parallax" sirve de capa de fondo sobre la
+	cual se aplica el efecto de desplazamiento.
+	El atributo `data-rellax-speed` controla la intensidad del efecto.
+	-->
+	<div class="parallax" data-rellax-speed="-3"></div>
 
-	<!-- Contenido principal -->
-	<section style="overflow: hidden;">
-		<h1>
-			Bienvenido, <span th:text="${loggedUserName}">Usuario</span>
-		</h1>
-		<p class="lead">
-			Has iniciado sesión correctamente el
-			<time th:text="${#temporals.format(serverNow, 'dd/MM/yyyy HH:mm')}">
-				02/11/2025 16:00
-			</time>.
+	<!-- ============================================================
+	CONTENIDO PRINCIPAL
+	============================================================ -->
+	<section>
+		<h1 th:text="'Bienvenido, ' + ${loggedUser.fullName}">Bienvenido</h1>
+
+		<p>
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam viverra
+			vehicula erat, nec suscipit nisl egestas nec. Suspendisse potenti.
+			Integer non ligula eget turpis malesuada tincidunt. Pellentesque
+			habitant morbi tristique senectus et netus et malesuada fames ac turpis
+			egestas. Curabitur ac orci in sapien facilisis sagittis. Duis eu
+			laoreet urna, ut sollicitudin leo. Fusce id est nisi. Aenean quis dolor
+			eu est facilisis egestas at vel felis. Sed congue lorem eget justo
+			consequat, vel dignissim neque mattis.
 		</p>
 
-		<hr class="mt-2 mb-2" />
-
-		<p style="text-align: justify;">
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed
-			orci at velit feugiat cursus. Nulla facilisi. Donec tempor, risus sed
-			ullamcorper egestas, orci metus suscipit odio, nec condimentum justo
-			augue at nulla. Praesent sed libero orci. Maecenas quis bibendum est.
-			Sed non tristique diam, ac pulvinar sem. Integer at mauris a nulla
-			rhoncus feugiat. Pellentesque habitant morbi tristique senectus et
-			netus et malesuada fames ac turpis egestas. Curabitur tristique sapien
-			ut orci facilisis posuere. Nam efficitur purus sit amet libero varius,
-			ut varius magna tristique. Fusce sodales efficitur ante. Mauris sit
-			amet ipsum et nisl consequat aliquet non nec est.
-		</p>
-
-		<p style="text-align: justify;">
-			Donec sit amet commodo lacus. Nam efficitur mattis ligula nec
-			volutpat. Integer at elit lectus. Morbi lacinia, magna et bibendum
-			pellentesque, augue diam blandit mi, in interdum turpis justo vitae
-			neque. Curabitur in lacus risus. Sed tincidunt mauris nec nulla
-			malesuada, ac consequat leo feugiat. Duis vehicula convallis erat,
-			eget aliquet felis bibendum et. Nam luctus sagittis est non aliquet.
-			Sed bibendum congue elit in elementum.
-		</p>
-
-		<p style="text-align: justify;">
-			Phasellus iaculis, neque in mattis commodo, mi felis gravida eros,
-			sed condimentum magna leo in purus. Vivamus in tortor sapien. Donec
-			mollis justo id sem porttitor, id commodo justo ultricies. Nulla
-			facilisi. Suspendisse potenti. Integer dignissim sapien eu lectus
-			fermentum porta. Duis convallis lorem eget tellus suscipit, sit amet
-			vulputate purus accumsan. Mauris in nisl neque. Nunc feugiat, magna
-			id facilisis tempus, nulla nisl porttitor nunc, ut maximus eros risus
-			sed lorem.
-		</p>
-
-		<p style="text-align: justify;">
-			Integer convallis, libero vitae elementum venenatis, ligula felis
-			tincidunt est, non eleifend justo neque ac lorem. Ut eget varius
-			lectus. Sed finibus, ante in pharetra fermentum, sapien neque ornare
-			metus, ac facilisis purus lorem id nisi. Quisque a dapibus velit.
-			Maecenas tincidunt nulla in enim porttitor porttitor. Integer posuere
-			ex sed dignissim tempor. Suspendisse potenti. Vestibulum ante ipsum
-			primis in faucibus orci luctus et ultrices posuere cubilia curae;
-			Cras sit amet augue eget velit gravida sagittis non vel lectus.
+		<p>
+			Vivamus tincidunt, justo in posuere laoreet, nunc erat tincidunt arcu,
+			eu dictum sapien turpis at ex. Praesent commodo elit at lacus blandit,
+			a dictum elit efficitur. Donec congue tortor nec tortor vehicula,
+			nec faucibus nisl placerat. Donec viverra laoreet bibendum. Nulla
+			convallis sem vel sapien pulvinar convallis. In id nisi at magna
+			malesuada porttitor non vitae erat.
 		</p>
 	</section>
+
+	<!-- ============================================================
+	SCRIPTS DE PARALLAX
+	============================================================ -->
+	<!--
+	1. Se carga la librería Rellax.js desde un CDN público.
+	2. Se carga el script local `parallax-init.js`, ubicado en
+	   src/main/resources/static/js/parallax-init.js.
+
+	   Spring Boot sirve automáticamente todos los archivos dentro
+	   de /static como recursos públicos.
+	   Por tanto, el archivo estará disponible en la URL:
+	       http://localhost:8080/js/parallax-init.js
+
+	   El atributo `th:src="@{/js/parallax-init.js}"` genera la ruta
+	   correcta en función del contexto de la aplicación.
+	-->
+	<script src="https://unpkg.com/rellax@1.12.1/rellax.min.js"></script>
+	<script th:src="@{/js/parallax-init.js}"></script>
 </main>
 
-<footer th:replace="layout :: footer"></footer>
-</body>
 </html>
