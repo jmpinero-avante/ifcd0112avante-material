@@ -12,6 +12,7 @@ import com.example.htmlapp.model.db.User;
 import com.example.htmlapp.model.db.UserRepository;
 import com.example.htmlapp.model.enums.SortDirection;
 import com.example.htmlapp.model.enums.UserOrderField;
+import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -89,16 +90,16 @@ public class UserListService {
 	 * elimine o modifique a sí mismo.
 	 *
 	 * Si, tras excluir al usuario actual, no queda ningún ID válido
-	 * en la lista, se lanza una IllegalArgumentException.
+	 * en la lista, se lanza una OperationFailedException.
 	 *
 	 * @param ids     Lista de IDs de usuario.
 	 * @param isAdmin Nuevo valor para el campo isAdmin.
-	 * @throws SecurityException         si el usuario no tiene permisos de administrador.
-	 * @throws IllegalArgumentException  si no hay usuarios válidos para modificar.
+	 * @throws SecurityException        si el usuario no tiene permisos de administrador.
+	 * @throws OperationFailedException si no hay usuarios válidos para modificar.
 	 */
 	@Transactional
 	public void setAdminStatusBulk(List<Integer> ids, boolean isAdmin)
-		throws SecurityException, IllegalArgumentException {
+		throws SecurityException, OperationFailedException {
 
 		List<Integer> targetIds = getFilteredUserIds(ids);
 
@@ -114,15 +115,15 @@ public class UserListService {
 	 * Este método no permite borrar al usuario logado.
 	 *
 	 * Si, tras excluir al usuario actual, no queda ningún ID válido
-	 * en la lista, se lanza una IllegalArgumentException.
+	 * en la lista, se lanza una OperationFailedException.
 	 *
 	 * @param ids Lista de IDs de usuario a eliminar.
-	 * @throws SecurityException         si el usuario no tiene permisos de administrador.
-	 * @throws IllegalArgumentException  si no hay usuarios válidos para borrar.
+	 * @throws SecurityException        si el usuario no tiene permisos de administrador.
+	 * @throws OperationFailedException si no hay usuarios válidos para borrar.
 	 */
 	@Transactional
 	public void deleteUsersBulk(List<Integer> ids)
-		throws SecurityException, IllegalArgumentException {
+		throws SecurityException, OperationFailedException {
 
 		List<Integer> targetIds = getFilteredUserIds(ids);
 
@@ -134,15 +135,16 @@ public class UserListService {
 	 * excluyendo siempre al usuario logado (para impedir que se
 	 * modifique o borre a sí mismo).
 	 *
-	 * Si tras el filtrado no queda ningún ID válido, lanza una excepción.
+	 * Si tras el filtrado no queda ningún ID válido, lanza una excepción
+	 * OperationFailedException con un mensaje descriptivo.
 	 *
 	 * @param ids Lista original de IDs recibida en la operación bulk.
 	 * @return Lista de IDs válidos tras excluir al usuario actual.
-	 * @throws SecurityException         si el usuario actual no tiene permisos.
-	 * @throws IllegalArgumentException  si la lista queda vacía tras el filtrado.
+	 * @throws SecurityException        si el usuario actual no tiene permisos.
+	 * @throws OperationFailedException si la lista queda vacía tras el filtrado.
 	 */
 	private List<Integer> getFilteredUserIds(List<Integer> ids)
-		throws SecurityException, IllegalArgumentException {
+		throws SecurityException, OperationFailedException {
 
 		User admin = permissionsService.checkAdminPermission();
 		Integer currentUserId = admin.getId();
@@ -152,7 +154,7 @@ public class UserListService {
 			.collect(Collectors.toList());
 
 		if (filteredIds.isEmpty()) {
-			throw new IllegalArgumentException(
+			throw new OperationFailedException(
 				"No hay usuarios válidos para procesar la operación. " +
 				"El usuario actual no puede modificarse ni eliminarse a sí mismo."
 			);
@@ -189,16 +191,16 @@ public class UserListService {
  *
  * Además, se excluye siempre al usuario logado de las operaciones en bloque.
  * Si no queda ningún usuario tras esa exclusión, se lanza una excepción
- * IllegalArgumentException para notificarlo explícitamente.
+ * OperationFailedException para notificarlo explícitamente.
  *
  * Las cláusulas "throws" se incluyen explícitamente para documentar que
  * estos métodos pueden lanzar tanto errores de permisos (SecurityException)
- * como errores de validación de datos (IllegalArgumentException).
+ * como errores de validación de datos (OperationFailedException).
  *
  * ----------------------------------------------------------------------------
  * NOTA SOBRE LAS EXCEPCIONES NO COMPROBADAS (RuntimeException)
  * ----------------------------------------------------------------------------
- * Aunque SecurityException e IllegalArgumentException son excepciones
+ * Aunque SecurityException y OperationFailedException son excepciones
  * no comprobadas (unchecked), se declaran explícitamente en los métodos
  * para documentar claramente los posibles puntos de fallo y mejorar la
  * legibilidad del código, especialmente en entornos educativos.
