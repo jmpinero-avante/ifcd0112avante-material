@@ -1,4 +1,4 @@
-c<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 <html th:replace="~{fragments/layout :: layout(
 	title='Página principal - HtmlApp',
 	content=~{::main}
@@ -25,7 +25,14 @@ desde el layout (fragments/layout.html) cuando hay sesión activa.
 	<!--
 	El elemento con clase "parallax" sirve de capa de fondo sobre la
 	cual se aplica el efecto de desplazamiento.
-	El atributo `data-rellax-speed` controla la intensidad del efecto.
+
+	El atributo `data-rellax-speed` define la velocidad del efecto.
+	Valores negativos hacen que el fondo se mueva más lentamente
+	que el contenido en primer plano (efecto de profundidad).
+
+	Ejemplo:
+	  data-rellax-speed="-3" → fondo se mueve lentamente.
+	  data-rellax-speed="5"  → fondo se mueve más rápido.
 	-->
 	<div class="parallax" data-rellax-speed="-3"></div>
 
@@ -61,6 +68,9 @@ desde el layout (fragments/layout.html) cuando hay sesión activa.
 	============================================================ -->
 	<!--
 	1. Se carga la librería Rellax.js desde un CDN público.
+	   Esta librería lee los atributos `data-rellax-*` de cada
+	   elemento HTML y aplica el efecto Parallax automáticamente.
+
 	2. Se carga el script local `parallax-init.js`, ubicado en
 	   src/main/resources/static/js/parallax-init.js.
 
@@ -69,8 +79,9 @@ desde el layout (fragments/layout.html) cuando hay sesión activa.
 	   Por tanto, el archivo estará disponible en la URL:
 	       http://localhost:8080/js/parallax-init.js
 
-	   El atributo `th:src="@{/js/parallax-init.js}"` genera la ruta
-	   correcta en función del contexto de la aplicación.
+	3. En este proyecto, la velocidad del efecto se define en el
+	   atributo `data-rellax-speed` del HTML, por lo que el script
+	   parallax-init.js solo inicializa la librería (sin pasar speed).
 	-->
 	<script src="https://unpkg.com/rellax@1.12.1/rellax.min.js"></script>
 	<script th:src="@{/js/parallax-init.js}"></script>
