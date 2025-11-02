@@ -1,0 +1,85 @@
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
+
+/* ==========================================================================
+	 ESTILOS ESPECÍFICOS PARA PÁGINAS DE ERROR
+	 ========================================================================== */
+
+.error-card {
+	max-width: 600px;
+	margin: 6rem auto;
+	background: white;
+	padding: 2.5rem;
+	border-radius: var(--border-radius);
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+	text-align: center;
+	position: relative;
+	z-index: 10;
+}
+
+.error-card h1 {
+	font-size: 2rem;
+	color: var(--color-error);
+	margin-bottom: 1rem;
+}
+
+.error-card .lead {
+	color: var(--color-text);
+	font-size: 1.1rem;
+	margin-bottom: 1.2rem;
+}
+
+.error-card p.code {
+	font-size: 0.9rem;
+	color: var(--color-muted);
+	margin-top: 1rem;
+}
+
+.error-card .actions {
+	margin-top: 2rem;
+}
+
+.error-card .btn {
+	background-color: var(--color-accent);
+	color: white;
+	padding: 0.75rem 1.5rem;
+	font-size: 1rem;
+}
+
+.error-card .btn:hover {
+	background-color: var(--color-accent-hover);
+}
+
+/* Efecto de aparición suave */
+.error-card {
+	animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+	0% {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Fondo parallax detrás del error */
+.parallax {
+	filter: blur(2px) brightness(0.85);
+}
+
+/* Ajustes de footer */
+footer {
+	margin-top: 5rem;
+	font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.error-card {
+		margin: 3rem 1rem;
+		padding: 2rem 1.2rem;
+	}
+}

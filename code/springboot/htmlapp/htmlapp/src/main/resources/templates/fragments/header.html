@@ -1,0 +1,42 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!DOCTYPE html>
+<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title th:text="${title} ?: 'HtmlApp'">HtmlApp</title>
+
+	<!-- Estilos globales -->
+	<link rel="stylesheet" href="/css/base.css" />
+	<link rel="stylesheet" href="/css/error.css" th:if="${pageType == 'error'}" />
+
+	<!-- Fuente profesional y favicon opcional -->
+	<link rel="icon" href="/img/favicon.ico" type="image/x-icon" />
+</head>
+
+<body>
+	<header th:fragment="header">
+		<nav class="topbar">
+			<!-- Si hay usuario logado -->
+			<div class="topbar-left" th:if="${loggedUserName != null}">
+				<span class="user" th:text="${loggedUserName}">Usuario</span>
+				<span class="sep">·</span>
+				<time class="server-time" th:text="${serverNow}">2025-11-02 16:00</time>
+			</div>
+
+			<!-- Si no hay usuario logado -->
+			<div class="topbar-left" th:if="${loggedUserName == null}">
+				<span>HtmlApp</span>
+			</div>
+
+			<!-- Enlace lateral opcional (ejemplo: menú lateral) -->
+			<div class="topbar-right">
+				<a th:if="${loggedUserName != null}" class="btn" th:href="@{/logout}">Salir</a>
+			</div>
+		</nav>
+
+		<!-- Capa de fondo Parallax -->
+		<div class="parallax rellax" data-rellax-speed="-2" aria-hidden="true"></div>
+	</header>
+</body>
+</html>

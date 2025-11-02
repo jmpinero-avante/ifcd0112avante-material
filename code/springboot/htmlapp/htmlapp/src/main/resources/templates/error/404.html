@@ -1,53 +1,28 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 <!DOCTYPE html>
-<html lang="es-ES">
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>Página no encontrada (404)</title>
-	<link rel="stylesheet" href="/css/base.css" />
-	<link rel="stylesheet" href="/css/error.css" />
-</head>
+<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="layout :: head('Página no encontrada (404)')"></head>
+
 <body>
-	<header>
-		<nav class="topbar">
-			<div class="topbar-left" th:if="${loggedUserName != null}">
-				<span class="user" th:text="${loggedUserName}">Usuario</span>
-				<span class="sep">·</span>
-				<time class="server-time" th:text="${serverNow}">2025-11-02 16:00</time>
-			</div>
-			<div class="topbar-left" th:if="${loggedUserName == null}">
-				<span>Aplicación de ejemplo</span>
-			</div>
-		</nav>
-	</header>
+<header th:replace="layout :: header"></header>
 
-	<div class="parallax rellax" data-rellax-speed="-2" aria-hidden="true"></div>
+<main th:replace="layout :: body">
+	<section class="error-card" role="alert">
+		<h1>Página no encontrada</h1>
+		<p class="lead">La página solicitada no existe o ha sido movida.</p>
+		<p th:if="${errorMessage}" th:text="${errorMessage}">
+			Compruebe la dirección e inténtelo de nuevo.
+		</p>
+		<p class="code">
+			Código de error: <strong th:text="${errorCode}">404</strong>
+		</p>
+		<div class="actions">
+			<a class="btn" th:href="@{/}">Volver al inicio</a>
+		</div>
+	</section>
+</main>
 
-	<main>
-		<section class="error-card" role="alert" aria-live="polite">
-			<h1>Página no encontrada</h1>
-			<p class="lead">La página solicitada no existe o ha sido movida.</p>
-
-			<p th:if="${errorMessage}" th:text="${errorMessage}">
-				Compruebe la URL e inténtelo de nuevo.
-			</p>
-
-			<p class="code">
-				Código de error: <strong th:text="${errorCode}">404</strong>
-			</p>
-
-			<div class="actions">
-				<a class="btn" href="/" th:href="@{/}">Volver al inicio</a>
-			</div>
-		</section>
-	</main>
-
-	<footer>
-		<small>&copy; 2025 HtmlApp</small>
-	</footer>
-
-	<script src="/js/rellax.min.js"></script>
-	<script src="/js/parallax-init.js"></script>
+<footer th:replace="layout :: footer"></footer>
 </body>
 </html>
