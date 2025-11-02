@@ -6,34 +6,51 @@ PARALLAX-INIT.JS
 ============================================================
 Script de inicialización del efecto Parallax en HtmlApp.
 
-Utiliza la librería externa Rellax.js, cargada desde CDN en la
-página principal (main.html). Este archivo activa el efecto una
-vez que el DOM está listo.
+Este archivo activa la librería externa Rellax.js, que se carga desde
+un CDN en la página `main.html`. El objetivo es aplicar el efecto
+"parallax" a los elementos con clase `.parallax`.
 
-Ubicación:
+------------------------------------------------------------
+UBICACIÓN Y ACCESO
+------------------------------------------------------------
+Este archivo se encuentra en:
   src/main/resources/static/js/parallax-init.js
 
-Se referencia en main.html mediante:
+Spring Boot sirve automáticamente los archivos ubicados en `/static`
+como recursos públicos. Por tanto, estará disponible en:
+  http://localhost:8080/js/parallax-init.js
+
+En el HTML se referencia usando:
   <script th:src="@{/js/parallax-init.js}"></script>
 */
 
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("[HtmlApp] Iniciando efecto Parallax...");
 
-	// Verifica que Rellax esté disponible
+	// ------------------------------------------------------------
+	// 1. Comprobación de que la librería Rellax está disponible
+	// ------------------------------------------------------------
 	if (typeof Rellax === "undefined") {
-		console.error("Rellax.js no está cargado. Verifica el CDN.");
+		console.error("Rellax.js no está cargado. Verifica el CDN o la conexión.");
 		return;
 	}
 
 	/*
-	Inicializa el efecto Parallax sobre los elementos con clase .parallax.
+	------------------------------------------------------------
+	2. Inicialización del efecto
+	------------------------------------------------------------
 
-	IMPORTANTE:
-	-----------
-	Si los elementos definen el atributo `data-rellax-speed` en su HTML,
-	Rellax usará esos valores individuales de velocidad y no es necesario
-	establecer la opción `speed` aquí.
+	La librería Rellax busca automáticamente en el DOM todos los
+	elementos que coincidan con el selector proporcionado (en este
+	caso, '.parallax') y les aplica el desplazamiento según los
+	atributos `data-rellax-*` definidos en el HTML.
+
+	Por ejemplo:
+	  <div class="parallax" data-rellax-speed="-3"></div>
+
+	En este caso, no es necesario pasar ninguna configuración extra
+	en el constructor (como { speed: -3 }), ya que el atributo
+	`data-rellax-speed` tiene prioridad sobre las opciones globales.
 	*/
 	new Rellax(".parallax");
 
