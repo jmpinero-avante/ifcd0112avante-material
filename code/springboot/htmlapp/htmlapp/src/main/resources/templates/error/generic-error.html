@@ -2,26 +2,19 @@
 <!DOCTYPE html>
 <html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="layout :: head('Error inesperado (500)')"></head>
+<head th:replace="layout :: head-error('Error - Ocurrió un problema')"></head>
 
 <body>
-<header th:replace="layout :: header"></header>
-
-<main th:replace="layout :: body">
-	<section class="error-card" role="alert">
-		<h1>Error inesperado</h1>
-		<p class="lead">
-			Se ha producido un error no esperado. Por favor, contacte con el administrador.
+	<div class="error-container">
+		<h1 class="error-code">ERROR</h1>
+		<p class="error-message" th:text="${errorMessage}">
+			Se ha producido un error al procesar tu solicitud.
 		</p>
-		<p class="code">
-			Código de error: <strong th:text="${errorCode}">500</strong>
-		</p>
-		<div class="actions">
-			<a class="btn" th:href="@{/}">Volver al inicio</a>
+		<div class="error-actions">
+			<a th:href="@{/}" class="error-link">Volver al inicio</a>
+			<a href="javascript:history.back()" class="error-link"
+			   style="background-color: var(--color-muted);">Volver atrás</a>
 		</div>
-	</section>
-</main>
-
-<footer th:replace="layout :: footer"></footer>
+	</div>
 </body>
 </html>

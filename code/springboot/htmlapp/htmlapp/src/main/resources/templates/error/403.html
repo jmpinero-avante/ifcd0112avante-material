@@ -2,27 +2,15 @@
 <!DOCTYPE html>
 <html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="layout :: head('Acceso denegado (403)')"></head>
+<head th:replace="layout :: head-error('Error 403 - Acceso denegado')"></head>
 
 <body>
-<header th:replace="layout :: header"></header>
-
-<main th:replace="layout :: body">
-	<section class="error-card" role="alert">
-		<h1>Acceso denegado</h1>
-		<p class="lead">No dispone de permisos para acceder a este recurso.</p>
-		<p th:if="${errorMessage}" th:text="${errorMessage}">
-			No tiene privilegios suficientes para realizar esta acción.
+	<div class="error-container">
+		<h1 class="error-code">403</h1>
+		<p class="error-message">
+			No tienes permisos para acceder a esta página o realizar esta acción.
 		</p>
-		<p class="code">
-			Código de error: <strong th:text="${errorCode}">403</strong>
-		</p>
-		<div class="actions">
-			<a class="btn" th:href="@{/}">Volver al inicio</a>
-		</div>
-	</section>
-</main>
-
-<footer th:replace="layout :: footer"></footer>
+		<a th:href="@{/}" class="error-link">Volver al inicio</a>
+	</div>
 </body>
 </html>

@@ -19,8 +19,7 @@
 		<div th:replace="fragments/auth-message :: message(${errorMessage}, 'error')"></div>
 		<div th:replace="fragments/auth-message :: message(${successMessage}, 'success')"></div>
 
-		<form method="post" th:action="@{/register}" th:object="${userForm}"
-		      novalidate>
+		<form method="post" th:action="@{/register}" th:object="${userForm}" novalidate>
 
 			<label for="fullName">Nombre completo</label>
 			<input type="text" id="fullName" name="fullName"

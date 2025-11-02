@@ -1,85 +1,72 @@
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
 
 /* ==========================================================================
-	 ESTILOS ESPECÍFICOS PARA PÁGINAS DE ERROR
-	 ========================================================================== */
+ESTILOS PARA PÁGINAS DE ERROR (403, 404, 500)
+========================================================================== */
 
-.error-card {
-	max-width: 600px;
-	margin: 6rem auto;
-	background: white;
-	padding: 2.5rem;
-	border-radius: var(--border-radius);
-	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-	text-align: center;
-	position: relative;
-	z-index: 10;
+@import url('variables.css');
+@import url('utilities.css');
+@import url('responsive.css'); /* Hereda comportamiento móvil global */
+
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background-color: var(--color-bg);
+	font-family: 'Inter', system-ui, sans-serif;
+	color: var(--color-text);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.error-card h1 {
-	font-size: 2rem;
+.error-container {
+	text-align: center;
+	background-color: white;
+	padding: 3rem 2.5rem;
+	border-radius: var(--border-radius);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+	max-width: 500px;
+	margin: 2rem;
+}
+
+h1.error-code {
+	font-size: 4rem;
+	font-weight: 700;
 	color: var(--color-error);
 	margin-bottom: 1rem;
 }
 
-.error-card .lead {
-	color: var(--color-text);
+p.error-message {
 	font-size: 1.1rem;
-	margin-bottom: 1.2rem;
-}
-
-.error-card p.code {
-	font-size: 0.9rem;
 	color: var(--color-muted);
-	margin-top: 1rem;
+	margin-bottom: 2rem;
 }
 
-.error-card .actions {
-	margin-top: 2rem;
-}
-
-.error-card .btn {
+a.error-link {
+	display: inline-block;
 	background-color: var(--color-accent);
 	color: white;
-	padding: 0.75rem 1.5rem;
-	font-size: 1rem;
+	padding: 0.7rem 1.4rem;
+	border-radius: var(--border-radius);
+	text-decoration: none;
+	font-weight: 500;
+	transition: background-color 0.3s ease;
 }
 
-.error-card .btn:hover {
+a.error-link:hover {
 	background-color: var(--color-accent-hover);
 }
 
-/* Efecto de aparición suave */
-.error-card {
-	animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-	0% {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-/* Fondo parallax detrás del error */
-.parallax {
-	filter: blur(2px) brightness(0.85);
-}
-
-/* Ajustes de footer */
-footer {
-	margin-top: 5rem;
-	font-size: 0.85rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-	.error-card {
-		margin: 3rem 1rem;
+/* Ajustes responsive simples */
+@media (max-width: 480px) {
+	.error-container {
 		padding: 2rem 1.2rem;
+	}
+	h1.error-code {
+		font-size: 3rem;
+	}
+	p.error-message {
+		font-size: 1rem;
 	}
 }

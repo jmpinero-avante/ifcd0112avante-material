@@ -2,27 +2,19 @@
 <!DOCTYPE html>
 <html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="layout :: head('Error en la operación')"></head>
+<head th:replace="layout :: head-error('Error en la operación')"></head>
 
 <body>
-<header th:replace="layout :: header"></header>
-
-<main th:replace="layout :: body">
-	<section class="error-card" role="alert">
-		<h1>Error en la operación</h1>
-		<p class="lead">No se pudo completar la acción solicitada.</p>
-		<p th:if="${errorMessage}" th:text="${errorMessage}">
-			Se ha producido un error de integridad (por ejemplo, email duplicado).
+	<div class="error-container">
+		<h1 class="error-code">OPERACIÓN</h1>
+		<p class="error-message" th:text="${errorMessage}">
+			No se pudo completar la operación solicitada.
 		</p>
-		<p class="code">
-			Código de error: <strong th:text="${errorCode}">409</strong>
-		</p>
-		<div class="actions">
-			<a class="btn" th:href="@{/}">Volver al inicio</a>
+		<div class="error-actions">
+			<a href="javascript:history.back()" class="error-link"
+			   style="background-color: var(--color-muted);">Volver atrás</a>
+			<a th:href="@{/}" class="error-link">Ir a la página principal</a>
 		</div>
-	</section>
-</main>
-
-<footer th:replace="layout :: footer"></footer>
+	</div>
 </body>
 </html>
