@@ -48,6 +48,9 @@ public class UserListService {
 	/**
 	 * Devuelve una lista de todos los usuarios, con orden dinámico.
 	 *
+	 * El usuario logado (si es admin) también se devuelve en el listado.
+	 * En caso de que se quiera excluir, puede filtrarse en el controlador.
+	 *
 	 * @param orderBy   Campo por el que ordenar (EMAIL, FULL_NAME o null).
 	 * @param direction Dirección del orden (ASC o DESC).
 	 * @return Lista ordenada de usuarios.
@@ -67,10 +70,10 @@ public class UserListService {
 		 * bloque 'default', que ordena por la fecha de creación (creationTimestamp).
 		 */
 		Comparator<User> comparator = switch (orderBy) {
-			case EMAIL -> Comparator.comparing(
-				User::getEmail, String.CASE_INSENSITIVE_ORDER);
-			case FULL_NAME -> Comparator.comparing(
-				User::getFullName, String.CASE_INSENSITIVE_ORDER);
+			case EMAIL -> Comparator.comparing(User::getEmail,
+				String.CASE_INSENSITIVE_ORDER);
+			case FULL_NAME -> Comparator.comparing(User::getFullName,
+				String.CASE_INSENSITIVE_ORDER);
 			default -> Comparator.comparing(User::getCreationTimestamp);
 		};
 
@@ -90,12 +93,12 @@ public class UserListService {
 	 * elimine o modifique a sí mismo.
 	 *
 	 * Si, tras excluir al usuario actual, no queda ningún ID válido
-	 * en la lista, se lanza una OperationFailedException.
+	 * en la lista, se lanza una OperationFailedException (HTTP 422).
 	 *
 	 * @param ids     Lista de IDs de usuario.
 	 * @param isAdmin Nuevo valor para el campo isAdmin.
-	 * @throws SecurityException        si el usuario no tiene permisos de administrador.
-	 * @throws OperationFailedException si no hay usuarios válidos para modificar.
+	 * @throws SecurityException         si el usuario no tiene permisos de administrador.
+	 * @throws OperationFailedException  si no hay usuarios válidos para modificar.
 	 */
 	@Transactional
 	public void setAdminStatusBulk(List<Integer> ids, boolean isAdmin)
@@ -115,11 +118,11 @@ public class UserListService {
 	 * Este método no permite borrar al usuario logado.
 	 *
 	 * Si, tras excluir al usuario actual, no queda ningún ID válido
-	 * en la lista, se lanza una OperationFailedException.
+	 * en la lista, se lanza una OperationFailedException (HTTP 422).
 	 *
 	 * @param ids Lista de IDs de usuario a eliminar.
-	 * @throws SecurityException        si el usuario no tiene permisos de administrador.
-	 * @throws OperationFailedException si no hay usuarios válidos para borrar.
+	 * @throws SecurityException         si el usuario no tiene permisos de administrador.
+	 * @throws OperationFailedException  si no hay usuarios válidos para borrar.
 	 */
 	@Transactional
 	public void deleteUsersBulk(List<Integer> ids)
@@ -135,13 +138,12 @@ public class UserListService {
 	 * excluyendo siempre al usuario logado (para impedir que se
 	 * modifique o borre a sí mismo).
 	 *
-	 * Si tras el filtrado no queda ningún ID válido, lanza una excepción
-	 * OperationFailedException con un mensaje descriptivo.
+	 * Si tras el filtrado no queda ningún ID válido, lanza una excepción.
 	 *
 	 * @param ids Lista original de IDs recibida en la operación bulk.
 	 * @return Lista de IDs válidos tras excluir al usuario actual.
-	 * @throws SecurityException        si el usuario actual no tiene permisos.
-	 * @throws OperationFailedException si la lista queda vacía tras el filtrado.
+	 * @throws SecurityException         si el usuario actual no tiene permisos.
+	 * @throws OperationFailedException  si la lista queda vacía tras el filtrado.
 	 */
 	private List<Integer> getFilteredUserIds(List<Integer> ids)
 		throws SecurityException, OperationFailedException {
@@ -154,9 +156,10 @@ public class UserListService {
 			.collect(Collectors.toList());
 
 		if (filteredIds.isEmpty()) {
+			// 422 Unprocessable Entity → sin usuarios válidos tras el filtrado
 			throw new OperationFailedException(
-				"No hay usuarios válidos para procesar la operación. " +
-				"El usuario actual no puede modificarse ni eliminarse a sí mismo."
+				"No hay usuarios válidos para procesar la operación. "
+				+ "El usuario actual no puede modificarse ni eliminarse a sí mismo.", 422
 			);
 		}
 
@@ -191,17 +194,16 @@ public class UserListService {
  *
  * Además, se excluye siempre al usuario logado de las operaciones en bloque.
  * Si no queda ningún usuario tras esa exclusión, se lanza una excepción
- * OperationFailedException para notificarlo explícitamente.
- *
- * Las cláusulas "throws" se incluyen explícitamente para documentar que
- * estos métodos pueden lanzar tanto errores de permisos (SecurityException)
- * como errores de validación de datos (OperationFailedException).
+ * OperationFailedException con código 422 (Unprocessable Entity),
+ * que indica que la solicitud era válida pero no se puede ejecutar
+ * en el contexto actual (por ejemplo, intentar borrarse a sí mismo).
  *
  * ----------------------------------------------------------------------------
- * NOTA SOBRE LAS EXCEPCIONES NO COMPROBADAS (RuntimeException)
+ * SOBRE LA GESTIÓN DE EXCEPCIONES PERSONALIZADAS
  * ----------------------------------------------------------------------------
- * Aunque SecurityException y OperationFailedException son excepciones
- * no comprobadas (unchecked), se declaran explícitamente en los métodos
- * para documentar claramente los posibles puntos de fallo y mejorar la
- * legibilidad del código, especialmente en entornos educativos.
+ * Las OperationFailedException se muestran en la vista
+ * error/operation-error.html con un código y un mensaje claros.
+ *
+ * Esto permite distinguir los errores de negocio (422, 409, etc.)
+ * de los errores técnicos o de servidor (500).
  */

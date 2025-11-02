@@ -2,6 +2,7 @@
 
 package com.example.htmlapp.model.logic;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -40,7 +41,7 @@ import lombok.RequiredArgsConstructor;
  * a la base de datos: buscar, insertar, actualizar o borrar registros.
  *
  * El servicio añade la "lógica de negocio": validaciones, control de
- * errores, comprobaciones de permisos, y operaciones más complejas que
+ * errores, comprobaciones de permisos y operaciones más complejas que
  * combinan varias consultas o reglas de aplicación.
  */
 @Service
@@ -66,12 +67,9 @@ public class UserService {
 	 * @param email    Email único.
 	 * @param password Contraseña en texto plano.
 	 * @return El usuario recién creado.
-	 * @throws OperationFailedException si el correo ya existe o no se puede crear el usuario.
 	 */
 	@Transactional
-	public User registerUser(String fullName, String email, String password)
-		throws OperationFailedException {
-
+	public User registerUser(String fullName, String email, String password) {
 		String salt = passwordService.generateSalt();
 		String hash = passwordService.hashPassword(password, salt);
 
@@ -86,14 +84,9 @@ public class UserService {
 		try {
 			return userRepository.insert(user);
 		} catch (DataIntegrityViolationException ex) {
-			/*
-			 * Si la base de datos lanza un error por violación de restricción UNIQUE,
-			 * (correo duplicado), convertimos la excepción técnica en una excepción
-			 * de negocio (OperationFailedException), para que pueda ser manejada por
-			 * ErrorControllerAdvice y mostrarse en la plantilla operation-error.html.
-			 */
+			// 409 Conflict → registro duplicado
 			throw new OperationFailedException(
-				"Ya existe un usuario con ese correo electrónico."
+				"Ya existe un usuario con ese correo electrónico.", 409
 			);
 		}
 	}
@@ -111,9 +104,9 @@ public class UserService {
 	@Transactional
 	public User updateUser(User user) {
 		User existing = userRepository.findById(user.getId())
-			.orElseThrow(() -> new IllegalArgumentException(
-				"Usuario no encontrado."
-			));
+			.orElseThrow(() ->
+				new OperationFailedException("El usuario especificado no existe.", 404)
+			);
 
 		// Conserva los valores originales de los campos sensibles
 		user.setIsAdmin(existing.isAdmin());
@@ -126,16 +119,11 @@ public class UserService {
 	/**
 	 * Cambia la contraseña de un usuario.
 	 *
-	 * @param id       ID del usuario al que se le cambia la contraseña.
+	 * @param user     Usuario al que se le cambia la contraseña.
 	 * @param password Nueva contraseña en texto plano.
 	 */
 	@Transactional
-	public void changePassword(int id, String password) {
-		User user = userRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException(
-				"Usuario no encontrado."
-			));
-
+	public void changePassword(User user, String password) {
 		String newSalt = passwordService.generateSalt();
 		String newHash = passwordService.hashPassword(password, newSalt);
 		user.setSalt(newSalt);
@@ -149,7 +137,7 @@ public class UserService {
 	 * @param id Identificador del usuario a eliminar.
 	 */
 	@Transactional
-	public void deleteUser(int id) {
+	public void deleteUser(Integer id) {
 		userRepository.deleteById(id);
 	}
 
@@ -159,8 +147,17 @@ public class UserService {
 	 * @param id Identificador.
 	 * @return Optional<User> con el usuario o vacío si no existe.
 	 */
-	public Optional<User> findById(int id) {
+	public Optional<User> findById(Integer id) {
 		return userRepository.findById(id);
+	}
+
+	/**
+	 * Devuelve la lista completa de usuarios.
+	 *
+	 * @return Lista de usuarios ordenados por fecha de creación.
+	 */
+	public List<User> findAll() {
+		return userRepository.findAll();
 	}
 
 	/**
@@ -175,14 +172,14 @@ public class UserService {
 	 * @return Usuario actualizado.
 	 */
 	@Transactional
-	public User setAdminStatus(int id, boolean isAdmin) {
+	public User setAdminStatus(Integer id, boolean isAdmin) {
 		User updatedUser = userRepository.findById(id)
 			.map(user -> {
 				user.setIsAdmin(isAdmin);
 				return userRepository.save(user);
 			})
 			.orElseThrow(() ->
-				new IllegalArgumentException("El usuario no existe.")
+				new OperationFailedException("El usuario no existe.", 404)
 			);
 
 		return updatedUser;
@@ -221,7 +218,6 @@ public class UserService {
  * ----------------------------------------------------------------------------
  * SOBRE EL CONTROL DE CAMPOS SENSIBLES EN UPDATE
  * ----------------------------------------------------------------------------
- *
  * El método updateUser no permite modificar los campos:
  *   - isAdmin       → privilegios del usuario.
  *   - salt          → semilla criptográfica usada para el hash.
@@ -232,12 +228,6 @@ public class UserService {
  * usuario malintencionado manipule el formulario para escalar sus
  * privilegios o alterar su contraseña sin pasar por los métodos
  * adecuados (como changePassword o setAdminStatus).
- *
- * ----------------------------------------------------------------------------
- * SOBRE EL USO DE @RequiredArgsConstructor
- * ----------------------------------------------------------------------------
- * @RequiredArgsConstructor (de Lombok) genera automáticamente un constructor
- * con todos los campos declarados como final o anotados con @NonNull.
  *
  * ----------------------------------------------------------------------------
  * SOBRE Optional, map(), orElseThrow(), orElse(), orElseGet()
@@ -259,9 +249,4 @@ public class UserService {
  *       .passwordHash("...")
  *       .isAdmin(false)
  *       .build();
- *
- * Ventajas:
- *  - Legibilidad y reducción de errores.
- *  - Objetos más seguros e inmutables.
- *  - Facilita mantener un diseño limpio.
  */

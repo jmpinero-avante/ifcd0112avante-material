@@ -14,202 +14,153 @@ import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Controlador global de manejo de errores.
+ * Controlador global de errores.
  *
- * Captura excepciones y redirige a las plantillas de error personalizadas
- * situadas en /templates/error/.
+ * Centraliza la gestión de excepciones en toda la aplicación.
+ * Sustituye la página “Whitelabel Error Page” de Spring Boot
+ * por nuestras propias vistas de error personalizadas.
  *
  * ----------------------------------------------------------------------------
  * SOBRE @ControllerAdvice
  * ----------------------------------------------------------------------------
- * Esta anotación permite definir un componente que actúa como un "observador"
- * global de excepciones lanzadas en cualquier controlador del proyecto.
- *
- * Cualquier excepción no capturada de manera específica será interceptada aquí,
- * lo que permite devolver una página de error coherente con el diseño general
- * de la aplicación.
- *
- * ----------------------------------------------------------------------------
- * SOBRE @ExceptionHandler
- * ----------------------------------------------------------------------------
- * Cada método dentro de esta clase está anotado con @ExceptionHandler(Tipo.class),
- * lo que indica que manejará las excepciones del tipo especificado (o sus subclases).
- *
- * Spring busca el método más específico disponible:
- *   - Si ocurre una SecurityException → ejecuta handleForbidden().
- *   - Si ocurre un NoHandlerFoundException → ejecuta handleNotFound().
- *   - Si ocurre cualquier otra excepción → ejecuta handleGenericError().
- *
- * Esta jerarquía permite controlar de forma muy precisa qué vista se muestra
- * al usuario en función del tipo de error producido.
+ * Indica que esta clase intercepta excepciones lanzadas desde cualquier
+ * controlador (@Controller) y permite dirigir al usuario a una página
+ * HTML de error coherente con el diseño general de la aplicación.
  *
  * ----------------------------------------------------------------------------
  * SOBRE @Slf4j
  * ----------------------------------------------------------------------------
- * La anotación @Slf4j (Simple Logging Facade for Java) de Lombok genera
- * automáticamente un **atributo estático y final** llamado `log` en la clase,
- * de tipo org.slf4j.Logger.
+ * Lombok genera un logger estático llamado `log` (de tipo org.slf4j.Logger)
+ * que permite registrar mensajes de diagnóstico en distintos niveles:
  *
- * Es equivalente a escribir manualmente:
- *
- *     private static final org.slf4j.Logger log =
- *         org.slf4j.LoggerFactory.getLogger(ErrorControllerAdvice.class);
- *
- * Esto permite usar directamente métodos como:
- *     log.info("Inicio de la aplicación");
- *     log.warn("Acceso no autorizado");
- *     log.error("Fallo crítico en el sistema", ex);
- *     log.debug("Detalles para depuración");
+ *   log.info(...)   → información general.
+ *   log.warn(...)   → advertencias o errores esperables (403, 404...).
+ *   log.error(...)  → errores graves del servidor.
+ *   log.debug(...)  → detalles técnicos y stackTrace (solo en desarrollo).
  *
  * ----------------------------------------------------------------------------
- * NIVELES DE LOG
+ * FILOSOFÍA DE DISEÑO
  * ----------------------------------------------------------------------------
- * Los niveles más comunes de SLF4J son:
- *   - trace → información extremadamente detallada (nivel más bajo)
- *   - debug → información útil para desarrolladores durante la depuración
- *   - info  → mensajes informativos de funcionamiento normal
- *   - warn  → advertencias o situaciones anómalas pero no críticas
- *   - error → errores graves o excepciones que afectan al funcionamiento
- *
- * ----------------------------------------------------------------------------
- * DIFERENCIA ENTRE LOGGING Y CONSOLE OUTPUT
- * ----------------------------------------------------------------------------
- * Usar loggers (como SLF4J) es preferible a System.out.println()
- * porque:
- *   - Permite configurar la salida de logs (archivo, consola, syslog...).
- *   - Controla el nivel de detalle mediante configuración externa (application.yml).
- *   - Facilita auditoría, depuración y mantenimiento.
- *
- * En Spring Boot, el logging está gestionado internamente por Logback,
- * pero el uso de @Slf4j garantiza independencia del framework concreto.
- *
- * ----------------------------------------------------------------------------
- * SOBRE EL REGISTRO DE LOGS EN ESTA CLASE
- * ----------------------------------------------------------------------------
- * En este controlador, los logs se usan así:
- *   - log.warn() → para errores del usuario (403, 404, 400)
- *   - log.error() → para fallos del sistema (500)
- *   - log.debug() → para registrar el stack trace completo (solo visible
- *     si el nivel de logging está configurado en DEBUG)
- *
- * Esto permite depurar los errores sin exponer información sensible al usuario.
+ * - El usuario ve solo mensajes comprensibles y visualmente consistentes.
+ * - Los detalles técnicos quedan registrados en los logs.
+ * - No se expone información sensible en producción.
  */
+
 @Slf4j
 @ControllerAdvice
 public class ErrorControllerAdvice {
 
-	/**
-	 * Maneja errores de acceso no autorizado o permisos insuficientes (403).
-	 */
-	@ExceptionHandler(SecurityException.class)
-	@ResponseStatus(HttpStatus.FORBIDDEN)
-	public String handleForbidden(SecurityException ex, Model model) {
-		log.warn("Acceso no autorizado: {}", ex.getMessage());
-		log.debug("Detalles de la excepción:", ex);
-		model.addAttribute("errorMessage", ex.getMessage());
-		return "error/403";
-	}
-
-	/**
-	 * Maneja errores de recurso no encontrado (404).
-	 *
-	 * Esta excepción suele lanzarse cuando no existe un controlador o ruta
-	 * que coincida con la URL solicitada por el usuario.
-	 */
+	// -------------------------------------------------------------------------
+	// 404 - Página no encontrada
+	// -------------------------------------------------------------------------
 	@ExceptionHandler(NoHandlerFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public String handleNotFound(NoHandlerFoundException ex, Model model) {
-		log.warn("Página no encontrada: {}", ex.getRequestURL());
-		log.debug("Detalles de la excepción:", ex);
-		model.addAttribute("errorMessage", "La página solicitada no existe.");
+		log.warn("Recurso no encontrado: {}", ex.getRequestURL());
+		log.debug("StackTrace:", ex);
+
+		model.addAttribute("errorCode", 404);
+		model.addAttribute("title", "Página no encontrada");
 		return "error/404";
 	}
 
-	/**
-	 * Maneja errores de solicitud incorrecta (400).
-	 *
-	 * Este tipo de error se usa cuando la petición contiene parámetros
-	 * inválidos, formatos erróneos o datos no procesables.
-	 *
-	 * Puede ocurrir, por ejemplo, si el usuario manipula manualmente
-	 * la URL o si se envían datos incompletos en un formulario.
-	 */
+	// -------------------------------------------------------------------------
+	// 403 - Acceso denegado
+	// -------------------------------------------------------------------------
+	@ExceptionHandler(SecurityException.class)
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	public String handleForbidden(SecurityException ex, Model model) {
+		log.warn("Acceso denegado: {}", ex.getMessage());
+		log.debug("StackTrace:", ex);
+
+		model.addAttribute("errorCode", 403);
+		model.addAttribute("title", "Acceso denegado");
+		return "error/403";
+	}
+
+	// -------------------------------------------------------------------------
+	// 400 - Solicitud incorrecta
+	// -------------------------------------------------------------------------
 	@ExceptionHandler(IllegalArgumentException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public String handleBadRequest(IllegalArgumentException ex, Model model) {
-		log.warn("Petición incorrecta: {}", ex.getMessage());
-		log.debug("Detalles de la excepción:", ex);
-		model.addAttribute("errorMessage", ex.getMessage());
+		log.warn("Solicitud incorrecta: {}", ex.getMessage());
+		log.debug("StackTrace:", ex);
+
+		model.addAttribute("errorCode", 400);
+		model.addAttribute("title", "Solicitud incorrecta");
 		return "error/400";
 	}
 
+	// -------------------------------------------------------------------------
+	// 500 - Error en operación de negocio
+	// -------------------------------------------------------------------------
 	/**
-	 * Maneja errores de operación fallida (por ejemplo, al actualizar
-	 * o eliminar datos en base de datos).
+	 * Maneja las excepciones de tipo OperationFailedException,
+	 * usadas para errores funcionales o de negocio.
 	 *
-	 * Este caso puede incluir fallos de integridad, restricciones UNIQUE,
-	 * o cualquier otro problema de negocio que impida completar la acción.
+	 * Este método utiliza el código HTTP 500, pero además puede
+	 * mostrar un código numérico alternativo definido en la propia
+	 * excepción (por ejemplo, 409 o 422).
 	 *
-	 * Se lanza explícitamente desde los servicios mediante la clase
-	 * OperationFailedException (definida en model.logic.exceptions).
+	 * @param ex Excepción personalizada de operación fallida.
+	 * @param model Modelo de Thymeleaf.
+	 * @return Vista "error/operation-error".
 	 */
 	@ExceptionHandler(OperationFailedException.class)
-	@ResponseStatus(HttpStatus.CONFLICT)
-	public String handleOperationError(OperationFailedException ex, Model model) {
-		log.warn("Error en la operación: {}", ex.getMessage());
-		log.debug("Detalles de la excepción:", ex);
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public String handleOperationFailed(OperationFailedException ex, Model model) {
+		int code = ex.getStatusCode() != 0 ? ex.getStatusCode() : 500;
+
+		log.error("Error en operación de negocio (código {}): {}", code, ex.getMessage());
+		log.debug("StackTrace:", ex);
+
+		model.addAttribute("errorCode", code);
 		model.addAttribute("errorMessage", ex.getMessage());
+		model.addAttribute("title", "Error en la operación");
 		return "error/operation-error";
 	}
 
+	// -------------------------------------------------------------------------
+	// 500 - Error genérico no controlado
+	// -------------------------------------------------------------------------
 	/**
-	 * Captura cualquier otra excepción no manejada explícitamente
-	 * y devuelve una página de error genérica (500 o "generic-error").
+	 * Maneja cualquier otra excepción no prevista.
+	 * Es el último “catch-all” de la aplicación.
 	 *
-	 * Esto garantiza que el usuario no vea un stack trace en el navegador,
-	 * y que toda la experiencia de error sea coherente y controlada.
+	 * @param ex Excepción no controlada.
+	 * @param model Modelo para la vista.
+	 * @return Vista "error/generic-error".
 	 */
 	@ExceptionHandler(Exception.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public String handleGenericError(Exception ex, Model model) {
-		log.error("Error interno en la aplicación: {}", ex.getMessage());
-		log.debug("Stack trace completo:", ex);
+	public String handleGenericException(Exception ex, Model model) {
+		log.error("Error interno del servidor: {}", ex.getMessage());
+		log.debug("StackTrace:", ex);
+
+		model.addAttribute("errorCode", 500);
 		model.addAttribute("errorMessage",
-			"Se ha producido un error interno. Por favor, inténtelo más tarde.");
+			"Ha ocurrido un error inesperado. Inténtalo de nuevo más tarde.");
+		model.addAttribute("title", "Error interno del servidor");
 		return "error/generic-error";
 	}
 }
 
 /*
  * ----------------------------------------------------------------------------
- * SOBRE EL MANEJO DE EXCEPCIONES PERSONALIZADAS
+ * NOTAS ADICIONALES
  * ----------------------------------------------------------------------------
+ * 1. Todas las vistas de error se encuentran en:
+ *    src/main/resources/templates/error/
  *
- * La clase OperationFailedException se encuentra en:
- *   com.example.htmlapp.model.logic.exceptions.OperationFailedException
+ * 2. Los controladores y servicios pueden lanzar excepciones:
+ *      - SecurityException          → acceso denegado (403)
+ *      - IllegalArgumentException   → datos incorrectos (400)
+ *      - OperationFailedException   → error funcional (500 u otro)
+ *      - Exception (genérico)       → error imprevisto (500)
  *
- * Permite lanzar errores específicos desde la capa de servicios cuando
- * ocurre un fallo lógico o de base de datos, y mostrar al usuario una
- * página adaptada como "operation-error.html".
- *
- * ----------------------------------------------------------------------------
- * SOBRE LAS PÁGINAS DE ERROR
- * ----------------------------------------------------------------------------
- *
- * error/400.html     → Peticiones inválidas o incompletas.
- * error/403.html     → Falta de permisos.
- * error/404.html     → Recurso no encontrado.
- * error/500.html     → Error interno o inesperado.
- * error/operation-error.html → Fallos en operaciones específicas.
- * error/generic-error.html   → Fallback general para cualquier otro caso.
- *
- * ----------------------------------------------------------------------------
- * SOBRE LAS BUENAS PRÁCTICAS
- * ----------------------------------------------------------------------------
- *
- * - No se muestra nunca el stack trace ni detalles técnicos al usuario final.
- * - Todos los mensajes visibles son redactados en lenguaje natural.
- * - Los logs guardan la información completa para diagnóstico posterior.
- * - Se usa una estructura coherente y pedagógica para enseñar buenas prácticas
- *   en el manejo de errores en aplicaciones Spring Boot.
+ * 3. Los logs se clasifican en niveles:
+ *      - WARN → Errores esperables del usuario.
+ *      - ERROR → Fallos graves en la lógica o servidor.
+ *      - DEBUG → Detalles de depuración (stackTrace).
  */

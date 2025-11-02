@@ -1,207 +1,168 @@
-# Sistema de Manejo de Errores en *HtmlApp*
+# Arquitectura de manejo de errores en HtmlApp
 
-## Objetivo general
+Este documento explica cómo se gestionan los errores en la aplicación **HtmlApp**,  
+siguiendo las buenas prácticas de Spring Boot, Thymeleaf y SLF4J.  
 
-El sistema de manejo de errores de *HtmlApp* tiene tres metas principales:
-
-1. **Mostrar mensajes claros y coherentes al usuario**, sin exponer detalles técnicos.
-2. **Registrar información completa en logs** (para depuración y análisis posterior).
-3. **Mantener coherencia visual** con el resto de la aplicación mediante plantillas Thymeleaf y el layout global.
-
----
-
-## Estructura del sistema
-
-```
-com.example.htmlapp.controller
- └── ErrorControllerAdvice.java     ← Captura y gestiona excepciones
-
-src/main/resources/templates/error/
- ├── 400.html                       ← Parámetros inválidos
- ├── 403.html                       ← Acceso denegado
- ├── 404.html                       ← No encontrado
- ├── operation-error.html           ← Error de integridad o BD
- └── generic-error.html             ← Error 500 general
-
-src/main/resources/templates/layout.html  ← Layout global (header, footer, parallax)
-```
+Incluye:  
+- Excepciones personalizadas  
+- Controlador global de errores  
+- Estructura de vistas de error  
+- Sistema de logging  
+- Buenas prácticas y propósito didáctico  
 
 ---
 
-## 1. Captura de excepciones con `@ControllerAdvice`
+## 1. Estructura general
 
-`ErrorControllerAdvice` es una clase global de Spring que **intercepta las excepciones** lanzadas por cualquier controlador o servicio.
+```
+src/
+ ├─ main/java/com/example/htmlapp/
+ │   ├─ controller/
+ │   │   └─ ErrorControllerAdvice.java
+ │   ├─ model/logic/exceptions/
+ │   │   └─ OperationFailedException.java
+ │   └─ ...
+ │
+ └─ main/resources/templates/error/
+     ├─ 400.html
+     ├─ 403.html
+     ├─ 404.html
+     ├─ 500.html
+     ├─ generic-error.html
+     ├─ operation-error.html
+     └─ layout-error.html
+```
 
-### Estructura básica
+---
+
+## 2. Filosofía de diseño
+
+El sistema de errores tiene tres objetivos principales:
+
+1. **Seguridad:**  
+   No exponer información sensible al usuario final.  
+   (Los detalles técnicos se registran solo en los logs).
+
+2. **Coherencia visual:**  
+   Todas las páginas de error usan el mismo diseño mediante `layout-error.html`  
+   y los estilos de `error.css`.
+
+3. **Claridad didáctica:**  
+   Cada excepción representa un tipo de error diferente y enseña buenas prácticas de desacoplamiento.
+
+---
+
+## 3. Componentes principales
+
+### a) `OperationFailedException`
+Excepción personalizada para errores de negocio.  
+Permite incluir un `statusCode` numérico opcional (por ejemplo 409 o 422).
 
 ```java
-@ControllerAdvice
-@Slf4j
-public class ErrorControllerAdvice {
-
-  @ExceptionHandler(SecurityException.class)
-  public String handleSecurityException(SecurityException ex, Model model) {
-    log.warn("Acceso denegado: {}", ex.getMessage());
-    log.debug("StackTrace completo", ex);
-    model.addAttribute("errorMessage", ex.getMessage());
-    model.addAttribute("errorCode", 403);
-    return "error/403";
-  }
-
-  @ExceptionHandler(IllegalArgumentException.class)
-  public String handleIllegalArgument(IllegalArgumentException ex, Model model) {
-    log.warn("Solicitud inválida: {}", ex.getMessage());
-    log.debug("StackTrace completo", ex);
-    model.addAttribute("errorMessage", ex.getMessage());
-    model.addAttribute("errorCode", 400);
-    return "error/400";
-  }
-
-  @ExceptionHandler(DataIntegrityViolationException.class)
-  public String handleIntegrity(DataIntegrityViolationException ex, Model model) {
-    log.error("Violación de integridad en BD: {}", ex.getMessage());
-    log.debug("StackTrace completo", ex);
-    model.addAttribute("errorMessage",
-      "La operación no se pudo completar: posible duplicado o dato inválido.");
-    model.addAttribute("errorCode", 409);
-    return "error/operation-error";
-  }
-
-  @ExceptionHandler(NoHandlerFoundException.class)
-  public String handleNotFound(NoHandlerFoundException ex, Model model) {
-    log.warn("Ruta no encontrada: {}", ex.getRequestURL());
-    log.debug("StackTrace completo", ex);
-    model.addAttribute("errorMessage", "La página solicitada no existe.");
-    model.addAttribute("errorCode", 404);
-    return "error/404";
-  }
-
-  @ExceptionHandler(Exception.class)
-  public String handleGeneric(Exception ex, Model model) {
-    log.error("Error inesperado: {}", ex.getMessage());
-    log.debug("StackTrace completo", ex);
-    model.addAttribute("errorMessage",
-      "Se ha producido un error inesperado. Contacte con el administrador.");
-    model.addAttribute("errorCode", 500);
-    return "error/generic-error";
-  }
-}
+throw new OperationFailedException("No se pudo enviar el correo.", 422);
 ```
+
+Vista mostrada: `error/operation-error.html`  
+Código mostrado en pantalla: `422`  
+Código HTTP real: `500` (controlado por @ResponseStatus)
 
 ---
 
-## 2. Integración con las plantillas Thymeleaf
+### b) `ErrorControllerAdvice`
+Clase central del sistema de errores.  
+Usa `@ControllerAdvice` y `@ExceptionHandler` para interceptar excepciones.
 
-Todas las vistas de error utilizan el **layout global `layout.html`**,  
-lo que garantiza un diseño consistente (barra superior, fondo parallax, pie, estilos).
+| Tipo de excepción | Código HTTP | Vista Thymeleaf |
+|--------------------|--------------|------------------|
+| `IllegalArgumentException` | 400 | `error/400.html` |
+| `SecurityException` | 403 | `error/403.html` |
+| `NoHandlerFoundException` | 404 | `error/404.html` |
+| `OperationFailedException` | 500 (u otro) | `error/operation-error.html` |
+| `Exception` (genérica) | 500 | `error/generic-error.html` |
 
-Ejemplo — `templates/error/403.html`:
-
-```html
-<head th:replace="layout :: head('Acceso denegado (403)')"></head>
-<body>
-  <header th:replace="layout :: header"></header>
-
-  <main th:replace="layout :: body">
-    <section class="error-card" role="alert">
-      <h1>Acceso denegado</h1>
-      <p class="lead">No dispone de permisos para acceder a este recurso.</p>
-      <p th:if="${errorMessage}" th:text="${errorMessage}"></p>
-      <p class="code">
-        Código de error: <strong th:text="${errorCode}">403</strong>
-      </p>
-      <div class="actions">
-        <a class="btn" th:href="@{/}">Volver al inicio</a>
-      </div>
-    </section>
-  </main>
-
-  <footer th:replace="layout :: footer"></footer>
-</body>
-```
-
----
-
-## 3. Tipos de errores gestionados
-
-| Tipo de error | Clase capturada | Vista Thymeleaf | Código HTTP | Descripción |
-|----------------|----------------|----------------|--------------|--------------|
-| Acceso denegado | `SecurityException` | `error/403.html` | 403 | Usuario sin permisos |
-| Parámetros inválidos | `IllegalArgumentException` | `error/400.html` | 400 | Argumentos GET/POST erróneos |
-| Violación de integridad | `DataIntegrityViolationException` | `error/operation-error.html` | 409 | Duplicados o errores de BD |
-| No encontrado | `NoHandlerFoundException` | `error/404.html` | 404 | Ruta inexistente |
-| Error general | `Exception` | `error/generic-error.html` | 500 | Fallo no controlado |
+Cada método del controlador:
+- Asigna el código y título adecuados.
+- Añade `errorMessage` y `errorCode` al modelo.
+- Registra el error en los logs con diferentes niveles.
 
 ---
 
 ## 4. Logging y niveles de severidad
 
-| Nivel | Uso | Ejemplo |
-|--------|-----|----------|
-| **WARN** | Errores previstos o controlados (por ejemplo, intento de acceso no autorizado). | "Acceso denegado a recurso /admin" |
-| **ERROR** | Fallos graves o excepciones no controladas. | "Error inesperado al guardar usuario" |
-| **DEBUG** | Trazas completas (stacktrace) para depuración. | "StackTrace completo" |
+| Nivel | Cuándo se usa | Ejemplo |
+|-------|----------------|----------|
+| **WARN** | Errores esperables (403, 404) | `log.warn("Acceso denegado: {}", ex.getMessage());` |
+| **ERROR** | Fallos graves del servidor o lógica | `log.error("Error interno del servidor: {}", ex.getMessage());` |
+| **DEBUG** | Información extendida y stackTrace | `log.debug("StackTrace:", ex);` |
 
-Esto enseña buenas prácticas de logging profesional: **mensajes claros, niveles adecuados y separación de información visible al usuario** (modelo) frente a **información interna** (logs).
-
----
-
-## 5. Flujo completo de un error
-
-```
-Controlador o servicio lanza una excepción
-        ↓
-ErrorControllerAdvice intercepta la excepción
-        ↓
-Se registra el evento en los logs (WARN/ERROR + DEBUG)
-        ↓
-Se añaden al modelo los atributos errorMessage y errorCode
-        ↓
-Spring muestra la plantilla Thymeleaf correspondiente
-        ↓
-El usuario ve un mensaje claro, sin información sensible
-```
+Esto permite mantener los logs limpios en producción,  
+pero obtener trazas detalladas en desarrollo.
 
 ---
 
-## 6. Configuración adicional en `application.yml`
+## 5. Vistas de error (HTML + Thymeleaf)
 
-Asegúrate de que estas opciones están activadas para permitir los errores 404 personalizados:
+Todas las vistas de error heredan el mismo layout:
 
-```yaml
-spring:
-  mvc:
-    throw-exception-if-no-handler-found: true
-  web:
-    resources:
-      add-mappings: false
+### `layout-error.html`
+Define la estructura fija de las páginas:
+- Título y cabecera.
+- Bloque central con `error-code`, `error-message` y botones de acción.
+- Pie de página común.
+
+Las demás vistas (400, 403, 404, 500, etc.) solo definen su fragmento `msg` con el mensaje de error.
+
+Ejemplo (404):
+```html
+<div th:replace="~{layout-error :: errorLayout('404', ~{::msg})}">
+  <p th:fragment="msg">La página que estás buscando no existe.</p>
+</div>
 ```
 
 ---
 
-## 7. Ejemplo de uso didáctico
+## 6. Flujo de un error
 
-Puedes crear una pequeña ruta de prueba para provocar distintos errores:
+1. Un controlador o servicio lanza una excepción.
+2. Spring delega el control a `ErrorControllerAdvice`.
+3. Se selecciona el método correspondiente según el tipo de excepción.
+4. Se registran los detalles en los logs.
+5. Se renderiza una plantilla `error/*.html` con el mensaje amigable.
+
+---
+
+## 7. Ejemplo completo
 
 ```java
-@GetMapping("/test-error/{type}")
-public String testError(@PathVariable String type) {
-  return switch (type) {
-    case "400" -> throw new IllegalArgumentException("Parámetro inválido simulado");
-    case "403" -> throw new SecurityException("Simulación de acceso denegado");
-    case "409" -> throw new DataIntegrityViolationException("Duplicado en BD");
-    case "404" -> throw new NoHandlerFoundException("GET", "/fake-url", null);
-    default -> throw new RuntimeException("Error inesperado simulado");
-  };
+@PostMapping("/register")
+public String register(@RequestParam String email) {
+    if (emailService.exists(email)) {
+        throw new OperationFailedException(
+            "Ya existe un usuario con ese correo electrónico.", 409);
+    }
+    // Registro exitoso...
 }
 ```
 
+Resultado visual:
+```
+Error 409
+Ya existe un usuario con ese correo electrónico.
+[Volver al inicio] [Volver atrás]
+```
+
+En logs:
+```
+ERROR  [ErrorControllerAdvice] - Error en operación de negocio (código 409): Ya existe un usuario con ese correo electrónico.
+DEBUG  StackTrace: com.example.htmlapp.model.logic.exceptions.OperationFailedException: ...
+```
+
 ---
 
-## Conclusión
+## 8. Buenas prácticas
 
-Este sistema muestra a los alumnos cómo **Spring Boot y Thymeleaf** permiten:
-- Gestionar errores globalmente con `@ControllerAdvice`.
-- Distinguir entre **errores previstos** (400, 403, 409) y **no previstos** (500).
-- Registrar trazas útiles para desarrollo sin exponer detalles al usuario.
-- Mantener un **diseño unificado** con fragmentos y layouts reutilizables.
+- No exponer nunca excepciones de Java directamente al usuario.
+- Centralizar el tratamiento de errores en un solo `@ControllerAdvice`.
+- Separar las excepciones técnicas (500) de las de negocio (OperationFailedException).
+- Usar logs con niveles de severidad adecuados.
+- Mostrar mensajes claros y breves en el front-end.

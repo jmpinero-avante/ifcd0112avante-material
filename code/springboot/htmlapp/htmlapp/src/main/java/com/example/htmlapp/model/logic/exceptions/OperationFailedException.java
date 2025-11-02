@@ -2,63 +2,76 @@
 
 package com.example.htmlapp.model.logic.exceptions;
 
-import java.io.Serial;
-
 /**
- * Excepción de "operación fallida" de la lógica de negocio.
+ * Excepción personalizada para indicar que una operación
+ * de negocio ha fallado.
  *
- * Se utiliza cuando una operación solicitada por el usuario no puede
- * completarse por razones de negocio o de integridad (por ejemplo,
- * violaciones de UNIQUE, estados no válidos, precondiciones incumplidas,
- * etc.).
- *
- * ----------------------------------------------------------------------------
- * CUÁNDO LANZARLA
- * ----------------------------------------------------------------------------
- * - Al intentar actualizar/eliminar un recurso que no cumple las reglas
- *   de negocio.
- * - Cuando la base de datos rechaza la operación por restricciones
- *   lógicas (p. ej., UNIQUE) y queremos elevar un mensaje comprensible.
- * - Para comunicar fallos "esperables" de la operación (no bugs).
+ * Se utiliza en lugar de RuntimeException genérica cuando
+ * se quiere informar de un error funcional (no técnico)
+ * al usuario o a la capa de presentación.
  *
  * ----------------------------------------------------------------------------
- * MANEJO CENTRALIZADO
+ * EJEMPLOS DE USO
  * ----------------------------------------------------------------------------
- * Esta excepción es capturada por ErrorControllerAdvice:
+ *   throw new OperationFailedException("No se pudo enviar el correo");
  *
- *   @ExceptionHandler(OperationFailedException.class)
- *   @ResponseStatus(HttpStatus.CONFLICT)
- *   public String handleOperationError(...)
+ *   throw new OperationFailedException(
+ *       "El saldo es insuficiente para realizar la compra.", 409);
  *
- * De este modo, se muestra la plantilla:
- *   templates/error/operation-error.html
- *
- * Nota: No se anota esta clase con @ResponseStatus para mantener la
- * gestión de códigos HTTP y plantillas de error centralizada en el
- * ControllerAdvice (separación de responsabilidades y mayor control).
+ * ----------------------------------------------------------------------------
+ * SOBRE EL STATUS CODE
+ * ----------------------------------------------------------------------------
+ * Aunque esta excepción usa HTTP 500 por defecto, puede incluir un
+ * código numérico alternativo (409, 422, etc.) para representar
+ * errores específicos de negocio. Esto permite mostrar diferentes
+ * códigos en la interfaz sin cambiar el comportamiento HTTP.
  */
 public class OperationFailedException extends RuntimeException {
 
-	@Serial
 	private static final long serialVersionUID = 1L;
+	private final int statusCode;
 
-	/** Constructor por defecto. */
-	public OperationFailedException() {
-		super("No se pudo completar la operación solicitada.");
-	}
-
-	/** Constructor con mensaje descriptivo. */
+	/**
+	 * Constructor con solo mensaje.
+	 *
+	 * @param message Mensaje descriptivo del error.
+	 */
 	public OperationFailedException(String message) {
 		super(message);
+		this.statusCode = 0; // Valor por defecto (se tratará como 500)
 	}
 
-	/** Constructor con causa encadenada. */
-	public OperationFailedException(Throwable cause) {
-		super(cause);
+	/**
+	 * Constructor con mensaje y código de estado.
+	 *
+	 * @param message    Descripción del error.
+	 * @param statusCode Código HTTP o semántico asociado.
+	 */
+	public OperationFailedException(String message, int statusCode) {
+		super(message);
+		this.statusCode = statusCode;
 	}
 
-	/** Constructor con mensaje y causa encadenada. */
-	public OperationFailedException(String message, Throwable cause) {
-		super(message, cause);
+	/**
+	 * Devuelve el código de estado asociado al error.
+	 *
+	 * Si el valor es 0, el ErrorControllerAdvice mostrará 500.
+	 *
+	 * @return Código numérico del error.
+	 */
+	public int getStatusCode() {
+		return statusCode;
 	}
 }
+
+/*
+ * ----------------------------------------------------------------------------
+ * SOBRE SU USO EN SPRING
+ * ----------------------------------------------------------------------------
+ * Las excepciones de este tipo son capturadas por el controlador
+ * global de errores (ErrorControllerAdvice), que mostrará la
+ * plantilla error/operation-error.html.
+ *
+ * En producción, el usuario solo verá un mensaje amigable.
+ * En los logs, sin embargo, se registrará el error completo.
+ */

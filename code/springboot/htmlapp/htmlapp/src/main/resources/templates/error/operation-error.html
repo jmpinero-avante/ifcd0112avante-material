@@ -2,8 +2,20 @@
 <!-- ==========================================================================
 ERROR DE OPERACIÓN (MENSAJE PERSONALIZADO)
 ========================================================================== -->
-<div th:replace="~{layout-error :: errorLayout(${errorCode} ?: 'Error', ~{::msg})}">
-	<p th:fragment="msg" th:text="${errorMessage}">
-		Ha ocurrido un error al procesar la operación.
+<!--
+Esta plantilla se utiliza para mostrar errores funcionales o de negocio
+producidos durante la ejecución de una operación (por ejemplo, fallos
+al registrar un usuario, procesar un pago o actualizar datos).
+
+El código de error (`errorCode`) y el mensaje (`errorMessage`)
+son proporcionados por el ErrorControllerAdvice.
+
+Si no se especifica un código, se mostrará 500 por defecto.
+-->
+
+<div th:replace="~{layout-error :: errorLayout(${errorCode} ?: 500, ~{::msg})}">
+	<p th:fragment="msg" th:text="${errorMessage} ?: 
+		'Ha ocurrido un error al procesar la operación. Inténtalo de nuevo.'">
+		Ha ocurrido un error al procesar la operación. Inténtalo de nuevo.
 	</p>
 </div>
