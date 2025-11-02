@@ -1,20 +1,28 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
-
-<head th:replace="layout :: head-error('Error en la operación')"></head>
-
-<body>
-	<div class="error-container">
-		<h1 class="error-code">OPERACIÓN</h1>
-		<p class="error-message" th:text="${errorMessage}">
-			No se pudo completar la operación solicitada.
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout-error :: layoutError(
+	      title='Error en la operación',
+	      content=~{::main}
+      )}">
+<main>
+	<section class="error-container">
+		<h1>Error en la operación</h1>
+		<p>La acción solicitada no se ha podido completar correctamente.</p>
+		<p th:if="${errorMessage}" th:text="${errorMessage}">
+			Por favor, revisa los datos o inténtalo de nuevo más tarde.
 		</p>
+
 		<div class="error-actions">
-			<a href="javascript:history.back()" class="error-link"
-			   style="background-color: var(--color-muted);">Volver atrás</a>
-			<a th:href="@{/}" class="error-link">Ir a la página principal</a>
+			<a th:href="@{/}" class="btn">Volver al inicio</a>
+			<a href="javascript:history.back()" class="btn">Volver atrás</a>
 		</div>
-	</div>
-</body>
+	</section>
+</main>
 </html>
+
+<!--
+Este error se muestra cuando una operación del sistema (editar, borrar,
+registrar, etc.) no puede completarse correctamente por un fallo lógico
+o de validación. Muestra el mensaje `errorMessage` si el controlador
+lo añade al modelo.
+-->

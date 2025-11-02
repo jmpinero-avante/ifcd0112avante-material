@@ -163,8 +163,11 @@ public class AuthController {
 	 *     → Registro exitoso. Redirige al usuario ya logado a la página principal.
 	 *
 	 * - "auth/register"
-	 *     → Error de validación o email duplicado. Se recarga el formulario
-	 *       mostrando el mensaje de error correspondiente.
+	 *     → Error de validación local (como contraseñas no coincidentes).
+	 *
+	 * Si ocurre un error de negocio (como email duplicado), se lanza una
+	 * OperationFailedException, que será gestionada globalmente por
+	 * ErrorControllerAdvice y mostrará la plantilla error/operation-error.html.
 	 */
 	@PostMapping("/register")
 	public String processRegister(
@@ -180,21 +183,17 @@ public class AuthController {
 			return "html/auth/register";
 		}
 
-		try {
-			User newUser = userService.registerUser(
-				userForm.getFullName(),
-				email,
-				passwordPlain
-			);
+		// El registro puede lanzar OperationFailedException (por ejemplo, si el email ya existe).
+		User newUser = userService.registerUser(
+			userForm.getFullName(),
+			email,
+			passwordPlain
+		);
 
-			authService.login(email, passwordPlain);
-			model.addAttribute("loggedUserName", newUser.getFullName());
-			return "redirect:/main";
-
-		} catch (IllegalArgumentException ex) {
-			model.addAttribute("errorMessage", ex.getMessage());
-			return "html/auth/register";
-		}
+		// Inicia la sesión automáticamente tras el registro.
+		authService.login(email, passwordPlain);
+		model.addAttribute("loggedUserName", newUser.getFullName());
+		return "redirect:/main";
 	}
 
 	// -------------------------------------------------------------------------

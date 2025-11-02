@@ -1,31 +1,101 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<body>
-
+<!-- ============================================================
+FRAGMENTO: AUTH-MESSAGE (MENSAJES GLOBALES DE AUTENTICACIÓN)
+============================================================ -->
 <!--
-	FRAGMENTO: auth-message
-	-----------------------------------------------------------
-	Se usa para mostrar mensajes de información, éxito o error
-	en las páginas de autenticación (login, registro, etc.).
-	El fragmento puede recibir dos variables:
+Este archivo define un fragmento reutilizable que muestra mensajes
+informativos o de error relacionados con la autenticación de usuarios.
 
-	- message: texto del mensaje (String)
-	- type: tipo de mensaje (info, success, error)
+Se utiliza para mostrar avisos como:
+ - “Has cerrado sesión correctamente.”
+ - “Correo o contraseña incorrectos.”
+ - “Error al registrarse.”
 
-	Ejemplo de uso:
-	  <div th:replace="fragments/auth-message :: message(
-	         'Registro completado correctamente', 'success')"></div>
+El layout principal (`fragments/layout.html`) lo incluye automáticamente
+debajo del contenido principal mediante:
 
-	  <div th:replace="fragments/auth-message :: message(
-	         ${errorMessage}, 'error')"></div>
+    <div th:replace="~{fragments/auth-message :: authMessage}"></div>
+
+De esta forma, cualquier vista puede mostrar mensajes basados en
+parámetros o atributos del modelo sin necesidad de duplicar código.
 -->
+<div th:fragment="authMessage">
+	<!-- ============================================================
+	MENSAJES BASADOS EN PARÁMETROS DE LA PETICIÓN (REQUEST PARAMS)
+	============================================================ -->
+	<!--
+	El atributo `param.logout` es establecido por Spring al realizar
+	una redirección tras el logout. Si está presente, se muestra
+	un mensaje de confirmación.
+	-->
+	<div th:if="${param.logout}" class="text-center mt-2">
+		<p class="text-success">Has cerrado sesión correctamente.</p>
+	</div>
 
-<div th:fragment="message(message, type)"
-     th:if="${message}"
-     th:class="'auth-message ' + ${type}">
-	<p th:text="${message}"></p>
+	<!--
+	El parámetro `param.error` indica un fallo en el login.
+	Esto puede deberse a credenciales incorrectas u otro error
+	de autenticación. Muestra un mensaje de error genérico.
+	-->
+	<div th:if="${param.error}" class="text-center mt-2">
+		<p class="text-error">Correo o contraseña incorrectos.</p>
+	</div>
+
+	<!-- ============================================================
+	MENSAJES BASADOS EN EL MODELO (ATRIBUTOS DEL CONTROLADOR)
+	============================================================ -->
+	<!--
+	Si el controlador añade un atributo `infoMessage` al modelo,
+	se muestra en formato de mensaje informativo.
+	-->
+	<div th:if="${infoMessage}" class="text-center mt-2">
+		<p class="text-info" th:text="${infoMessage}">Mensaje informativo.</p>
+	</div>
+
+	<!--
+	Si el controlador añade un atributo `errorMessage` al modelo,
+	se muestra como mensaje de error destacado.
+	-->
+	<div th:if="${errorMessage}" class="text-center mt-2">
+		<p class="text-error" th:text="${errorMessage}">
+			Ha ocurrido un error.
+		</p>
+	</div>
 </div>
 
-</body>
-</html>
+<!-- ============================================================
+NOTAS DE DISEÑO Y FUNCIONAMIENTO
+============================================================ -->
+<!--
+1. MECANISMO DE FUNCIONAMIENTO
+-------------------------------
+Thymeleaf permite acceder tanto a parámetros GET como a
+atributos del modelo en las vistas.
+
+ - `${param.nombre}`  → lee los parámetros de la URL (por ejemplo ?logout o ?error).
+ - `${atributo}`      → lee los atributos añadidos por el controlador al modelo.
+
+Esto permite mostrar mensajes sin necesidad de lógica adicional
+en las plantillas.
+
+2. ESTILOS
+----------
+Los estilos para los mensajes están definidos en `base.css`:
+
+.text-success { color: var(--color-success); }
+.text-error   { color: var(--color-error); }
+.text-info    { color: var(--color-accent); }
+
+.mt-2 añade un margen superior para separar los mensajes del contenido.
+
+3. OBJETIVO PEDAGÓGICO
+------------------------
+Este fragmento muestra cómo usar Thymeleaf para:
+ - Acceder a parámetros de la request (`param.*`).
+ - Mostrar mensajes condicionalmente (`th:if`).
+ - Usar atributos del modelo desde el controlador.
+
+Es un ejemplo claro de cómo desacoplar la lógica del controlador
+de la presentación, centralizando la visualización de mensajes
+en un único punto de la aplicación.
+-->

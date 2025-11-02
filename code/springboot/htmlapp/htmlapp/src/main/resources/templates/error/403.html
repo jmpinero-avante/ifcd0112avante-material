@@ -1,16 +1,21 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout-error :: layoutError(
+	      title='Error 403 - Acceso denegado',
+	      content=~{::main}
+      )}">
+<main>
+	<section class="error-container">
+		<h1>Error 403</h1>
+		<p>No tienes permisos para acceder a este recurso o realizar esta acción.</p>
+		<p>Si crees que se trata de un error, contacta con el administrador.</p>
 
-<head th:replace="layout :: head-error('Error 403 - Acceso denegado')"></head>
-
-<body>
-	<div class="error-container">
-		<h1 class="error-code">403</h1>
-		<p class="error-message">
-			No tienes permisos para acceder a esta página o realizar esta acción.
-		</p>
-		<a th:href="@{/}" class="error-link">Volver al inicio</a>
-	</div>
-</body>
+		<a th:href="@{/}" class="btn">Volver al inicio</a>
+	</section>
+</main>
 </html>
+
+<!--
+Este error se lanza cuando un usuario intenta acceder a una zona
+sin los permisos adecuados (por ejemplo, sin ser administrador).
+-->

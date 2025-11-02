@@ -2,6 +2,7 @@
 
 package com.example.htmlapp.model.logic;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
  *  - Actualización de datos personales.
  *  - Borrado de cuentas.
  *  - Asignación o retirada de privilegios de administrador.
+ *  - Listado de usuarios (para la parte administrativa).
  *
  * ----------------------------------------------------------------------------
  * SOBRE LA ANOTACIÓN @Service
@@ -65,10 +67,12 @@ public class UserService {
 	 * @param email    Email único.
 	 * @param password Contraseña en texto plano.
 	 * @return El usuario recién creado.
-	 * @throws OperationFailedException si ya existe un usuario con el mismo email.
+	 * @throws OperationFailedException si el correo ya existe o no se puede crear el usuario.
 	 */
 	@Transactional
-	public User registerUser(String fullName, String email, String password) {
+	public User registerUser(String fullName, String email, String password)
+		throws OperationFailedException {
+
 		String salt = passwordService.generateSalt();
 		String hash = passwordService.hashPassword(password, salt);
 
@@ -83,8 +87,14 @@ public class UserService {
 		try {
 			return userRepository.insert(user);
 		} catch (DataIntegrityViolationException ex) {
+			/*
+			 * Si la base de datos lanza un error por violación de restricción UNIQUE,
+			 * (correo duplicado), convertimos la excepción técnica en una excepción
+			 * de negocio (OperationFailedException), para que pueda ser manejada por
+			 * ErrorControllerAdvice y mostrarse en la plantilla operation-error.html.
+			 */
 			throw new OperationFailedException(
-				"Ya existe un usuario con ese correo electrónico.", ex
+				"Ya existe un usuario con ese correo electrónico."
 			);
 		}
 	}
@@ -96,31 +106,22 @@ public class UserService {
 	 * sensibles (isAdmin, salt o passwordHash), copiando siempre
 	 * sus valores originales desde la base de datos antes de guardar.
 	 *
-	 * @param id   Identificador del usuario a modificar.
 	 * @param user Usuario con los nuevos datos personales.
 	 * @return El usuario actualizado.
-	 * @throws OperationFailedException si el usuario no existe o la actualización falla.
 	 */
 	@Transactional
-	public User updateUser(int id, User user) {
-		User existing = userRepository.findById(id)
-			.orElseThrow(() -> new OperationFailedException(
-				"El usuario especificado no existe o fue eliminado."
+	public User updateUser(User user) {
+		User existing = userRepository.findById(user.getId())
+			.orElseThrow(() -> new IllegalArgumentException(
+				"Usuario no encontrado."
 			));
 
 		// Conserva los valores originales de los campos sensibles
 		user.setIsAdmin(existing.isAdmin());
 		user.setSalt(existing.getSalt());
 		user.setPasswordHash(existing.getPasswordHash());
-		user.setId(existing.getId());
 
-		try {
-			return userRepository.save(user);
-		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"No se pudo actualizar el usuario en la base de datos.", ex
-			);
-		}
+		return userRepository.save(user);
 	}
 
 	/**
@@ -128,50 +129,29 @@ public class UserService {
 	 *
 	 * @param id       ID del usuario al que se le cambia la contraseña.
 	 * @param password Nueva contraseña en texto plano.
-	 * @throws OperationFailedException si el usuario no existe o la operación falla.
 	 */
 	@Transactional
 	public void changePassword(int id, String password) {
 		User user = userRepository.findById(id)
-			.orElseThrow(() -> new OperationFailedException(
-				"No se puede cambiar la contraseña: el usuario no existe."
+			.orElseThrow(() -> new IllegalArgumentException(
+				"Usuario no encontrado."
 			));
 
 		String newSalt = passwordService.generateSalt();
 		String newHash = passwordService.hashPassword(password, newSalt);
 		user.setSalt(newSalt);
 		user.setPasswordHash(newHash);
-
-		try {
-			userRepository.save(user);
-		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"No se pudo actualizar la contraseña del usuario.", ex
-			);
-		}
+		userRepository.save(user);
 	}
 
 	/**
 	 * Borra un usuario por su ID.
 	 *
 	 * @param id Identificador del usuario a eliminar.
-	 * @throws OperationFailedException si el usuario no existe o no puede eliminarse.
 	 */
 	@Transactional
 	public void deleteUser(int id) {
-		if (!userRepository.existsById(id)) {
-			throw new OperationFailedException(
-				"No se puede eliminar: el usuario no existe."
-			);
-		}
-
-		try {
-			userRepository.deleteById(id);
-		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"Error al eliminar el usuario de la base de datos.", ex
-			);
-		}
+		userRepository.deleteById(id);
 	}
 
 	/**
@@ -194,7 +174,6 @@ public class UserService {
 	 * @param id      ID del usuario.
 	 * @param isAdmin Nuevo valor del campo isAdmin.
 	 * @return Usuario actualizado.
-	 * @throws OperationFailedException si el usuario no existe o la actualización falla.
 	 */
 	@Transactional
 	public User setAdminStatus(int id, boolean isAdmin) {
@@ -203,11 +182,39 @@ public class UserService {
 				user.setIsAdmin(isAdmin);
 				return userRepository.save(user);
 			})
-			.orElseThrow(() -> new OperationFailedException(
-				"El usuario especificado no existe o no se pudo actualizar."
-			));
+			.orElseThrow(() ->
+				new IllegalArgumentException("El usuario no existe.")
+			);
 
 		return updatedUser;
+	}
+
+	/**
+	 * Verifica que el usuario actual tiene privilegios de administrador.
+	 *
+	 * Este método se utiliza en servicios o controladores que necesiten
+	 * asegurar que la operación solo puede realizarla un usuario con
+	 * rol de administrador.
+	 *
+	 * Si no hay usuario logado o no es administrador, lanza una excepción.
+	 *
+	 * @throws SecurityException si el usuario no está autorizado.
+	 */
+	public void checkAdminPrivileges() {
+		authService.getLoggedUser().ifPresentOrElse(
+			user -> {
+				if (!user.isAdmin()) {
+					throw new SecurityException(
+						"Acceso denegado: el usuario no tiene privilegios de administrador."
+					);
+				}
+			},
+			() -> {
+				throw new SecurityException(
+					"Acceso denegado: no hay usuario logado."
+				);
+			}
+		);
 	}
 }
 

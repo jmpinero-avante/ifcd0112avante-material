@@ -1,13 +1,30 @@
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
 
 /* ==========================================================================
-ESTILOS PARA PÁGINAS DE ERROR (403, 404, 500)
+ESTILOS PARA PÁGINAS DE ERROR (400, 403, 404, 500, ETC.)
 ========================================================================== */
 
+/*
+Este archivo define la apariencia visual de todas las páginas de error.
+
+Mantiene la coherencia estética con el resto de la aplicación, pero
+utiliza una disposición centrada y minimalista, con fondo claro y un
+bloque central destacado para el mensaje de error.
+
+Se carga desde el layout `layout-error.html` y puede reutilizar las
+variables definidas en `variables.css` y utilidades globales.
+*/
+
+/* ============================================================
+IMPORTACIÓN DE VARIABLES Y UTILIDADES COMUNES
+============================================================ */
 @import url('variables.css');
 @import url('utilities.css');
 @import url('responsive.css'); /* Hereda comportamiento móvil global */
 
+/* ============================================================
+CONFIGURACIÓN GLOBAL DEL DOCUMENTO
+============================================================ */
 html, body {
 	margin: 0;
 	padding: 0;
@@ -20,6 +37,9 @@ html, body {
 	justify-content: center;
 }
 
+/* ============================================================
+CONTENEDOR PRINCIPAL DEL ERROR
+============================================================ */
 .error-container {
 	text-align: center;
 	background-color: white;
@@ -30,6 +50,9 @@ html, body {
 	margin: 2rem;
 }
 
+/* ============================================================
+TÍTULO Y MENSAJE
+============================================================ */
 h1.error-code {
 	font-size: 4rem;
 	font-weight: 700;
@@ -43,7 +66,11 @@ p.error-message {
 	margin-bottom: 2rem;
 }
 
-a.error-link {
+/* ============================================================
+BOTONES Y ENLACES DE ACCIÓN
+============================================================ */
+a.error-link,
+a.btn {
 	display: inline-block;
 	background-color: var(--color-accent);
 	color: white;
@@ -52,13 +79,28 @@ a.error-link {
 	text-decoration: none;
 	font-weight: 500;
 	transition: background-color 0.3s ease;
+	margin: 0.25rem;
 }
 
-a.error-link:hover {
+a.error-link:hover,
+a.btn:hover {
 	background-color: var(--color-accent-hover);
 }
 
-/* Ajustes responsive simples */
+/*
+.error-actions agrupa los botones “Volver al inicio” y “Volver atrás”
+en la página operation-error.html. Mantiene la alineación centrada.
+*/
+.error-actions {
+	display: flex;
+	justify-content: center;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+/* ============================================================
+RESPONSIVE
+============================================================ */
 @media (max-width: 480px) {
 	.error-container {
 		padding: 2rem 1.2rem;
@@ -70,3 +112,15 @@ a.error-link:hover {
 		font-size: 1rem;
 	}
 }
+
+/* ============================================================
+OBJETIVO PEDAGÓGICO
+============================================================ */
+/*
+Este archivo sirve para enseñar:
+ - Cómo mantener una hoja de estilos separada para contextos especiales.
+ - Cómo reutilizar variables y utilidades CSS globales.
+ - Cómo adaptar un diseño a distintos dispositivos.
+ - Cómo garantizar que las páginas de error sigan siendo legibles y coherentes
+   incluso cuando la aplicación principal ha fallado.
+*/

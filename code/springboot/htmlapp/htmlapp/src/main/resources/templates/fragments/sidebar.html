@@ -1,0 +1,119 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!-- ============================================================
+FRAGMENTO: SIDEBAR (MENÚ LATERAL IZQUIERDO)
+============================================================ -->
+<!--
+Este archivo define el fragmento de menú lateral de la aplicación.
+
+Aparece en todas las páginas en las que haya un usuario logado
+(por ejemplo, main.html, profile.html, o el panel de administración).
+
+El layout principal (`fragments/layout.html`) lo incluye automáticamente
+cuando existe un atributo `userId` en la sesión:
+
+    <aside th:if="${session.userId}"
+           th:replace="~{fragments/sidebar :: sidebar}"></aside>
+
+Esto evita tener que repetir el menú en cada plantilla.
+-->
+<aside th:fragment="sidebar">
+	<nav class="sidebar">
+		<ul>
+			<!--
+			Enlace a la sección de datos personales.
+			Permite al usuario consultar y editar su perfil.
+			-->
+			<li>
+				<a th:href="@{/profile}">
+					Datos personales
+				</a>
+			</li>
+
+			<!--
+			Enlace para descargar el esquema SQL de la tabla de usuarios.
+			El atributo `download` indica al navegador que debe
+			descargar el archivo en lugar de abrirlo en una pestaña nueva.
+			-->
+			<li>
+				<a th:href="@{/download/users.sql}" download>
+					Descargar esquema SQL
+				</a>
+			</li>
+
+			<!--
+			El siguiente enlace solo se muestra si el usuario logado
+			tiene privilegios de administrador.
+			La condición se evalúa en Thymeleaf mediante `${session.isAdmin}`.
+			Este atributo debería establecerse desde el AuthService
+			cuando el usuario inicia sesión.
+			-->
+			<li th:if="${session.isAdmin}">
+				<a th:href="@{/admin/users}">
+					Listar usuarios
+				</a>
+			</li>
+
+			<!--
+			Enlace para cerrar la sesión.
+			Redirige a /logout, que elimina la sesión del usuario
+			y lo devuelve a la página principal.
+			-->
+			<li>
+				<a th:href="@{/logout}">
+					Salir
+				</a>
+			</li>
+		</ul>
+	</nav>
+</aside>
+
+<!-- ============================================================
+NOTAS DE DISEÑO Y BUENAS PRÁCTICAS
+============================================================ -->
+<!--
+1. ESTRUCTURA HTML
+-------------------
+El menú usa una lista <ul> para estructurar los enlaces.
+Cada <li> contiene un <a> con su destino. Esto mejora
+la accesibilidad y semántica del HTML.
+
+2. CONTROL CONDICIONAL
+------------------------
+El uso de `th:if="${session.isAdmin}"` permite mostrar opciones
+solo a ciertos roles sin necesidad de duplicar código en los controladores.
+
+También se puede extender el menú con más condiciones, por ejemplo:
+  - `${session.isEditor}`
+  - `${session.isInstructor}`
+
+3. ESTILO Y APARIENCIA
+------------------------
+Los estilos se definen en base.css, donde se sugiere usar una
+disposición fija en el lateral izquierdo, con colores coherentes
+con la cabecera superior. Por ejemplo:
+
+.sidebar {
+	position: fixed;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 240px;
+	background-color: #0d1b2a;
+	color: #e0e0e0;
+}
+
+.sidebar a {
+	display: block;
+	padding: 0.75rem 1rem;
+	color: #e0e0e0;
+	text-decoration: none;
+	transition: background-color 0.3s ease;
+}
+
+.sidebar a:hover {
+	background-color: #1b263b;
+}
+
+De este modo, el menú permanecerá visible mientras el usuario
+se desplaza por la página principal (efecto "panel fijo").
+-->

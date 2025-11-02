@@ -1,42 +1,113 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="head(title)">
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title th:text="${title} ?: 'HtmlApp'">HtmlApp</title>
+<!-- ============================================================
+FRAGMENTO: HEADER (BARRA SUPERIOR DE LA APLICACIÓN)
+============================================================ -->
+<!--
+Este archivo define el fragmento de la barra superior (header)
+que aparece en la parte superior de las páginas principales.
 
-	<!-- Estilos globales -->
-	<link rel="stylesheet" href="/css/base.css" />
-	<link rel="stylesheet" href="/css/error.css" th:if="${pageType == 'error'}" />
+Su objetivo es mostrar:
+ - El nombre de la aplicación ("HtmlApp").
+ - El nombre del usuario logado (si hay sesión activa).
+ - La fecha y hora actual, calculadas en el servidor.
+ - Un indicador visual [ADMIN] si el usuario es administrador.
 
-	<!-- Fuente profesional y favicon opcional -->
-	<link rel="icon" href="/img/favicon.ico" type="image/x-icon" />
-</head>
+El layout principal (`fragments/layout.html`) lo incluye mediante:
 
-<body>
-	<header th:fragment="header">
-		<nav class="topbar">
-			<!-- Si hay usuario logado -->
-			<div class="topbar-left" th:if="${loggedUserName != null}">
-				<span class="user" th:text="${loggedUserName}">Usuario</span>
-				<span class="sep">·</span>
-				<time class="server-time" th:text="${serverNow}">2025-11-02 16:00</time>
-			</div>
+    <header th:replace="~{fragments/header :: header}"></header>
+-->
+<header th:fragment="header">
+	<div class="topbar">
+		<!--
+		Sección izquierda del header: nombre de la aplicación.
+		Se mantiene visible en todas las vistas.
+		-->
+		<div class="topbar-left">
+			<span class="app-name">HtmlApp</span>
+		</div>
 
-			<!-- Si no hay usuario logado -->
-			<div class="topbar-left" th:if="${loggedUserName == null}">
-				<span>HtmlApp</span>
-			</div>
+		<!--
+		Sección derecha del header: información del usuario.
+		Solo se muestra si hay un usuario logado (sesión activa).
+		-->
+		<div class="topbar-right" th:if="${session.userId}">
+			<!-- Nombre del usuario logado -->
+			<span class="user" th:text="${session.fullName}">Usuario</span>
 
-			<!-- Enlace lateral opcional (ejemplo: menú lateral) -->
-			<div class="topbar-right">
-				<a th:if="${loggedUserName != null}" class="btn" th:href="@{/logout}">Salir</a>
-			</div>
-		</nav>
+			<!-- Etiqueta [ADMIN] si el usuario tiene privilegios -->
+			<span class="role-tag"
+			      th:if="${session.isAdmin}"
+			      style="color:#ffc107; font-weight:bold;">
+				[ADMIN]
+			</span>
 
-		<!-- Capa de fondo Parallax -->
-		<div class="parallax rellax" data-rellax-speed="-2" aria-hidden="true"></div>
-	</header>
-</body>
-</html>
+			<!-- Separador visual -->
+			<span class="sep">|</span>
+
+			<!-- Fecha y hora del servidor -->
+			<time th:text="${session.serverDateTime}">2025-11-02 15:30</time>
+		</div>
+	</div>
+</header>
+
+<!-- ============================================================
+NOTAS DE DISEÑO Y FUNCIONAMIENTO
+============================================================ -->
+<!--
+1. CÁLCULO DE LA FECHA/HORA
+----------------------------
+El valor de `${session.serverDateTime}` se debe establecer desde el
+controlador o un interceptor antes de renderizar la vista.
+Representa la fecha y hora actuales del servidor en el momento
+de la respuesta (no se actualiza dinámicamente en el cliente).
+
+Por ejemplo, desde un controlador:
+    model.addAttribute("serverDateTime",
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+
+También puede almacenarse en la sesión durante la navegación si se desea
+mantener el valor fijo para toda la duración de la sesión.
+
+2. GESTIÓN DE SESIÓN
+---------------------
+Los atributos de sesión usados aquí son:
+ - `userId`       → identifica al usuario logado.
+ - `fullName`     → nombre completo mostrado en la barra superior.
+ - `isAdmin`      → booleano que indica si el usuario es administrador.
+ - `serverDateTime` → fecha y hora actuales del servidor.
+
+Estos valores deben establecerse en el `AuthService` o durante el login.
+
+3. ESTILO Y APARIENCIA
+------------------------
+Los estilos se definen en `base.css`, donde `.topbar` controla
+la disposición y colores de la barra superior. Por ejemplo:
+
+.topbar {
+	width: 100%;
+	background-color: var(--color-header-bg);
+	color: var(--color-header-text);
+	padding: 0.75rem 1.5rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.topbar-left .app-name {
+	font-weight: 600;
+	font-size: 1.1rem;
+}
+
+.topbar-right .user {
+	font-weight: 600;
+	margin-right: 0.25rem;
+}
+
+4. OBJETIVO PEDAGÓGICO
+------------------------
+Este fragmento permite enseñar a los alumnos cómo se pueden
+mostrar datos de sesión en las vistas mediante Thymeleaf,
+y cómo adaptar el contenido visible en función del estado
+de autenticación (usando `th:if` y `th:text`).
+-->
