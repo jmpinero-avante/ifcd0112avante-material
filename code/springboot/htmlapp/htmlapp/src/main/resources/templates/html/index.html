@@ -2,17 +2,18 @@
 <!DOCTYPE html>
 <html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="layout :: head('Inicio - HtmlApp')"></head>
+<head th:replace="layout :: head('HtmlApp - Inicio')"></head>
 
 <body>
 <header th:replace="layout :: header"></header>
 
 <main th:replace="layout :: body">
 	<section class="text-center" style="margin-top: 5rem;">
-		<h1 th:text="${pageTitle}">Bienvenido a HtmlApp</h1>
+		<h1>Bienvenido a HtmlApp</h1>
+
 		<p class="lead">
-			Una aplicación de ejemplo para aprender arquitectura MVC, validación,
-			autenticación y gestión de errores en Spring Boot.
+			Aplicación educativa para practicar desarrollo web con Spring Boot,
+			Thymeleaf y arquitectura MVC.
 		</p>
 
 		<div class="mt-4">
@@ -20,7 +21,6 @@
 			<a class="btn" th:href="@{/register}">Crear cuenta nueva</a>
 		</div>
 
-		<!-- Mensaje informativo si llega desde logout -->
 		<p class="mt-4" th:if="${param.logout}">
 			Has cerrado sesión correctamente.
 		</p>

@@ -30,6 +30,18 @@ import lombok.RequiredArgsConstructor;
  * Lombok genera automáticamente un constructor con los campos `final`
  * o marcados con `@NonNull`. Esto permite inyectar dependencias sin
  * necesidad de usar `@Autowired` explícitamente.
+ *
+ * ----------------------------------------------------------------------------
+ * SOBRE EL PROPÓSITO DE ESTE CONTROLADOR
+ * ----------------------------------------------------------------------------
+ * Este controlador actúa como puerta de entrada de la aplicación:
+ *  - Si el usuario NO está logado, muestra la página de inicio (`index.html`),
+ *    donde puede hacer login o registrarse.
+ *  - Si el usuario YA está logado, lo redirige automáticamente a `/main`,
+ *    que es la página principal con el efecto parallax y el contenido central.
+ *
+ * También se encarga de establecer en el modelo la información contextual
+ * necesaria para las vistas (nombre del usuario y fecha/hora de servidor).
  */
 @Controller
 @RequestMapping("/")
@@ -46,19 +58,17 @@ public class HomeController {
 	 * Si no, se muestra la página `index.html`, que incluye
 	 * el formulario de login y de registro.
 	 *
-	 * @param model Modelo de datos para la vista Thymeleaf.
 	 * @return Nombre de la plantilla o redirección.
 	 */
 	@GetMapping
-	public String home(Model model) {
+	public String home() {
 		// Si ya hay usuario logado → redirige a la página principal
 		if (authService.getLoggedUser().isPresent()) {
 			return "redirect:/main";
 		}
 
 		// Si no hay usuario logado → muestra la página de inicio
-		model.addAttribute("pageTitle", "Bienvenido a HtmlApp");
-		return "index";
+		return "html/index";
 	}
 
 	/**
@@ -78,10 +88,12 @@ public class HomeController {
 		var user = authService.getLoggedUser()
 			.orElseThrow(() -> new SecurityException("Debe iniciar sesión para acceder."));
 
+		// Información contextual para la vista
 		model.addAttribute("loggedUserName", user.getFullName());
+		model.addAttribute("loggedUserAdmin", user.isAdmin());
 		model.addAttribute("serverNow", java.time.LocalDateTime.now());
-		model.addAttribute("pageTitle", "Página principal");
 
-		return "main";
+		// Devuelve la plantilla principal (lorem ipsum con parallax)
+		return "html/main";
 	}
 }

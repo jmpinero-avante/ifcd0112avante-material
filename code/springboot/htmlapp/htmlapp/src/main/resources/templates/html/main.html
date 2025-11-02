@@ -1,0 +1,99 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!DOCTYPE html>
+<html lang="es-ES" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="layout :: head('HtmlApp - Página principal')"></head>
+
+<body>
+<header th:replace="layout :: header"></header>
+
+<main th:replace="layout :: body">
+
+	<!-- Menú lateral -->
+	<aside style="float: left; width: 230px; padding: 1rem; background: #fff;
+	              border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	              margin-right: 2rem; position: sticky; top: 2rem;">
+		<h3>Menú</h3>
+		<ul style="list-style: none; padding-left: 0;">
+			<li style="margin: 0.75rem 0;">
+				<a th:href="@{/user/profile}" class="btn" style="width: 100%;">Datos personales</a>
+			</li>
+			<li style="margin: 0.75rem 0;">
+				<a th:href="@{/sql/users.sql}" class="btn" style="width: 100%;"
+				   download>Descargar esquema SQL</a>
+			</li>
+			<li style="margin: 0.75rem 0;">
+				<a th:href="@{/logout}" class="btn" style="width: 100%;">Salir</a>
+			</li>
+			<li style="margin: 0.75rem 0;" th:if="${loggedUserAdmin}">
+				<a th:href="@{/admin/users}" class="btn" style="width: 100%;">
+					Listar usuarios
+				</a>
+			</li>
+		</ul>
+	</aside>
+
+	<!-- Contenido principal -->
+	<section style="overflow: hidden;">
+		<h1>
+			Bienvenido, <span th:text="${loggedUserName}">Usuario</span>
+		</h1>
+		<p class="lead">
+			Has iniciado sesión correctamente el
+			<time th:text="${#temporals.format(serverNow, 'dd/MM/yyyy HH:mm')}">
+				02/11/2025 16:00
+			</time>.
+		</p>
+
+		<hr class="mt-2 mb-2" />
+
+		<p style="text-align: justify;">
+			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sed
+			orci at velit feugiat cursus. Nulla facilisi. Donec tempor, risus sed
+			ullamcorper egestas, orci metus suscipit odio, nec condimentum justo
+			augue at nulla. Praesent sed libero orci. Maecenas quis bibendum est.
+			Sed non tristique diam, ac pulvinar sem. Integer at mauris a nulla
+			rhoncus feugiat. Pellentesque habitant morbi tristique senectus et
+			netus et malesuada fames ac turpis egestas. Curabitur tristique sapien
+			ut orci facilisis posuere. Nam efficitur purus sit amet libero varius,
+			ut varius magna tristique. Fusce sodales efficitur ante. Mauris sit
+			amet ipsum et nisl consequat aliquet non nec est.
+		</p>
+
+		<p style="text-align: justify;">
+			Donec sit amet commodo lacus. Nam efficitur mattis ligula nec
+			volutpat. Integer at elit lectus. Morbi lacinia, magna et bibendum
+			pellentesque, augue diam blandit mi, in interdum turpis justo vitae
+			neque. Curabitur in lacus risus. Sed tincidunt mauris nec nulla
+			malesuada, ac consequat leo feugiat. Duis vehicula convallis erat,
+			eget aliquet felis bibendum et. Nam luctus sagittis est non aliquet.
+			Sed bibendum congue elit in elementum.
+		</p>
+
+		<p style="text-align: justify;">
+			Phasellus iaculis, neque in mattis commodo, mi felis gravida eros,
+			sed condimentum magna leo in purus. Vivamus in tortor sapien. Donec
+			mollis justo id sem porttitor, id commodo justo ultricies. Nulla
+			facilisi. Suspendisse potenti. Integer dignissim sapien eu lectus
+			fermentum porta. Duis convallis lorem eget tellus suscipit, sit amet
+			vulputate purus accumsan. Mauris in nisl neque. Nunc feugiat, magna
+			id facilisis tempus, nulla nisl porttitor nunc, ut maximus eros risus
+			sed lorem.
+		</p>
+
+		<p style="text-align: justify;">
+			Integer convallis, libero vitae elementum venenatis, ligula felis
+			tincidunt est, non eleifend justo neque ac lorem. Ut eget varius
+			lectus. Sed finibus, ante in pharetra fermentum, sapien neque ornare
+			metus, ac facilisis purus lorem id nisi. Quisque a dapibus velit.
+			Maecenas tincidunt nulla in enim porttitor porttitor. Integer posuere
+			ex sed dignissim tempor. Suspendisse potenti. Vestibulum ante ipsum
+			primis in faucibus orci luctus et ultrices posuere cubilia curae;
+			Cras sit amet augue eget velit gravida sagittis non vel lectus.
+		</p>
+	</section>
+</main>
+
+<footer th:replace="layout :: footer"></footer>
+</body>
+</html>
