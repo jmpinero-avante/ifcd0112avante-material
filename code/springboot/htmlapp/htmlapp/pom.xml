@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Cambiado para la app HTML/Thymeleaf -->
+	<groupId>com.example</groupId>
+	<artifactId>htmlapp</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>HTML App</name>
+
+	<properties>
+		<!-- VERSIONES -->
+		<version.java>21</version.java>
+		<version.lombok>1.18.42</version.lombok>
+		<version.postgresql>42.7.8</version.postgresql>
+		<version.springboot>3.4.0</version.springboot>
+		<version.compiler-plugin>3.13.0</version.compiler-plugin>
+		<!-- FIN VERSIONES -->
+
+		<!-- VERSION BASE DE JAVA Y SPRINGBOOT -->
+		<java.version>${version.java}</java.version>
+		<spring-boot.version>${version.springboot}</spring-boot.version>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>${version.java}</maven.compiler.release>
+		<maven.compiler.source>${version.java}</maven.compiler.source>
+		<maven.compiler.target>${version.java}</maven.compiler.target>
+		
+		<!-- CLASE principal -->
+		<!-- Cambiado al main de esta app -->
+		<exec.mainClass>com.example.htmlapp.HtmlApp</exec.mainClass>
+	</properties>
+
+	<!--
+			Con el dependencyManagement el pom ya sabe que versiones
+					de los componentes de SpringBoot funcionan bien con
+					la versión base que indiquemos
+
+			Esto lo hace bajándose un BOM (Bill Of Materials) con todas
+					las versiones.
+	-->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${version.springboot}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- POSTGRESQL -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${version.postgresql}</version>
+		</dependency>
+		
+		<!-- LOMBOK -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${version.lombok}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- SPRINGBOOT -->
+		<!--
+				SpringBoot no necesita las versiones porque con el
+						dependencyManagement ya se ha bajado un BOM (Bill
+						Of Materials) con las versiones que funcionan de
+						todos los compenentes de SpringBoot
+		-->
+
+		<!-- SB: SERVIDOR WEB -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<!-- SB: CAPA DE PERSISTENCIA BD -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<!-- SB: MOTOR DE PLANTILLAS HTML -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
+		<!-- SB: REGLAS DE VALIDACION -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<!-- SB: CLASES CRIPTOGRAFICAS DE SPRINGBOOT SECURITY -->
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+		
+		<!--
+				SB: LOGGING
+						sería spring-boot-starter-logging
+						pero si vamos a usar las clases por defecto
+								org.slf4j:slf4j-api           (la fachada)
+								ch.qos.logback:logback-clasic (la implementación)
+								ch.qos.logback:logback-core   (el nucleo de logback)
+
+						no hace falta incluirlo porque cualquier otro starter ya lo
+								incluirá
+		-->
+		<!-- FIN DEPENDEncias SPRINGBOOT -->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- COMPILER PLUGIN -> paths del procesador de anotaciones -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${version.compiler-plugin}</version>
+				<configuration>
+					<source>${version.java}</source>
+					<target>${version.java}</target>
+					
+					<!--
+						Este true es muy importante porque si no springboot
+							no va a ser capaz de recuperar las variables
+							de la ruta de la url cuando se usan como parámetros
+							de los métodos de los controladores web
+						
+						Si no se pusiese o si se pusiese como false, en la
+							anotación @PathVariable habría que indicar cúal es
+							el nombre de la variable, algo así:
+						
+						
+						Con <parameters>true</parameters>
+						
+						@GetMapping("/{id}")
+						public ResponseEntity<User> get(@PathVariable int id) {...}
+						
+						
+						Sin <parameters>true</parameters> (o si se pone false)
+						
+						@GetMapping("/{id}")
+						public ResponseEntity<User> get(@PathVariable("id") int id) {...}
+					-->
+					<parameters>true</parameters>
+
+			<!-- PARA QUE LOMBOK FUNCIONE SI EL PROYECTO SE HACE POR MODULOS -->
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${version.lombok}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+ 
+			<!-- SPRINGBOOT PLUGIN -->
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

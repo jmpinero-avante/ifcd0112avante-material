@@ -1,0 +1,112 @@
+spring:
+  # *** datasource -> configuración básica de conexión a la bd
+  # incluye: url username password
+  #          y driver-class-name (el driver del motor de BD subyacente)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/springbootjma
+    username: user_springbootjma
+    password: 12345
+    driver-class-name: org.postgresql.Driver
+
+  # *** jpa --> (Java Persistency API) más configuración de la bae de datos
+  jpa:
+    show-sql: true
+    hibernate:
+      # *** spring.jpa.hibernate.ddl-auto -->
+      #           Qué queremos hacer con las tablas y columnas
+      #           al arrancar y al finalizar hibernate
+      #
+      #
+      #        none: no hace nada ni a las tablas ni a las columnas
+      #
+      #    validate: comprueba que las tablas y columnas existen
+      #                 (y coinciden con los mapeos de entidades)
+      #
+      #      update: actualiza el esquema con tablas y columnas que falten
+      #                 (no borra nada)
+      #
+      #      create: crea las tablas desde 0 en el arranque (borra lo anterior)
+      #
+      # create-drop: como create + borra las tablas al terminar
+      #
+      ddl-auto: validate
+    
+    properties:
+      
+      # *** spring.jpa.properties.hibernate ->
+      #          todo el resto de configuraciones que iban en el
+      #          hibernate.cfg.xml se pueden poner aquí
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql_comments: true
+        autocommit: false
+
+# *** server --> Configuración del servidor web
+server:
+  port: 8080
+
+# *** logging -> configuración de logging de la aplicación
+logging:
+
+  # *** logging.level -> configuración del nivel mínimo de logging por
+  #                         defecto (root) y por paquetes
+  level:
+    # root es el nivel global
+    root: INFO
+
+    # ahora podemos poner paquetes y especificar su nivel mínimo de logging
+    # mi código
+    com.avante.springbootjma01: DEBUG
+
+    # nivel para Spring MVC
+    org.springframework.web: INFO
+
+    # para que salgan las consultas SQL generadas (DEBUG)
+    org.hibernate.SQL: DEBUG
+
+    # para ver los parámetros SQL (TRACE)
+    org.hibernate.type: TRACE
+
+  
+  # *** logging.file -> guarda los logs en un archivo
+  file:
+    # ruta relativa o absoluta a un fichero con "name"
+    # name: logs/springbootjma01.log
+
+    # ruta relativa o absoluta a una carpeta con "path"
+    path: logs/springbootjma01
+
+  logback:
+    # *** logging.logback.rollingpoliciy ->
+    #         la politica de rotación de ficheros
+    #         (si queremos esa funcionalidad)
+    rollingpolicy:
+
+      # tamaño máximo de cada archivo
+      max-file_size: 10MB
+
+      # número máximo de archivos que se dejan
+      max-history: 7
+
+      # patrón de nombrado de ficheros
+      #    ver las variables en pattern
+      file-name-pattern: logs/springbootjma01/sbj01-%d{yyyy-MM-dd}.%i.log
+
+
+  # *** logging.pattern -> formato del log 
+  #
+  #   VARIABLES QIE SE PUEDEN USAR
+  #   %d{} -> fecha/hora (con yyyy-MM-dd HH:mm:ss.SSS)
+  #   %thread -> hilo
+  #   %level -> nivel de log
+  #   %logger{N} -> nombre del logger (N cars. máximo)
+  #   %msg -> mensaje
+  #   %n -> salto de línea
+  pattern:
+
+    # para los logs que aparecen en la consola
+    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"
+
+    # para los logs que aparecen en archivo
+    file: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
