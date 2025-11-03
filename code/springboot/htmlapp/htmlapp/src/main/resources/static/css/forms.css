@@ -1,13 +1,8 @@
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
 
 /* ==========================================================================
-FORMS.CSS – ESTILOS COMUNES PARA FORMULARIOS (login, registro, edición, etc.)
+FORMS.CSS – ESTILOS UNIFICADOS Y PROFESIONALES PARA FORMULARIOS
 ========================================================================== */
-/*
-Este archivo define el estilo visual y estructural de los formularios
-de la aplicación. Incluye márgenes, alineación vertical y estilos
-coherentes con la paleta definida en `core/variables.css`.
-*/
 
 /* ------------------------------------------------------------
 IMPORTS DE MÓDULOS COMUNES
@@ -15,62 +10,65 @@ IMPORTS DE MÓDULOS COMUNES
 @import url('core/variables.css');
 @import url('core/utilities.css');
 @import url('core/responsive.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 /* ==========================================================================
-ESTRUCTURA GENERAL
+ESTILO BASE DEL FORMULARIO
 ========================================================================== */
 
 form {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem;
-	max-width: 420px;
-	margin: 0 auto;
-	padding: 1rem 0;
-}
-
-/* Cada grupo de campos (label + input) ocupa su propio bloque */
-.form-group {
-	display: flex;
-	flex-direction: column;
-	margin-bottom: 1rem;
+	gap: 1.2rem;
+	max-width: 480px;
+	margin: 2rem auto;
+	padding: 2rem 2.5rem;
+	background: #fff;
+	border-radius: var(--border-radius, 10px);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+	font-family: 'Inter', system-ui, sans-serif;
 }
 
 /* ==========================================================================
-LABELS
+LABELS Y CAMPOS DE ENTRADA
 ========================================================================== */
 
-form label,
-.form-group label {
+form label {
 	font-weight: 600;
+	font-size: 0.95rem;
+	color: var(--color-text, #333);
 	margin-bottom: 0.3rem;
 	display: block;
-	color: var(--color-text);
+	text-align: left;
 }
-
-/* ==========================================================================
-CAMPOS DE ENTRADA
-========================================================================== */
 
 form input[type="text"],
 form input[type="email"],
-form input[type="password"],
-.form-group input {
+form input[type="password"] {
 	width: 100%;
-	padding: 0.6rem 0.8rem;
-	border: 1px solid var(--color-border, #ccc);
-	border-radius: var(--border-radius, 6px);
+	padding: 0.7rem 0.9rem;
 	font-size: 1rem;
+	border: 1px solid var(--color-border, #ccc);
+	border-radius: 6px;
+	background-color: #fdfdfd;
 	box-sizing: border-box;
-	background-color: white;
-	color: var(--color-text);
-	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	transition: all 0.2s ease;
 }
 
 form input:focus {
-	border-color: var(--color-accent);
-	box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+	border-color: var(--color-accent, #007bff);
+	box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 	outline: none;
+	background-color: #fff;
+}
+
+/* ==========================================================================
+SEPARACIÓN Y AGRUPACIÓN
+========================================================================== */
+
+.form-group {
+	display: flex;
+	flex-direction: column;
 }
 
 /* ==========================================================================
@@ -79,15 +77,43 @@ BOTONES Y ACCIONES
 
 .form-actions {
 	display: flex;
-	justify-content: space-between;
+	justify-content: center;
 	align-items: center;
-	margin-top: 1rem;
 	gap: 1rem;
+	margin-top: 2rem;
+	padding-top: 1rem;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .form-actions .btn {
 	flex: 1;
 	text-align: center;
+	padding: 0.75rem 0;
+	font-size: 1rem;
+	font-weight: 600;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: all 0.2s ease-in-out;
+}
+
+.btn-success {
+	background-color: var(--color-accent, #007bff);
+	color: #fff;
+	border: none;
+}
+
+.btn-success:hover {
+	background-color: var(--color-accent-hover, #005dc1);
+}
+
+.btn {
+	background-color: #e0e0e0;
+	color: #333;
+	border: none;
+}
+
+.btn:hover {
+	background-color: #d5d5d5;
 }
 
 /* ==========================================================================
@@ -97,7 +123,7 @@ MENSAJES DE ERROR
 form .error-message {
 	color: var(--color-error, #d9534f);
 	font-weight: 500;
-	margin-top: 0.5rem;
+	margin-top: 0.75rem;
 	text-align: center;
 }
 
@@ -107,8 +133,7 @@ RESPONSIVE
 
 @media (max-width: 480px) {
 	form {
-		max-width: 100%;
-		padding: 0.5rem;
+		padding: 1.2rem 1.5rem;
 	}
 
 	.form-actions {
@@ -124,9 +149,10 @@ RESPONSIVE
 OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
-Este archivo demuestra:
- - Cómo estructurar formularios verticalmente con flexbox.
- - Cómo agrupar campos mediante .form-group para mayor legibilidad.
- - Cómo usar variables globales para coherencia visual.
- - Cómo centrar el formulario y hacerlo adaptable (responsive).
+Este rediseño ilustra cómo lograr un estilo profesional sin frameworks:
+ - Tipografía moderna y coherente.
+ - Inputs limpios con feedback visual suave.
+ - Botones de igual tamaño y buena jerarquía visual.
+ - Separación clara entre contenido y acciones.
+ - Layout flexible y adaptable a móvil.
 */

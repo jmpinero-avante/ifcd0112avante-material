@@ -5,31 +5,34 @@ PÁGINA PRINCIPAL (EFECTO PARALLAX)
 <html th:replace="~{fragments/layout :: layout(
 	title='Página principal',
 	content=~{::main},
-	scripts=~{::script}
+	scripts=~{::scripts}
 )}">
 
 <!--
-Esta vista es accesible solo para usuarios autenticados.
-Muestra un efecto visual de parallax mediante la librería Rellax.js.
+Vista principal accesible solo para usuarios autenticados.
+Muestra un efecto parallax usando Rellax.js.
 -->
 <main>
 	<!-- Capa de fondo con imagen lejana -->
 	<div class="rellax" data-rellax-speed="-4" data-rellax-zindex="-2"
 	     style="background-image:url('/img/layer-back.jpg');
-	            background-size:cover; background-position:center;
-	            position:fixed; top:0; left:0; right:0; bottom:0;
+	            background-size:cover;
+	            background-position:center;
+	            position:fixed; inset:0;
 	            opacity:0.3; z-index:-2;">
 	</div>
 
 	<!-- Capa de primer plano -->
 	<div class="rellax" data-rellax-speed="-1" data-rellax-zindex="-1"
 	     style="background-image:url('/img/layer-front.png');
-	            background-size:contain; background-repeat:no-repeat;
+	            background-size:contain;
+	            background-repeat:no-repeat;
 	            background-position:center bottom;
-	            position:fixed; top:0; left:0; right:0; bottom:0;
+	            position:fixed; inset:0;
 	            opacity:0.6; z-index:-1;">
 	</div>
 
+	<!-- Contenido principal visible -->
 	<section class="info-box" style="position:relative; z-index:10;">
 		<h1>Bienvenido, <span th:text="${session.user.fullName}">Usuario</span></h1>
 
@@ -42,19 +45,56 @@ Muestra un efecto visual de parallax mediante la librería Rellax.js.
 			Esta es la página principal de HtmlApp.  
 			Explora las secciones del menú lateral para acceder a tus datos o gestionar usuarios.
 		</p>
+
+		<!-- Contenido adicional para probar el efecto parallax -->
+		<div class="content-block">
+			<p>
+				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in magna at 
+				leo malesuada consequat. Nulla vel vulputate purus. Cras vel lectus at 
+				mauris tincidunt dapibus sit amet ac neque.
+			</p>
+			<p>
+				Aliquam non mi et lectus consequat suscipit. Proin fringilla, nunc in 
+				porttitor bibendum, risus nisi egestas metus, nec tempor sapien dolor sit 
+				amet est. Sed facilisis convallis ex non gravida.
+			</p>
+			<p>
+				Curabitur at leo sit amet eros laoreet finibus. Duis commodo erat ac augue 
+				ultrices vestibulum. Donec faucibus porttitor augue ut tincidunt.
+			</p>
+			<p>
+				Aenean dignissim eros id felis fermentum, at facilisis lorem ullamcorper. 
+				Pellentesque tincidunt ante ut tincidunt porttitor. Vestibulum ante ipsum 
+				primis in faucibus orci luctus et ultrices posuere cubilia curae.
+			</p>
+			<p>
+				Suspendisse potenti. Nam et nisi sapien. Donec sed elementum mi. Etiam 
+				finibus efficitur est, non luctus lacus fringilla id.
+			</p>
+			<p>
+				Phasellus sed justo at mi volutpat posuere. Integer vitae suscipit justo, 
+				ut suscipit nisl. Cras sodales orci non libero tincidunt, in varius nunc 
+				pellentesque. Integer in eros id mi eleifend dictum.
+			</p>
+		</div>
 	</section>
 </main>
 
 <!-- ============================================================
 SCRIPTS NECESARIOS PARA EL EFECTO PARALLAX
 ============================================================ -->
-<script th:inline="javascript">
-	// Inicialización de la librería Rellax
-	const rellax = new Rellax('.rellax');
-</script>
+<div th:fragment="scripts">
+	<!-- Librería Rellax desde CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"></script>
 
-<!-- Librería Rellax desde CDN -->
-<script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"></script>
+	<!-- Inicialización de la librería Rellax -->
+	<script th:inline="javascript">
+		document.addEventListener("DOMContentLoaded", () => {
+			new Rellax('.rellax');
+		});
+	</script>
+</div>
+
 </html>
 
 <!-- ============================================================
@@ -63,7 +103,7 @@ NOTAS DE DISEÑO Y FUNCIONAMIENTO
 <!--
 1. Usa el parámetro `scripts` del layout para cargar Rellax.js al final del <body>.
 2. Las imágenes `layer-back.jpg` y `layer-front.png` deben estar en /static/img/.
-3. El fondo se posiciona fijo y con opacidad para simular profundidad.
-4. El contenido real se muestra en una caja con z-index superior.
-5. Compatible con el layout principal y las clases de estilo globales.
+3. El contenido adicional sirve para probar el desplazamiento con efecto parallax.
+4. El bloque <div th:fragment="scripts"> permite pasar scripts al layout.
+5. Compatible con Spring Boot 3 + Thymeleaf 3.
 -->
