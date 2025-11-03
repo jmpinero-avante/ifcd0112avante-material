@@ -27,17 +27,16 @@ import lombok.RequiredArgsConstructor;
  * ----------------------------------------------------------------------------
  * RESPONSABILIDAD
  * ----------------------------------------------------------------------------
- * - Este servicio **no maneja vistas ni sesión HTTP** directamente.
- * - La verificación de permisos se realiza mediante `PermissionsService`.
- * - La persistencia y eficiencia se delega al `UserRepository`.
+ * Este servicio **no maneja vistas, sesión ni permisos**.
+ * Se limita exclusivamente a ejecutar operaciones de negocio
+ * sobre los datos recibidos, asumiendo que el controlador ya
+ * ha validado los permisos necesarios.
  */
 @Service
 @RequiredArgsConstructor
 public class UserListService {
 
 	private final UserRepository userRepository;
-	private final AuthService authService;
-	private final PermissionsService permissionsService;
 
 	// -------------------------------------------------------------------------
 	// LISTADO GENERAL DE USUARIOS
@@ -52,8 +51,6 @@ public class UserListService {
 	 */
 	@Transactional(readOnly = true)
 	public List<User> listAllUsers(UserOrderField orderBy, SortDirection direction) {
-		permissionsService.checkAdminPermission();
-
 		return switch (orderBy) {
 			case EMAIL -> direction == SortDirection.ASC
 				? userRepository.findAllOrderByEmailAsc()
@@ -68,34 +65,28 @@ public class UserListService {
 	}
 
 	// -------------------------------------------------------------------------
-	// FILTRADO DE USUARIOS (EXCLUYENDO USUARIO LOGADO)
+	// FILTRADO DE USUARIOS
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Filtra una lista de IDs de usuario, eliminando el usuario actual si
-	 * está incluido. Devuelve los usuarios válidos.
+	 * Filtra una lista de IDs y devuelve solo los usuarios existentes.
+	 *
+	 * No realiza comprobaciones de permisos; se asume que el controlador
+	 * ya ha excluido los usuarios que no deben procesarse (como el logado).
 	 *
 	 * @param ids Lista de IDs seleccionados.
-	 * @return Lista de usuarios existentes, sin el usuario logado.
+	 * @return Lista de usuarios existentes.
 	 */
 	@Transactional(readOnly = true)
-	public List<User> listFilteredUsers(List<Integer> ids) {
-		permissionsService.checkAdminPermission();
-
+	public List<User> listUsersByIds(List<Integer> ids) {
 		if (ids == null || ids.isEmpty()) {
 			throw new IllegalArgumentException("Debe seleccionar al menos un usuario.");
 		}
 
-		Integer currentUserId = authService.getUserId().orElse(null);
-
-		List<User> users = userRepository.findAllByIdIn(ids).stream()
-			.filter(u -> !u.getId().equals(currentUserId))
-			.collect(Collectors.toList());
-
+		List<User> users = userRepository.findAllByIdIn(ids);
 		if (users.isEmpty()) {
 			throw new OperationFailedException("No hay usuarios válidos para procesar.", 400);
 		}
-
 		return users;
 	}
 
@@ -111,35 +102,23 @@ public class UserListService {
 	 */
 	@Transactional
 	public void setAdminStatusBulk(List<Integer> ids, boolean isAdmin) {
-		List<User> validUsers = listFilteredUsers(ids);
-		List<Integer> validIds = validUsers.stream()
-			.map(User::getId)
-			.collect(Collectors.toList());
-
-		if (validIds.isEmpty()) {
+		if (ids == null || ids.isEmpty()) {
 			throw new OperationFailedException("No hay usuarios válidos para modificar.", 400);
 		}
-
-		userRepository.updateAdminStatusByIds(validIds, isAdmin);
+		userRepository.updateAdminStatusByIds(ids, isAdmin);
 	}
 
 	/**
-	 * Elimina en bloque una lista de usuarios (excepto el logado).
+	 * Elimina en bloque una lista de usuarios.
 	 *
 	 * @param ids Lista de IDs a eliminar.
 	 */
 	@Transactional
 	public void deleteUsersBulk(List<Integer> ids) {
-		List<User> validUsers = listFilteredUsers(ids);
-		List<Integer> validIds = validUsers.stream()
-			.map(User::getId)
-			.collect(Collectors.toList());
-
-		if (validIds.isEmpty()) {
+		if (ids == null || ids.isEmpty()) {
 			throw new OperationFailedException("No hay usuarios válidos para eliminar.", 400);
 		}
-
-		userRepository.deleteAllByIdIn(validIds);
+		userRepository.deleteAllByIdIn(ids);
 	}
 }
 
@@ -147,31 +126,31 @@ public class UserListService {
 ===============================================================================
 NOTAS PEDAGÓGICAS
 ===============================================================================
-1. EFICIENCIA EN OPERACIONES MASIVAS
--------------------------------------
-Este servicio aprovecha los métodos bulk de `UserRepository`:
- - `updateAdminStatusByIds(...)`
- - `deleteAllByIdIn(...)`
-para realizar actualizaciones y eliminaciones directas en la base de datos,
-sin cargar entidades en memoria, lo que mejora enormemente el rendimiento.
+1. PUREZA DE LA LÓGICA DE NEGOCIO
+---------------------------------
+Este servicio no conoce el contexto de sesión ni los permisos del usuario.
+Su única responsabilidad es ejecutar operaciones válidas y consistentes
+sobre el conjunto de usuarios recibido.
 
-2. SEGURIDAD Y PERMISOS
+2. SEGURIDAD
+-------------
+La verificación de permisos (por ejemplo, si el usuario es administrador)
+se realiza en el **controlador** antes de invocar estos métodos.
+
+3. EFICIENCIA EN OPERACIONES BULK
+---------------------------------
+Los métodos bulk utilizan sentencias SQL directas a través del repositorio
+para minimizar el tráfico y mejorar el rendimiento.
+
+4. SEPARACIÓN DE CAPAS
+-----------------------
+- `UserRepository` → consultas y acceso a datos.
+- `UserListService` → operaciones de negocio.
+- `UserListController` → control de flujo, vistas y permisos.
+
+5. OBJETIVO PEDAGÓGICO
 ------------------------
-Cada operación valida que el usuario sea administrador antes de continuar.
-Además, se excluye siempre al usuario logado de cualquier acción masiva,
-evitando que pueda eliminarse o revocarse permisos a sí mismo.
-
-3. SEPARACIÓN DE RESPONSABILIDADES
------------------------------------
-- `UserRepository` → Acceso a datos y consultas JPQL.
-- `UserListService` → Lógica de negocio y consistencia.
-- `PermissionsService` → Control de seguridad y permisos.
-
-4. OBJETIVO PEDAGÓGICO
-------------------------
-Ilustra cómo combinar:
- - consultas JPQL personalizadas para eficiencia,
- - validación de negocio previa a las operaciones,
- - y buenas prácticas de diseño en capas (repository → service → controller).
+Ilustrar un diseño de servicios limpio, reusable y sin acoplamiento
+a la capa de presentación o seguridad.
 ===============================================================================
 */
