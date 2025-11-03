@@ -22,10 +22,6 @@ FOLDER=${SCRIPT:h:h:h}
 
 cd "${FOLDER}"
 
-print - ${PWD}
-exit 0
-
-
 mvn exec:java \
   -Dexec.mainClass="com.example.htmlapp.tools.VerifyPassword" \
   -Dexec.args="${(j. .)${(qq)@}}"
