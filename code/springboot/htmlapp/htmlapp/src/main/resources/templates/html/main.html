@@ -1,29 +1,18 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 <!-- ============================================================
-PÁGINA PRINCIPAL (EFECTO PARALLAX)
+PÁGINA PRINCIPAL (SIN EFECTO PARALLAX)
 ============================================================ -->
 <html th:replace="~{fragments/layout :: layout(
 	title='Página principal',
 	content=~{::main},
-	scripts=~{::scripts}
+	scripts=~{}
 )}">
 
 <!--
 Vista principal accesible solo para usuarios autenticados.
-Usa el nuevo sistema modular de parallax (definido en parallax.css)
-y la librería Rellax.js para el desplazamiento a distintas velocidades.
+Versión sin efecto parallax, con estructura simple y fondo estático.
 -->
 <main>
-	<!-- Contenedor general del efecto parallax -->
-	<div class="parallax-container">
-		<!-- Capa de fondo (más lenta) -->
-		<div class="rellax layer-back" data-rellax-speed="-4"></div>
-
-		<!-- Capa de primer plano (más rápida) -->
-		<div class="rellax layer-front" data-rellax-speed="-1"></div>
-	</div>
-
-	<!-- Contenido principal visible -->
 	<section class="info-box">
 		<h1>Bienvenido, <span th:text="${session.user.fullName}">Usuario</span></h1>
 
@@ -37,7 +26,7 @@ y la librería Rellax.js para el desplazamiento a distintas velocidades.
 			Explora las secciones del menú lateral para acceder a tus datos o gestionar usuarios.
 		</p>
 
-		<!-- Contenido adicional para probar el efecto parallax -->
+		<!-- Contenido adicional para mostrar desplazamiento normal -->
 		<div class="content-block">
 			<p>
 				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi in magna at 
@@ -70,31 +59,14 @@ y la librería Rellax.js para el desplazamiento a distintas velocidades.
 		</div>
 	</section>
 </main>
-
-<!-- ============================================================
-SCRIPTS NECESARIOS PARA EL EFECTO PARALLAX
-============================================================ -->
-<div th:fragment="scripts">
-	<!-- Librería Rellax desde CDN -->
-	<script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"></script>
-
-	<!-- Inicialización de Rellax -->
-	<script th:inline="javascript">
-		document.addEventListener("DOMContentLoaded", () => {
-			new Rellax('.rellax', { center: true });
-		});
-	</script>
-</div>
-
 </html>
 
 <!-- ============================================================
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. Las clases `.layer-back` y `.layer-front` se definen en `parallax.css`.
-2. El efecto parallax se logra al desplazar ambas capas a distinta velocidad.
-3. Rellax.js se carga y ejecuta al final mediante el fragmento `scripts`.
-4. El contenido dentro de `.info-box` flota por encima del parallax.
-5. Compatible con Spring Boot 3 + Thymeleaf 3.
+1. Se ha eliminado el contenedor `.parallax-container` y las capas `.rellax`.
+2. Ya no se requiere la librería Rellax.js ni el fragmento de scripts.
+3. El contenido se muestra con desplazamiento normal, sin efectos dinámicos.
+4. Ideal para un entorno más sobrio o con mejor rendimiento.
 -->
