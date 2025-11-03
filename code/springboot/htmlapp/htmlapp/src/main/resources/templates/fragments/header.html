@@ -6,14 +6,13 @@ FRAGMENTO: HEADER (BARRA SUPERIOR DE LA APLICACIÓN)
 Este archivo define el fragmento de la barra superior (header)
 que aparece en la parte superior de las páginas principales.
 
-Su objetivo es mostrar:
+Muestra:
  - El nombre de la aplicación ("HtmlApp").
  - El nombre del usuario logado (si hay sesión activa).
- - La fecha y hora actual, calculadas en el servidor.
+ - La fecha y hora actual del servidor.
  - Un indicador visual [ADMIN] si el usuario es administrador.
 
 El layout principal (`fragments/layout.html`) lo incluye mediante:
-
     <header th:replace="~{fragments/header :: header}"></header>
 -->
 <header th:fragment="header">
@@ -39,8 +38,8 @@ El layout principal (`fragments/layout.html`) lo incluye mediante:
 			<span class="sep">|</span>
 
 			<!-- Fecha y hora del servidor -->
-			<time th:text="${#dates.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm')}">
-				2025-11-02 15:30
+			<time th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm')}">
+				2025-11-03 06:00
 			</time>
 		</div>
 	</div>
@@ -52,18 +51,17 @@ NOTAS DE DISEÑO Y FUNCIONAMIENTO
 <!--
 1. CÁLCULO DE LA FECHA/HORA
 ----------------------------
-El valor de `${#dates.format(#temporals.createNow())}` genera la fecha/hora
-actual del servidor en el momento del renderizado, sin necesidad de añadirlo
-desde el controlador.
+Se utiliza `#temporals.createNow()` para obtener la hora actual
+del servidor y `#temporals.format(...)` para aplicar el formato
+de salida, compatible con LocalDateTime.
 
 2. GESTIÓN DE SESIÓN
 ---------------------
 Los datos se obtienen del objeto `User` almacenado en sesión:
  - `${session.user.fullName}` → nombre completo del usuario.
- - `${session.user.admin}`    → booleano que indica si es administrador.
+ - `${session.user.admin}`    → indica si es administrador.
 
-Estos valores se establecen automáticamente en la sesión desde
-`AuthService` durante el login.
+Estos valores se establecen automáticamente por `AuthService`.
 
 3. ESTILO Y APARIENCIA
 ------------------------
@@ -72,7 +70,6 @@ la disposición y colores de la barra superior.
 
 4. OBJETIVO PEDAGÓGICO
 ------------------------
-Demuestra cómo Thymeleaf accede a propiedades JavaBean:
-`${session.user.admin}` llama internamente a `user.isAdmin()`,
-sin necesidad de usar paréntesis.
+Demuestra cómo Thymeleaf accede a propiedades JavaBean y cómo
+usar las utilidades modernas de fechas (`#temporals`).
 -->
