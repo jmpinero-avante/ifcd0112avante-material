@@ -145,29 +145,40 @@ public class UserController {
 		return "html/user/delete-confirm";
 	}
 
-	@PostMapping("/delete/{id}")
-	@Transactional
-	public String processDelete(@PathVariable Integer id) {
-		try {
-			userService.deleteUser(id);
+@PostMapping("/delete/{id}")
+@Transactional
+public String processDelete(@PathVariable Integer id, Model model) {
+	try {
+		userService.deleteUser(id);
 
-			// Si el usuario se elimina a sí mismo, cerrar sesión
-			authService.getLoggedUser().ifPresent(logged -> {
-				if (logged.getId().equals(id)) {
-					authService.logout();
-				}
-			});
+		// Si el usuario se elimina a sí mismo, cerrar sesión y redirigir
+		// directamente a la página principal con ?logout,
+		// lo que activará el fragmento logout-message.html.
+		authService.getLoggedUser().ifPresent(logged -> {
+			if (logged.getId().equals(id)) {
+				authService.logout();
+			}
+		});
 
-			return "html/user/delete-success";
-
-		} catch (SecurityException ex) {
-			throw new OperationFailedException(
-				"No tiene permisos para eliminar este usuario.", 403, ex);
-		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"Error inesperado al eliminar el usuario.", 500, ex);
+		// Si el usuario eliminado era el logado, ya se cerró la sesión arriba.
+		// En ese caso, devolvemos la redirección inmediatamente.
+		if (authService.getLoggedUser().isEmpty()) {
+			return "redirect:/?logout";
 		}
+
+		// Si el usuario eliminado NO es el logado, mostrar la página de éxito.
+		model.addAttribute("message", "La cuenta ha sido eliminada correctamente.");
+		return "html/user/delete-success";
+
+	} catch (SecurityException ex) {
+		throw new OperationFailedException(
+			"No tiene permisos para eliminar este usuario.", 403, ex);
+
+	} catch (Exception ex) {
+		throw new OperationFailedException(
+			"Error inesperado al eliminar el usuario.", 500, ex);
 	}
+}
 
 	// -------------------------------------------------------------------------
 	// GESTIÓN DE PRIVILEGIOS ADMINISTRATIVOS
