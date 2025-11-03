@@ -28,13 +28,6 @@ import lombok.RequiredArgsConstructor;
  * - Cambiar contraseñas.
  * - Eliminar usuarios de la base de datos.
  * - Mantener la integridad y validación de datos.
- *
- * ----------------------------------------------------------------------------
- * SOBRE @Service
- * ----------------------------------------------------------------------------
- * Indica que esta clase pertenece a la capa de lógica de negocio.
- * Puede ser inyectada en controladores u otros servicios mediante
- * el sistema de inyección de dependencias de Spring.
  */
 @Service
 @RequiredArgsConstructor
@@ -50,10 +43,16 @@ public class UserService {
 	/**
 	 * Registra un nuevo usuario con salt y hash de contraseña.
 	 *
+	 * Usa el método personalizado `insert()` de UserRepository, que ejecuta:
+	 *   persist(entity) + flush() + refresh(entity)
+	 * para asegurar que los valores por defecto asignados por PostgreSQL
+	 * (como `creation_timestamp` o `is_admin = false`) se reflejen en el
+	 * objeto devuelto.
+	 *
 	 * @param fullName  Nombre completo.
 	 * @param email     Email (único).
 	 * @param password  Contraseña en texto plano.
-	 * @return El objeto User recién creado.
+	 * @return El objeto User recién creado, sincronizado con la BD.
 	 *
 	 * @throws OperationFailedException si el email ya existe.
 	 */
@@ -71,9 +70,9 @@ public class UserService {
 			.email(email)
 			.salt(salt)
 			.passwordHash(hash)
-			.isAdmin(false)
 			.build();
 
+		// Se usa insert() en lugar de save() para obtener los valores por defecto.
 		return userRepository.insert(newUser);
 	}
 
@@ -176,11 +175,13 @@ public class UserService {
 ===============================================================================
 NOTAS PEDAGÓGICAS
 ===============================================================================
-1. SEPARACIÓN DE CAPAS
------------------------
-Este servicio actúa como intermediario entre los controladores y la capa
-de acceso a datos (UserRepository). Contiene las validaciones y reglas
-de negocio relacionadas con la entidad User.
+1. USO DE insert() EN VEZ DE save()
+-----------------------------------
+El método `insert()` definido en UserRepositoryCustomImpl permite:
+ - Persistir el nuevo usuario.
+ - Ejecutar flush() y refresh() para recargar el objeto desde la BD.
+Esto garantiza que los valores por defecto definidos en PostgreSQL
+queden reflejados inmediatamente en la instancia Java.
 
 2. GESTIÓN DE CONTRASEÑAS
 --------------------------
@@ -191,20 +192,20 @@ Las contraseñas nunca se almacenan en texto plano:
 
 3. VALIDACIÓN DE EMAIL
 -----------------------
-Durante el registro y actualización se comprueba que el email sea único
-y no pertenezca a otro usuario existente.
+Se comprueba siempre la unicidad del email tanto al registrar
+como al actualizar usuarios.
 
-4. USO DE @Transactional
--------------------------
-Garantiza que las operaciones de escritura (registro, actualización,
-eliminación) se ejecuten de forma atómica.
+4. SEPARACIÓN DE CAPAS
+-----------------------
+ - UserRepository → acceso a datos.
+ - UserService → lógica de negocio.
+ - Controladores → flujo de vistas y entrada de usuario.
 
 5. OBJETIVO PEDAGÓGICO
 ------------------------
-Este servicio ejemplifica buenas prácticas de diseño en una aplicación
-Spring MVC:
- - Cohesión y claridad en la lógica de negocio.
- - Separación estricta de capas.
- - Buenas prácticas de seguridad en el manejo de contraseñas.
+Este servicio ilustra cómo aplicar:
+ - Seguridad en contraseñas y validación de datos.
+ - Atomicidad transaccional.
+ - Persistencia avanzada con insert + refresh.
 ===============================================================================
 */

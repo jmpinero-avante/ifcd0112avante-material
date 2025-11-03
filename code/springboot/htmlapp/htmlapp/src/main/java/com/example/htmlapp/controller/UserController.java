@@ -47,7 +47,6 @@ public class UserController {
 
 	@GetMapping("/details/{id}")
 	public String showUserDetails(@PathVariable Integer id, Model model) {
-		// Verificación centralizada (admin o usuario propio)
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 
 		model.addAttribute("user", target);
@@ -80,8 +79,14 @@ public class UserController {
 		try {
 			target.setEmail(email);
 			target.setFullName(fullName);
-
 			userService.updateUser(target);
+
+			authService.getUser().ifPresent(current -> {
+				if (current.getId().equals(id)) {
+					authService.refreshUser();
+				}
+			});
+
 			return String.format("redirect:/user/details/%d", id);
 
 		} catch (IllegalArgumentException ex) {
@@ -129,6 +134,11 @@ public class UserController {
 
 		try {
 			userService.changePassword(target, newPassword);
+
+			if (isSelfChange) {
+				authService.refreshUser();
+			}
+
 			return "html/user/change-password-success";
 
 		} catch (Exception ex) {
@@ -155,7 +165,6 @@ public class UserController {
 		try {
 			userService.deleteUser(current.getId());
 
-			// Si el usuario se elimina a sí mismo → cerrar sesión
 			if (authService.getUser()
 					.map(u -> u.getId().equals(id))
 					.orElse(false)) {
@@ -184,6 +193,13 @@ public class UserController {
 		permissionsService.checkAdminPermission();
 		try {
 			userService.setAdminStatus(id, true);
+
+			authService.getUserId().ifPresent(currentId -> {
+				if (currentId.equals(id)) {
+					authService.refreshUser();
+				}
+			});
+
 			return String.format("redirect:/user/details/%d", id);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
@@ -196,6 +212,13 @@ public class UserController {
 		permissionsService.checkAdminPermission();
 		try {
 			userService.setAdminStatus(id, false);
+
+			authService.getUserId().ifPresent(currentId -> {
+				if (currentId.equals(id)) {
+					authService.refreshUser();
+				}
+			});
+
 			return String.format("redirect:/user/details/%d", id);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
@@ -206,60 +229,24 @@ public class UserController {
 
 /*
 ===============================================================================
-CONTROL EXPLÍCITO DE ACCESO
+ACTUALIZACIÓN DE SESIÓN TRAS CAMBIOS
 ===============================================================================
-Las comprobaciones de autenticación redundantes (`authService.isLogged()`)
-se han reemplazado por llamadas centralizadas a `permissionsService`, que
-valida tanto la sesión como los permisos necesarios en cada caso.
+Se añaden llamadas a `authService.refreshUser()` para mantener sincronizado el
+usuario en sesión tras cualquier operación que modifique su propio registro.
 
- - `checkAdminOrLoggedUserPermission(id)` asegura acceso al propio perfil
-   o acceso total si es administrador.
- - `checkAdminPermission()` protege las operaciones de privilegios.
+PUNTOS CLAVE:
+ - /edit/{id} → si edita su propio perfil.
+ - /change-password/{id} → si cambia su propia contraseña.
+ - /make-admin /revoke-admin → si cambia su propio rol.
+
+No se ejecuta en eliminaciones (logout ya limpia la sesión) ni en acciones
+sobre otros usuarios.
 
 ===============================================================================
 NOTAS PEDAGÓGICAS
 ===============================================================================
-1. CONTROL DE PERMISOS
------------------------
-Cada acción valida los permisos con PermissionsService:
- - checkAdminOrLoggedUserPermission(id)
-   → Devuelve el objeto User si hay permiso, o lanza SecurityException.
-
-2. FLUJO DE EDICIÓN
---------------------
-El formulario de edición usa updateUser() de UserService, que ignora campos
-sensibles (passwordHash, salt, isAdmin) para garantizar seguridad.
-
-3. CAMBIO DE CONTRASEÑA
-------------------------
-El usuario debe introducir su contraseña actual (si no es admin).
-Las contraseñas nuevas deben coincidir antes de aplicar el cambio.
-
-4. ELIMINACIÓN DE USUARIO
---------------------------
-Si el usuario logado se borra a sí mismo, se cierra la sesión y se redirige
-a la página principal con ?logout, activando el mensaje de cierre de sesión.
-
-5. GESTIÓN DE PRIVILEGIOS ADMIN
--------------------------------
-Los privilegios solo pueden cambiarse desde los métodos make-admin y
-revoke-admin, accesibles exclusivamente para administradores.
-
-6. EXCEPCIONES Y CÓDIGOS DE ERROR
----------------------------------
- - 400 → Datos inválidos o entrada incorrecta.
- - 403 → Falta de permisos o autenticación fallida.
- - 500 → Error interno o fallo inesperado.
-
-Los errores se encapsulan en OperationFailedException para ser tratados por
-el manejador global (ErrorControllerAdvice).
-
-7. OBJETIVO PEDAGÓGICO
-------------------------
-Este controlador enseña cómo:
- - Separar la lógica de edición y privilegios.
- - Centralizar la autorización en PermissionsService.
- - Mantener la integridad de la sesión y los datos.
- - Asignar códigos de error coherentes para depuración y trazabilidad.
+Este patrón asegura coherencia entre el estado persistido en base de datos
+y el objeto `User` almacenado en sesión, sin obligar al usuario a cerrar y
+abrir sesión tras cada cambio.
 ===============================================================================
 */
