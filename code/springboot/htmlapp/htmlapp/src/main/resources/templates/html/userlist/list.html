@@ -9,14 +9,19 @@ LISTADO DE USUARIOS (ADMIN)
 )}">
 
 <main>
+	<!-- Cabecera descriptiva -->
 	<section class="info-box">
 		<h1>Gestión de usuarios</h1>
+		<p>Desde aquí puedes ver, editar o eliminar usuarios, así como gestionar privilegios de administrador.</p>
+	</section>
 
+	<!-- Sección principal del listado -->
+	<section class="info-box table-wide">
 		<!-- Solo visible para administradores -->
 		<div th:if="${session.user.admin}">
 			<form th:action="@{/userlist/bulk-confirm}" method="post">
 
-				<!-- Envoltura que limita el ancho y habilita scroll horizontal -->
+				<!-- Contenedor con scroll horizontal -->
 				<div class="table-container">
 					<table class="table">
 						<thead>
@@ -45,24 +50,14 @@ LISTADO DE USUARIOS (ADMIN)
 									2025-11-03 14:00
 								</td>
 
-								<!-- Nueva columna: acciones -->
+								<!-- Columna de acciones -->
 								<td class="table-actions">
-									<a th:href="@{'/user/details/' + ${user.id}}"
-									   class="icon-btn" title="Ver detalles">
-										🔍
-									</a>
-
-									<a th:href="@{'/user/edit/' + ${user.id}}"
-									   class="icon-btn" title="Editar usuario">
-										✏️
-									</a>
-
+									<a th:href="@{'/user/details/' + ${user.id}}" class="icon-btn" title="Ver detalles">🔍</a>
+									<a th:href="@{'/user/edit/' + ${user.id}}" class="icon-btn" title="Editar usuario">✏️</a>
 									<a th:href="@{'/user/delete/' + ${user.id}}"
 									   class="icon-btn"
 									   th:if="${session.user.id != user.id}"
-									   title="Eliminar usuario">
-										🗑️
-									</a>
+									   title="Eliminar usuario">🗑️</a>
 								</td>
 							</tr>
 						</tbody>

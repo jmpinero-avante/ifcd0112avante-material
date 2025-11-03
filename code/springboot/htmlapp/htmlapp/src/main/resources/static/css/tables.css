@@ -66,7 +66,7 @@ ICONOS DE ACCIÓN
 
 .table-actions {
 	display: flex;
-	justify-content: flex-end; /* <--- ahora se alinean a la derecha */
+	justify-content: flex-end; /* Acciones a la derecha */
 	align-items: center;
 	gap: 0.6rem;
 }
@@ -143,7 +143,33 @@ RESPONSIVE TABLE WRAPPER
 	.table-actions {
 		flex-wrap: wrap;
 		gap: 0.4rem;
-		justify-content: flex-start; /* en móvil, más natural a la izquierda */
+		justify-content: flex-start; /* En móvil, alineadas a la izquierda */
+	}
+}
+
+/* ==========================================================================
+TABLAS ANCHAS DENTRO DE CAJAS (listados de usuarios, informes, etc.)
+========================================================================== */
+
+/* 
+Permite que las tablas dentro de .info-box.table-wide aprovechen
+todo el ancho del contenido principal, anulando los límites de max-width.
+*/
+.info-box.table-wide {
+	max-width: 100%;
+	width: calc(100% + 2rem); /* Compensa padding del main */
+	margin-left: -1rem;       /* Alinea la caja con los bordes del contenido */
+	margin-right: -1rem;
+	padding: 1.5rem 2rem;
+	box-shadow: var(--box-shadow-md);
+}
+
+/* En pantallas pequeñas, vuelve a encajar en el flujo normal */
+@media (max-width: 768px) {
+	.info-box.table-wide {
+		width: 100%;
+		margin: 0;
+		padding: 1rem;
 	}
 }
 
@@ -155,5 +181,6 @@ Este archivo enseña cómo:
  - Diseñar tablas limpias, accesibles y adaptables.
  - Alinear correctamente las acciones a la derecha.
  - Mantener consistencia visual entre formularios y tablas.
+ - Permitir tablas amplias sin afectar otros componentes.
  - Ofrecer feedback visual fluido y minimalista.
 */
