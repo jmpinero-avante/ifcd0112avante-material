@@ -1,235 +1,223 @@
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
 
 /* ==========================================================================
-BASE CSS – ESTILOS GLOBALES DE LA APLICACIÓN HTMLAPP
+ARCHIVO: core/responsive.css
+--------------------------------------------------------------------------
+Define las reglas de diseño adaptativo (responsive design) para la aplicación.
+Este archivo trabaja en conjunto con `variables.css` y `utilities.css`.
+
+Mantiene una estructura escalonada basada en *breakpoints*:
+ - Dispositivos pequeños (móviles)
+ - Dispositivos medianos (tablets)
+ - Dispositivos grandes (escritorios)
 ========================================================================== */
-/*
-Este archivo actúa como la hoja de estilos raíz de toda la aplicación.
-
-Su función principal es:
- - Establecer el estilo visual base (fuentes, colores, fondo, botones).
- - Importar las hojas modulares de estilo comunes.
- - Garantizar coherencia y uniformidad visual en todas las páginas.
-
-Se carga en el layout principal (`layout.html`) y aplica sus reglas a
-todas las vistas salvo las de error (que usan `error.css`).
-*/
-
-/* ------------------------------------------------------------
-IMPORTS DE MÓDULOS COMUNES
------------------------------------------------------------- */
-@import url('core/variables.css');
-@import url('core/utilities.css');
-@import url('core/responsive.css');
 
 /* ==========================================================================
-RESETEO Y CONFIGURACIÓN GLOBAL
+BREAKPOINTS DE REFERENCIA
+--------------------------------------------------------------------------
+Variables documentadas (no CSS variables, sino referencias conceptuales):
+  - <= 480px  → móvil pequeño
+  - <= 768px  → móvil grande / tablet vertical
+  - <= 1024px → tablet horizontal / portátil
+  - > 1024px  → escritorio
 ========================================================================== */
 
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
+/* ==========================================================================
+ESTILOS BASE
+========================================================================== */
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-html {
-	scroll-behavior: smooth;
-	font-family: var(--font-family-base);
-	background-color: var(--color-bg);
-	color: var(--color-text);
+img, video {
+  max-width: 100%;
+  height: auto;
 }
 
-body {
-	min-height: 100vh;
-	line-height: 1.6;
-	display: flex;
-	flex-direction: column;
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* ==========================================================================
-TIPOGRAFÍA Y TEXTO
+HEADER Y NAVBAR
 ========================================================================== */
-
-h1, h2, h3, h4, h5 {
-	color: var(--color-header-bg);
-	line-height: 1.3;
-	margin-bottom: 1rem;
-}
-
-p {
-	margin: 0.75rem 0;
-}
-
-/* ==========================================================================
-CABECERA (TOPBAR)
-========================================================================== */
-/*
-Define la barra superior que aparece en las páginas con usuario logado.
-Incluye nombre del usuario, fecha y enlaces básicos.
-*/
-
 .topbar {
-	width: 100%;
-	background-color: var(--color-header-bg);
-	color: var(--color-header-text);
-	padding: 0.75rem 1.5rem;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-	z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--color-header-bg);
+  color: var(--color-header-text);
 }
 
-.topbar-left span,
-.topbar-left time {
-	margin-right: 0.5rem;
-	font-size: 0.95rem;
+.topbar .app-name {
+  font-weight: 600;
+  font-size: 1.2rem;
 }
 
-.topbar .user {
-	font-weight: 600;
-}
-
-.sep {
-	color: var(--color-muted);
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
 }
 
 /* ==========================================================================
-BOTONES
+LAYOUT PRINCIPAL
 ========================================================================== */
-
-.btn {
-	display: inline-block;
-	background-color: var(--color-accent);
-	color: white;
-	padding: 0.65rem 1.2rem;
-	border-radius: var(--border-radius);
-	text-decoration: none;
-	font-weight: 500;
-	transition: background-color 0.3s ease, transform 0.2s ease;
-	border: none;
-	cursor: pointer;
+.main-content {
+  display: flex;
+  flex-direction: row;
+  min-height: calc(100vh - 60px);
+  background-color: var(--color-bg);
 }
 
-.btn:hover,
-.btn:focus {
-	background-color: var(--color-accent-hover);
-	transform: translateY(-2px);
+.sidebar {
+  width: 240px;
+  padding: 1rem;
+  background-color: var(--color-sidebar-bg);
+  color: var(--color-sidebar-text);
 }
 
-/* Botón de peligro (rojo) */
-.btn-danger {
-	background-color: var(--color-error);
-}
-
-.btn-danger:hover {
-	background-color: #b02a37;
-}
-
-/* Botón de éxito (verde) */
-.btn-success {
-	background-color: var(--color-success);
-}
-
-.btn-success:hover {
-	background-color: #146c43;
+.content {
+  flex: 1;
+  padding: 2rem;
 }
 
 /* ==========================================================================
-CONTENIDO GENERAL
+MEDIA QUERIES
 ========================================================================== */
 
-main {
-	max-width: var(--max-width);
-	margin: 0 auto;
-	padding: 2rem 1rem;
-	flex: 1;
-	background-color: var(--color-bg);
-}
-
-section {
-	margin-bottom: 2rem;
-}
-
-/* ==========================================================================
-EFECTO PARALLAX DE FONDO
-========================================================================== */
-
-.parallax {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-image: url('/img/background.jpg');
-	background-size: cover;
-	background-attachment: fixed;
-	background-position: center;
-	opacity: 0.25;
-	z-index: -1;
-}
-
-/* ==========================================================================
-FOOTER
-========================================================================== */
-
-footer {
-	text-align: center;
-	padding: 1rem;
-	background-color: var(--color-header-bg);
-	color: var(--color-header-text);
-	font-size: 0.85rem;
-	margin-top: auto;
-}
-
-/* ==========================================================================
-COMPONENTES ESPECIALES
-========================================================================== */
-
-/* Aviso de usuario administrador */
-.user-admin {
-	color: var(--color-success);
-	font-weight: 700;
-	margin-left: 0.5rem;
-}
-
-/* Cajas de información genéricas */
-.info-box {
-	background-color: white;
-	border-radius: var(--border-radius);
-	padding: 1rem 1.5rem;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-/* ==========================================================================
-RESPONSIVE
-========================================================================== */
-
-@media (max-width: 768px) {
-	.topbar {
-		flex-direction: column;
-		text-align: center;
-	}
-	main {
-		padding: 1.5rem 1rem;
-	}
-}
-
+/* -------- MÓVILES PEQUEÑOS (<= 480px) -------- */
 @media (max-width: 480px) {
-	.btn {
-		padding: 0.5rem 1rem;
-		font-size: 0.95rem;
-	}
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  h1, h2, h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* -------- TABLETS (<= 768px) -------- */
+@media (max-width: 768px) {
+  .topbar .app-name {
+    font-size: 1rem;
+  }
+
+  .sidebar {
+    width: 180px;
+  }
+
+  .content {
+    padding: 1.5rem;
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* -------- PORTÁTILES PEQUEÑOS (<= 1024px) -------- */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .content {
+    padding: 1.5rem;
+  }
+
+  .topbar-right {
+    gap: 0.5rem;
+  }
+}
+
+/* -------- ESCRITORIOS GRANDES (> 1024px) -------- */
+@media (min-width: 1025px) {
+  .topbar {
+    padding: 1rem 2rem;
+  }
+
+  .content {
+    padding: 2.5rem;
+  }
+
+  .sidebar {
+    width: 260px;
+  }
+}
+
+/* ==========================================================================
+ELEMENTOS ESPECIALES
+========================================================================== */
+
+/* Parallax container (para main.html) */
+.parallax-container {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.parallax-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: translateZ(0);
+}
+
+.layer-back {
+  z-index: 1;
+  background-attachment: fixed;
+  filter: brightness(0.7);
+}
+
+.layer-front {
+  z-index: 2;
+}
+
+.parallax-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--color-text-light);
+  text-align: center;
 }
 
 /* ==========================================================================
 OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
-Este archivo ilustra:
- - Cómo organizar estilos globales sin mezclar responsabilidades.
- - Cómo utilizar imports para mantener la modularidad CSS.
- - Cómo reutilizar variables y utilidades globales.
- - Cómo aplicar un diseño profesional sin frameworks externos.
- - Cómo asegurar coherencia entre todas las vistas de la aplicación.
+Este archivo enseña cómo aplicar diseño adaptativo en capas:
+ - Cómo definir puntos de ruptura lógicos.
+ - Cómo ocultar o modificar layouts según tamaño.
+ - Cómo mantener la coherencia de estilo global mediante variables.
+ - Cómo integrar efectos (como parallax) de forma responsive.
 */
