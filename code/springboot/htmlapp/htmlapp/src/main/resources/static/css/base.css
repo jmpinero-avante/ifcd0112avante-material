@@ -22,6 +22,14 @@ IMPORTS DE MÓDULOS COMUNES
 @import url('core/utilities.css');
 @import url('core/responsive.css');
 
+/* ------------------------------------------------------------
+OTROS IMPORTS
+------------------------------------------------------------ */
+@import url('layout.css');
+@import url('forms.css');
+@import url('tables.css');
+@import url('parallax.css');
+
 /* ==========================================================================
 RESETEO Y CONFIGURACIÓN GLOBAL
 ========================================================================== */
@@ -151,44 +159,6 @@ section {
 	margin-bottom: 2rem;
 }
 
-/* ==========================================================================
-EFECTO PARALLAX DE FONDO (MULTICAPA)
-========================================================================== */
-/*
-Se usan dos capas fijas con velocidades distintas mediante Rellax.js.
- - .layer-back  → imagen de fondo principal (montañas, cielo, etc.)
- - .layer-front → capa frontal (bosque, siluetas, etc.)
-Ambas se posicionan como fixed para crear el efecto de profundidad.
-*/
-
-.parallax {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-size: cover;
-	background-attachment: fixed;
-	background-position: center;
-	z-index: -1;
-}
-
-/* Capa de fondo: más difusa, más lenta */
-.layer-back {
-	background-image: url('/img/layer-back.jpg');
-	opacity: 0.25;
-	z-index: -3;
-}
-
-/* Capa frontal: más nítida y rápida */
-.layer-front {
-	background-image: url('/img/layer-front.png');
-	background-repeat: no-repeat;
-	background-position: center bottom;
-	background-size: cover;
-	opacity: 0.5;
-	z-index: -2;
-}
 
 /* ==========================================================================
 FOOTER

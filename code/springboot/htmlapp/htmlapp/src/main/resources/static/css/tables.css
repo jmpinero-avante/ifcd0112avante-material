@@ -1,66 +1,147 @@
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
 
 /* ==========================================================================
-ESTILOS PARA TABLAS ADMINISTRATIVAS
+TABLES.CSS – ESTILOS UNIFICADOS PARA TABLAS ADMINISTRATIVAS
 ========================================================================== */
 
-@import url('core/variables.css');
-@import url('core/utilities.css');
+/* ==========================================================================
+TABLAS BASE
+========================================================================== */
 
-/*
-Define la apariencia de las tablas usadas en los listados de usuarios.
-Incluye filas alternas, iconos de acción y cabeceras ordenables.
-*/
-
-/* ------------------------------------------------------------
-TABLAS BÁSICAS
------------------------------------------------------------- */
 table {
 	width: 100%;
 	border-collapse: collapse;
-	margin-top: 1.5rem;
-	background: white;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+	margin: 2rem 0;
+	background-color: #fff;
+	border-radius: var(--border-radius, 8px);
+	overflow: hidden;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+	font-family: var(--font-family-base);
+	font-size: 0.95rem;
 }
 
-th, td {
-	padding: 0.9rem 1rem;
-	border-bottom: 1px solid #e0e0e0;
-	text-align: left;
-}
-
+/* Encabezados */
 th {
 	background-color: #f8f9fa;
+	color: var(--color-text);
 	font-weight: 600;
+	text-align: left;
+	padding: 1rem 1.2rem;
+	border-bottom: 2px solid #dee2e6;
+	user-select: none;
+	white-space: nowrap;
 }
 
-tr:hover {
+/* Celdas */
+td {
+	padding: 0.85rem 1.2rem;
+	border-bottom: 1px solid #e9ecef;
+	vertical-align: middle;
+}
+
+/* Filas alternas */
+tbody tr:nth-child(odd) {
+	background-color: #fafafa;
+}
+
+/* Hover sutil */
+tbody tr:hover {
 	background-color: #f1f3f5;
+	transition: background-color 0.2s ease;
 }
 
-/* ------------------------------------------------------------
+/* ==========================================================================
 ICONOS DE ACCIÓN
------------------------------------------------------------- */
+========================================================================== */
+
 .table-actions {
 	display: flex;
-	gap: 0.5rem;
+	justify-content: flex-start;
+	align-items: center;
+	gap: 0.6rem;
 }
 
 .icon-btn {
 	background: none;
 	border: none;
 	cursor: pointer;
-	color: var(--color-accent);
+	color: var(--color-accent, #0b5ed7);
 	font-size: 1.1rem;
+	padding: 0.25rem 0.4rem;
+	border-radius: 4px;
+	transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 .icon-btn:hover {
-	color: var(--color-accent-hover);
+	color: var(--color-accent-hover, #094db6);
+	background-color: rgba(11, 94, 215, 0.08);
 }
 
+/* ==========================================================================
+CABECERAS ORDENABLES
+========================================================================== */
+
+th.sortable {
+	cursor: pointer;
+	position: relative;
+}
+
+th.sortable::after {
+	content: '⇅';
+	font-size: 0.8rem;
+	color: var(--color-muted, #6c757d);
+	margin-left: 0.5rem;
+}
+
+th.sortable.asc::after {
+	content: '▲';
+	color: var(--color-accent);
+}
+
+th.sortable.desc::after {
+	content: '▼';
+	color: var(--color-accent);
+}
+
+/* ==========================================================================
+RESPONSIVE TABLE WRAPPER
+========================================================================== */
+
 /*
-OBJETIVO PEDAGÓGICO:
- - Mostrar cómo construir tablas limpias y accesibles.
- - Usar flexbox para organizar acciones.
- - Mantener consistencia visual con los botones globales.
+Las tablas anchas se envuelven en un contenedor con scroll horizontal
+para evitar romper el diseño en pantallas pequeñas.
+*/
+
+.table-container {
+	width: 100%;
+	overflow-x: auto;
+	border-radius: var(--border-radius, 8px);
+	-webkit-overflow-scrolling: touch;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+	table {
+		font-size: 0.9rem;
+	}
+
+	th, td {
+		padding: 0.75rem 0.9rem;
+	}
+
+	.table-actions {
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+}
+
+/* ==========================================================================
+OBJETIVO PEDAGÓGICO
+========================================================================== */
+/*
+Este archivo enseña cómo:
+ - Diseñar tablas limpias, accesibles y adaptables.
+ - Incorporar iconos de acción consistentes con el resto de la UI.
+ - Implementar cabeceras ordenables sin frameworks.
+ - Mantener una jerarquía visual coherente con formularios y layout.
 */

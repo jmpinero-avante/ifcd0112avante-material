@@ -4,12 +4,6 @@
 FORMS.CSS – ESTILOS UNIFICADOS Y PROFESIONALES PARA FORMULARIOS
 ========================================================================== */
 
-/* ------------------------------------------------------------
-IMPORTS DE MÓDULOS COMUNES
------------------------------------------------------------- */
-@import url('core/variables.css');
-@import url('core/utilities.css');
-@import url('core/responsive.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 /* ==========================================================================
@@ -19,13 +13,13 @@ ESTILO BASE DEL FORMULARIO
 form {
 	display: flex;
 	flex-direction: column;
-	gap: 1.2rem;
-	max-width: 480px;
-	margin: 2rem auto;
+	gap: 1.5rem;
+	max-width: 500px;
+	margin: 2.5rem auto;
 	padding: 2rem 2.5rem;
-	background: #fff;
+	background-color: #fff;
 	border-radius: var(--border-radius, 10px);
-	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 	font-family: 'Inter', system-ui, sans-serif;
 }
 
@@ -33,20 +27,23 @@ form {
 LABELS Y CAMPOS DE ENTRADA
 ========================================================================== */
 
+.form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
 form label {
 	font-weight: 600;
 	font-size: 0.95rem;
 	color: var(--color-text, #333);
-	margin-bottom: 0.3rem;
-	display: block;
-	text-align: left;
 }
 
 form input[type="text"],
 form input[type="email"],
 form input[type="password"] {
 	width: 100%;
-	padding: 0.7rem 0.9rem;
+	padding: 0.75rem 1rem;
 	font-size: 1rem;
 	border: 1px solid var(--color-border, #ccc);
 	border-radius: 6px;
@@ -57,18 +54,19 @@ form input[type="password"] {
 
 form input:focus {
 	border-color: var(--color-accent, #007bff);
-	box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+	box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
 	outline: none;
 	background-color: #fff;
 }
 
 /* ==========================================================================
-SEPARACIÓN Y AGRUPACIÓN
+AGRUPACIÓN VISUAL
 ========================================================================== */
 
-.form-group {
-	display: flex;
-	flex-direction: column;
+form h1, form h2 {
+	text-align: center;
+	color: var(--color-header-bg);
+	margin-bottom: 1rem;
 }
 
 /* ==========================================================================
@@ -77,18 +75,18 @@ BOTONES Y ACCIONES
 
 .form-actions {
 	display: flex;
-	justify-content: center;
+	justify-content: space-between;
 	align-items: center;
 	gap: 1rem;
 	margin-top: 2rem;
-	padding-top: 1rem;
+	padding-top: 1.5rem;
 	border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .form-actions .btn {
 	flex: 1;
 	text-align: center;
-	padding: 0.75rem 0;
+	padding: 0.9rem 0;
 	font-size: 1rem;
 	font-weight: 600;
 	border-radius: 6px;
@@ -96,6 +94,7 @@ BOTONES Y ACCIONES
 	transition: all 0.2s ease-in-out;
 }
 
+/* Botón de acción principal */
 .btn-success {
 	background-color: var(--color-accent, #007bff);
 	color: #fff;
@@ -104,8 +103,10 @@ BOTONES Y ACCIONES
 
 .btn-success:hover {
 	background-color: var(--color-accent-hover, #005dc1);
+	transform: translateY(-1px);
 }
 
+/* Botón secundario (Cancelar, Volver...) */
 .btn {
 	background-color: #e0e0e0;
 	color: #333;
@@ -114,6 +115,7 @@ BOTONES Y ACCIONES
 
 .btn:hover {
 	background-color: #d5d5d5;
+	transform: translateY(-1px);
 }
 
 /* ==========================================================================
@@ -125,19 +127,26 @@ form .error-message {
 	font-weight: 500;
 	margin-top: 0.75rem;
 	text-align: center;
+	padding: 0.5rem 0.75rem;
+	background-color: rgba(220, 53, 69, 0.08);
+	border-radius: 4px;
 }
 
 /* ==========================================================================
 RESPONSIVE
 ========================================================================== */
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
 	form {
-		padding: 1.2rem 1.5rem;
+		padding: 1.5rem 1.25rem;
+		margin: 1.5rem auto;
+		gap: 1.2rem;
 	}
 
 	.form-actions {
 		flex-direction: column;
+		align-items: stretch;
+		gap: 0.8rem;
 	}
 
 	.form-actions .btn {
@@ -149,10 +158,10 @@ RESPONSIVE
 OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
-Este rediseño ilustra cómo lograr un estilo profesional sin frameworks:
- - Tipografía moderna y coherente.
- - Inputs limpios con feedback visual suave.
- - Botones de igual tamaño y buena jerarquía visual.
- - Separación clara entre contenido y acciones.
- - Layout flexible y adaptable a móvil.
+Este rediseño ilustra cómo lograr un estilo profesional y accesible:
+ - Tipografía moderna con buen contraste visual.
+ - Inputs bien alineados y espaciados.
+ - Botones de tamaño uniforme con jerarquía visual clara.
+ - Separación visual entre formulario y acciones.
+ - Diseño adaptable y legible en móvil.
 */

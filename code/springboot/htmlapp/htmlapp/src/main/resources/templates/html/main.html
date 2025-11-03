@@ -10,30 +10,21 @@ PÁGINA PRINCIPAL (EFECTO PARALLAX)
 
 <!--
 Vista principal accesible solo para usuarios autenticados.
-Muestra un efecto parallax usando Rellax.js.
+Usa el nuevo sistema modular de parallax (definido en parallax.css)
+y la librería Rellax.js para el desplazamiento a distintas velocidades.
 -->
 <main>
-	<!-- Capa de fondo con imagen lejana -->
-	<div class="rellax" data-rellax-speed="-4" data-rellax-zindex="-2"
-	     style="background-image:url('/img/layer-back.jpg');
-	            background-size:cover;
-	            background-position:center;
-	            position:fixed; inset:0;
-	            opacity:0.3; z-index:-2;">
-	</div>
+	<!-- Contenedor general del efecto parallax -->
+	<div class="parallax-container">
+		<!-- Capa de fondo (más lenta) -->
+		<div class="rellax layer-back" data-rellax-speed="-4"></div>
 
-	<!-- Capa de primer plano -->
-	<div class="rellax" data-rellax-speed="-1" data-rellax-zindex="-1"
-	     style="background-image:url('/img/layer-front.png');
-	            background-size:contain;
-	            background-repeat:no-repeat;
-	            background-position:center bottom;
-	            position:fixed; inset:0;
-	            opacity:0.6; z-index:-1;">
+		<!-- Capa de primer plano (más rápida) -->
+		<div class="rellax layer-front" data-rellax-speed="-1"></div>
 	</div>
 
 	<!-- Contenido principal visible -->
-	<section class="info-box" style="position:relative; z-index:10;">
+	<section class="info-box">
 		<h1>Bienvenido, <span th:text="${session.user.fullName}">Usuario</span></h1>
 
 		<p>
@@ -87,10 +78,10 @@ SCRIPTS NECESARIOS PARA EL EFECTO PARALLAX
 	<!-- Librería Rellax desde CDN -->
 	<script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"></script>
 
-	<!-- Inicialización de la librería Rellax -->
+	<!-- Inicialización de Rellax -->
 	<script th:inline="javascript">
 		document.addEventListener("DOMContentLoaded", () => {
-			new Rellax('.rellax');
+			new Rellax('.rellax', { center: true });
 		});
 	</script>
 </div>
@@ -101,9 +92,9 @@ SCRIPTS NECESARIOS PARA EL EFECTO PARALLAX
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. Usa el parámetro `scripts` del layout para cargar Rellax.js al final del <body>.
-2. Las imágenes `layer-back.jpg` y `layer-front.png` deben estar en /static/img/.
-3. El contenido adicional sirve para probar el desplazamiento con efecto parallax.
-4. El bloque <div th:fragment="scripts"> permite pasar scripts al layout.
+1. Las clases `.layer-back` y `.layer-front` se definen en `parallax.css`.
+2. El efecto parallax se logra al desplazar ambas capas a distinta velocidad.
+3. Rellax.js se carga y ejecuta al final mediante el fragmento `scripts`.
+4. El contenido dentro de `.info-box` flota por encima del parallax.
 5. Compatible con Spring Boot 3 + Thymeleaf 3.
 -->
