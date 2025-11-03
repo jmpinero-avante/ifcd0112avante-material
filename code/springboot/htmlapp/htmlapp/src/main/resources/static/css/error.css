@@ -1,14 +1,11 @@
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : */
 
 /* ==========================================================================
-ESTILOS PARA PÁGINAS DE ERROR (400, 403, 404, 500, ETC.)
+ERROR.CSS – ESTILOS UNIFICADOS PARA PÁGINAS DE ERROR
 ========================================================================== */
 /*
-Define el diseño visual de las páginas de error y mantiene la coherencia
-con el resto de la aplicación (colores, fuente y espaciado), pero con una
-estructura autónoma que puede mostrarse incluso si fallan otros recursos.
-
-Se carga exclusivamente desde `fragments/layout-error.html`.
+Diseño visual de las páginas de error (400, 403, 404, 500...),
+manteniendo coherencia con la interfaz general definida en base.css.
 */
 
 /* ------------------------------------------------------------
@@ -16,100 +13,94 @@ IMPORTS DE MÓDULOS COMUNES
 ------------------------------------------------------------ */
 @import url('core/variables.css');
 @import url('core/utilities.css');
-@import url('core/responsive.css');
 
 /* ==========================================================================
 CONFIGURACIÓN GLOBAL
 ========================================================================== */
-/*
-Se usa un layout centrado verticalmente con flexbox y fondo claro.
-*/
 
-html, body {
-	margin: 0;
-	padding: 0;
-	height: 100%;
+.error-body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
 	background-color: var(--color-bg);
 	font-family: var(--font-family-base);
 	color: var(--color-text);
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	text-align: center;
+	margin: 0;
+	padding: 2rem;
 }
 
 /* ==========================================================================
-CONTENEDOR PRINCIPAL DEL ERROR
+CAJA PRINCIPAL DE ERROR
 ========================================================================== */
 
 .error-container {
-	text-align: center;
-	background-color: #fff;
-	padding: 3rem 2.5rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+}
+
+.error-box {
+	background-color: var(--color-surface, #fff);
 	border-radius: var(--border-radius);
-	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--box-shadow-md);
+	padding: 2.5rem 2rem;
 	max-width: 500px;
-	margin: 2rem;
+	margin: 1rem auto;
 	animation: fadeIn 0.6s ease;
 }
 
 /* ==========================================================================
-TÍTULO Y MENSAJE
+TÍTULOS Y MENSAJES
 ========================================================================== */
 
-h1.error-code {
-	font-size: 4rem;
+.error-box h1 {
+	font-size: 3.2rem;
 	font-weight: 700;
 	color: var(--color-error);
 	margin-bottom: 1rem;
 }
 
-p.error-message {
+.error-message {
 	font-size: 1.1rem;
 	color: var(--color-muted);
-	margin-bottom: 2rem;
 	line-height: 1.5;
+	margin-bottom: 2rem;
 }
 
 /* ==========================================================================
-BOTONES Y ENLACES DE ACCIÓN
+BOTONES Y ACCIONES
 ========================================================================== */
-/*
-Se reutiliza el estilo base de los botones, con una variante local
-para mantener independencia respecto a base.css.
-*/
 
-a.btn,
-a.error-link {
-	display: inline-block;
-	background-color: var(--color-accent);
-	color: white;
-	padding: 0.7rem 1.4rem;
-	border-radius: var(--border-radius);
-	text-decoration: none;
-	font-weight: 500;
-	transition: background-color 0.3s ease, transform 0.2s ease;
-	margin: 0.25rem;
-}
-
-a.btn:hover,
-a.error-link:hover {
-	background-color: var(--color-accent-hover);
-	transform: translateY(-2px);
-}
-
-/*
-Agrupa los botones de navegación (“Volver al inicio”, etc.)
-*/
 .error-actions {
 	display: flex;
 	justify-content: center;
 	flex-wrap: wrap;
-	gap: 0.75rem;
-	margin-top: 1rem;
+	gap: 0.8rem;
+}
+
+.error-actions .btn {
+	padding: 0.75rem 1.5rem;
+	font-weight: 600;
+	border-radius: var(--border-radius);
+	transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.error-actions .btn-success {
+	background-color: var(--color-success);
+	color: #fff;
+}
+
+.error-actions .btn-success:hover {
+	background-color: var(--color-success-hover);
+	transform: translateY(-2px);
 }
 
 /* ==========================================================================
-ANIMACIONES
+ANIMACIÓN
 ========================================================================== */
 
 @keyframes fadeIn {
@@ -128,13 +119,13 @@ RESPONSIVE
 ========================================================================== */
 
 @media (max-width: 480px) {
-	.error-container {
+	.error-box {
 		padding: 2rem 1.2rem;
 	}
-	h1.error-code {
-		font-size: 3rem;
+	.error-box h1 {
+		font-size: 2.6rem;
 	}
-	p.error-message {
+	.error-message {
 		font-size: 1rem;
 	}
 }
@@ -143,9 +134,9 @@ RESPONSIVE
 OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
-Este archivo demuestra cómo:
- - Diseñar páginas de error limpias y autónomas.
- - Reutilizar variables globales de color y tipografía.
- - Añadir pequeñas animaciones sin depender de frameworks.
- - Asegurar legibilidad y coherencia visual en cualquier contexto.
+Demuestra cómo:
+ - Integrar el sistema visual global en las vistas de error.
+ - Usar variables CSS compartidas para colores y tipografía.
+ - Mantener consistencia en botones y cajas informativas.
+ - Asegurar legibilidad y centrado en cualquier dispositivo.
 */

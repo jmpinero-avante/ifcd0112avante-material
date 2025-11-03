@@ -3,30 +3,34 @@
 FRAGMENTO: SIDEBAR (MENÚ LATERAL DE NAVEGACIÓN)
 ============================================================ -->
 <!--
-Este fragmento define el menú lateral izquierdo de la aplicación,
-visible solo cuando el usuario está logado.
+Define el menú lateral fijo de la aplicación, visible solo cuando
+el usuario está logado. Su posición y comportamiento se ajustan
+mediante las variables globales `--sidebar-width` y `--topbar-height`.
 -->
-<aside th:fragment="sidebar" class="sidebar" th:if="${session.user != null}">
+
+<aside th:fragment="sidebar"
+       class="sidebar"
+       th:if="${session.user != null}">
 	<nav>
-		<ul>
+		<ul class="menu-list">
 			<!-- Opciones generales -->
-			<li><a th:href="@{/main}">Inicio</a></li>
-			<li><a th:href="@{/user/details/{id}(id=${session.user.id})}">Mi perfil</a></li>
-			<li><a th:href="@{/user/change-password/{id}(id=${session.user.id})}">Cambiar contraseña</a></li>
+			<li><a th:href="@{/main}">🏠 Inicio</a></li>
+			<li><a th:href="@{/user/details/{id}(id=${session.user.id})}">👤 Mi perfil</a></li>
+			<li><a th:href="@{/user/change-password/{id}(id=${session.user.id})}">🔑 Cambiar contraseña</a></li>
 
 			<!-- Opciones solo visibles para administradores -->
 			<li th:if="${session.user.admin}">
-				<a th:href="@{/userlist/list}">Administrar usuarios</a>
+				<a th:href="@{/userlist/list}">🧑‍💼 Administrar usuarios</a>
 			</li>
 			<li th:if="${session.user.admin}">
-				<a th:href="@{/register}">Dar de alta usuario</a>
+				<a th:href="@{/register}">➕ Dar de alta usuario</a>
 			</li>
 			<li th:if="${session.user.admin}">
-				<a th:href="@{/downloads/users.sql}" download>Descargar usuarios (SQL)</a>
+				<a th:href="@{/downloads/users.sql}" download>⬇️ Descargar usuarios (SQL)</a>
 			</li>
 
 			<!-- Opción común -->
-			<li><a th:href="@{/logout}">Cerrar sesión</a></li>
+			<li><a th:href="@{/logout}" class="logout">🚪 Cerrar sesión</a></li>
 		</ul>
 	</nav>
 </aside>
@@ -35,39 +39,27 @@ visible solo cuando el usuario está logado.
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. VISIBILIDAD DEL MENÚ
--------------------------
-El menú lateral solo se renderiza si existe un objeto `session.user`
-en la sesión activa, lo que indica que hay un usuario autenticado.
+1. COHERENCIA CON EL LAYOUT
+----------------------------
+ - El sidebar usa las mismas variables estructurales que `layout.css`:
+     width: var(--sidebar-width);
+     top: var(--topbar-height);
 
-2. OPCIONES EXCLUSIVAS DE ADMINISTRADOR
-----------------------------------------
-Las opciones de administración se muestran únicamente cuando
-`${session.user.admin}` es true, es decir, cuando el usuario tiene
-privilegios de administrador.
+ - Se posiciona de forma fija y deja espacio al `main` mediante `margin-left`.
 
-Actualmente incluyen:
- - "Administrar usuarios"
- - "Dar de alta usuario"
- - "Descargar usuarios (SQL)"
+2. ICONOS
+---------
+ - Los emojis sirven como iconos accesibles sin depender de librerías externas.
+   Si más adelante se usa una fuente de iconos (ej. Lucide o FontAwesome),
+   pueden sustituirse fácilmente.
 
-3. DESCARGA DIRECTA DEL ARCHIVO SQL
------------------------------------
-El enlace:
-    <a th:href="@{/downloads/users.sql}" download>
-permite descargar directamente el archivo `users.sql` ubicado en
-`src/main/resources/static/downloads/users.sql`.
-
-Spring Boot sirve automáticamente los recursos estáticos ubicados en:
- - `/static`
- - `/public`
- - `/resources`
-
-Por tanto, no se requiere controlador específico para la descarga.
+3. ACCESIBILIDAD Y SEMÁNTICA
+-----------------------------
+ - Estructura basada en `<nav>` + `<ul>` + `<li>` para lectura por screen readers.
+ - Los enlaces activos pueden destacarse con `.active`.
 
 4. OBJETIVO PEDAGÓGICO
 ------------------------
-Demuestra cómo controlar la visibilidad del contenido en función del
-rol del usuario (usando `th:if`) y cómo vincular enlaces a recursos
-estáticos servidos desde `/static`.
+ - Enseña cómo aplicar visibilidad condicional con Thymeleaf.
+ - Demuestra cómo usar variables globales para coordinar layout y navegación.
 -->

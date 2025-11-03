@@ -3,87 +3,53 @@
 FRAGMENTO: FOOTER (PIE DE PÁGINA COMÚN)
 ============================================================ -->
 <!--
-Este archivo define el pie de página reutilizable de la aplicación.
-
-Se incluye en todas las páginas mediante la instrucción:
+Define el pie de página reutilizable de la aplicación.
+Se incluye mediante:
 
     <footer th:replace="~{fragments/footer :: footer}"></footer>
-
-El objetivo es ofrecer un cierre coherente y profesional a la interfaz,
-manteniendo una apariencia uniforme entre las páginas normales y las de error.
 -->
-<footer th:fragment="footer">
-	<footer class="footer">
-		<p>&copy; 2025 HtmlApp. Todos los derechos reservados.</p>
 
-		<!--
-		Enlace opcional al aviso legal o política de privacidad.
-		Puede eliminarse o completarse más adelante si la aplicación
-		se amplía con secciones informativas adicionales.
-		-->
-		<p class="footer-links">
-			<a th:href="@{/privacy}" class="footer-link">Política de privacidad</a>
-			<span class="sep">|</span>
-			<a th:href="@{/terms}" class="footer-link">Términos de uso</a>
-		</p>
-	</footer>
+<footer th:fragment="footer" class="footer">
+	<p>&copy; 2025 HtmlApp. Todos los derechos reservados.</p>
+
+	<!-- Enlaces informativos opcionales -->
+	<p class="footer-links">
+		<a th:href="@{/privacy}" class="footer-link">Política de privacidad</a>
+		<span class="sep">|</span>
+		<a th:href="@{/terms}" class="footer-link">Términos de uso</a>
+	</p>
 </footer>
 
 <!-- ============================================================
 NOTAS DE DISEÑO Y BUENAS PRÁCTICAS
 ============================================================ -->
 <!--
-1. SEMÁNTICA Y ESTRUCTURA
---------------------------
-Este fragmento utiliza la etiqueta <footer> de HTML5, que define
-el pie de un documento o sección. Es semánticamente correcta para
-mostrar información legal, de autoría o enlaces secundarios.
+1. SEMÁNTICA
+-------------
+Elimina la anidación de <footer> dentro de otra <footer>.
 
-2. INTEGRACIÓN EN EL LAYOUT
-----------------------------
-El pie se incluye automáticamente en:
-  - `fragments/layout.html` (layout principal de la aplicación).
-  - `fragments/layout-error.html` (layout para páginas de error).
+2. INTEGRACIÓN VISUAL
+----------------------
+El estilo está centralizado en `base.css`, que define:
+  footer {
+    text-align: center;
+    padding: 1rem;
+    background-color: var(--color-header-bg);
+    color: var(--color-header-text);
+    font-size: 0.85rem;
+    margin-top: auto;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+  }
 
-Gracias a ello, no es necesario repetir el pie de página en
-cada plantilla individual.
-
-3. ESTILO Y APARIENCIA
-------------------------
-Los estilos están definidos en `base.css` (para páginas normales)
-y `error.css` (para páginas de error).
-
-Ejemplo de estilos sugeridos (ya presentes en base.css):
-
-footer {
-	text-align: center;
-	padding: 1rem;
-	background-color: var(--color-header-bg);
-	color: var(--color-header-text);
-	font-size: 0.85rem;
-}
-
-.footer-links {
-	margin-top: 0.5rem;
-}
-
-.footer-link {
-	color: var(--color-accent);
-	text-decoration: none;
-	transition: color 0.3s ease;
-}
-
-.footer-link:hover {
-	color: var(--color-accent-hover);
-	text-decoration: underline;
-}
+3. COHERENCIA GLOBAL
+---------------------
+ - Usa las mismas variables que el header.
+ - Se adapta automáticamente al modo responsive.
+ - El margen superior flexible asegura que el pie siempre quede
+   al final de la página incluso si el contenido es corto.
 
 4. OBJETIVO PEDAGÓGICO
 ------------------------
-Este fragmento permite enseñar a los alumnos cómo crear
-componentes reutilizables y coherentes en todas las páginas
-de una aplicación web mediante Thymeleaf.
-
-Muestra cómo se pueden definir enlaces comunes y variables
-globales sin repetir código en cada plantilla.
+Demuestra cómo reutilizar componentes con Thymeleaf (`th:fragment`)
+manteniendo estructura semántica, coherencia visual y buenas prácticas.
 -->

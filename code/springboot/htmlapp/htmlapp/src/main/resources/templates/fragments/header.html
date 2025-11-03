@@ -3,45 +3,38 @@
 FRAGMENTO: HEADER (BARRA SUPERIOR DE LA APLICACIÓN)
 ============================================================ -->
 <!--
-Este archivo define el fragmento de la barra superior (header)
-que aparece en la parte superior de las páginas principales.
-
+Define la barra superior que aparece en todas las páginas principales.
 Muestra:
- - El nombre de la aplicación ("HtmlApp").
- - El nombre del usuario logado (si hay sesión activa).
- - La fecha y hora actual del servidor.
- - Un indicador visual [ADMIN] si el usuario es administrador.
+ - El nombre de la aplicación ("HtmlApp")
+ - El nombre del usuario logado (si hay sesión activa)
+ - La hora actual del servidor
+ - Un indicador visual [ADMIN] si el usuario es administrador
 
-El layout principal (`fragments/layout.html`) lo incluye mediante:
+Se incluye desde el layout principal:
     <header th:replace="~{fragments/header :: header}"></header>
 -->
-<header th:fragment="header">
-	<div class="topbar">
-		<!-- Sección izquierda del header -->
-		<div class="topbar-left">
-			<span class="app-name">HtmlApp</span>
-		</div>
 
-		<!-- Sección derecha: visible solo si hay sesión activa -->
-		<div class="topbar-right" th:if="${session.user != null}">
-			<!-- Nombre del usuario logado -->
-			<span class="user" th:text="${session.user.fullName}">Usuario</span>
+<header th:fragment="header" class="topbar">
+	<!-- Sección izquierda -->
+	<div class="topbar-left">
+		<span class="app-name">HtmlApp</span>
+	</div>
 
-			<!-- Etiqueta [ADMIN] si el usuario tiene privilegios -->
-			<span class="role-tag"
-			      th:if="${session.user.admin}"
-			      style="color:#ffc107; font-weight:bold;">
-				[ADMIN]
-			</span>
+	<!-- Sección derecha (solo visible si hay sesión activa) -->
+	<div class="topbar-right" th:if="${session.user != null}">
+		<!-- Nombre del usuario logado -->
+		<span class="user" th:text="${session.user.fullName}">Usuario</span>
 
-			<!-- Separador visual -->
-			<span class="sep">|</span>
+		<!-- Etiqueta [ADMIN] -->
+		<span class="role-tag" th:if="${session.user.admin}">[ADMIN]</span>
 
-			<!-- Fecha y hora del servidor -->
-			<time th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm')}">
-				2025-11-03 06:00
-			</time>
-		</div>
+		<!-- Separador -->
+		<span class="sep">|</span>
+
+		<!-- Fecha y hora del servidor -->
+		<time th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm')}">
+			2025-11-03 06:00
+		</time>
 	</div>
 </header>
 
@@ -49,27 +42,16 @@ El layout principal (`fragments/layout.html`) lo incluye mediante:
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. CÁLCULO DE LA FECHA/HORA
-----------------------------
-Se utiliza `#temporals.createNow()` para obtener la hora actual
-del servidor y `#temporals.format(...)` para aplicar el formato
-de salida, compatible con LocalDateTime.
+1. Altura controlada por la variable global:
+     --topbar-height (definida en core/variables.css)
+   Asegura alineación con el sidebar y el contenido principal.
 
-2. GESTIÓN DE SESIÓN
----------------------
-Los datos se obtienen del objeto `User` almacenado en sesión:
- - `${session.user.fullName}` → nombre completo del usuario.
- - `${session.user.admin}`    → indica si es administrador.
+2. `.role-tag` utiliza el color `--color-warning` del tema actual,
+   definido en las variables globales (ya no inline).
 
-Estos valores se establecen automáticamente por `AuthService`.
+3. `.topbar` está declarada con `position: fixed` y `z-index: 100`
+   en layout.css, por lo que siempre queda visible y fuera del flujo
+   de scroll del contenido principal.
 
-3. ESTILO Y APARIENCIA
-------------------------
-Los estilos se definen en `base.css`, donde `.topbar` controla
-la disposición y colores de la barra superior.
-
-4. OBJETIVO PEDAGÓGICO
-------------------------
-Demuestra cómo Thymeleaf accede a propiedades JavaBean y cómo
-usar las utilidades modernas de fechas (`#temporals`).
+4. `.sep` es un separador visual, estilizado en base.css.
 -->

@@ -1,29 +1,5 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 
-<!--
-============================================================
-LAYOUT PRINCIPAL DE LA APLICACIÓN
-============================================================
-Este archivo define la estructura base reutilizable para todas las páginas
-de la aplicación (tanto públicas como privadas, excepto las de error).
-
-Recibe tres parámetros:
- - `title`   → el título que se mostrará en la pestaña del navegador.
- - `content` → el bloque principal de contenido (la sección o main de la vista hija).
- - `scripts` → bloque opcional con scripts específicos para esa vista.
-
-Se usa en cada plantilla de la siguiente forma:
-
-<html th:replace="~{fragments/layout :: layout(
-    title='Título de la página',
-    content=~{::main},
-    scripts=~{::script}
-)}">
-
-Si la plantilla hija no define un bloque <script>, el parámetro `scripts`
-será null y el layout no insertará nada en su lugar.
--->
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:fragment="layout(title, content, scripts)">
@@ -32,11 +8,10 @@ será null y el layout no insertará nada en su lugar.
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!--
-  Si la variable `title` no está definida en la plantilla hija,
-  se usará el valor por defecto "HtmlApp".
-  -->
+  <!-- Título dinámico con valor por defecto -->
   <title th:text="${title} ?: 'HtmlApp'">HtmlApp</title>
+
+  <!-- Hoja de estilos principal -->
   <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
 
@@ -49,17 +24,16 @@ será null y el layout no insertará nada en su lugar.
   </header>
 
   <!-- ============================================================
-  CONTENEDOR PRINCIPAL
+  MENÚ LATERAL (solo si hay sesión activa)
   ============================================================ -->
-  <div class="page-container">
-    <!-- Menú lateral, visible solo con sesión activa -->
-    <aside th:if="${session.user != null}"
-           th:replace="~{fragments/sidebar :: sidebar}">
-    </aside>
+  <aside th:if="${session.user != null}"
+         th:replace="~{fragments/sidebar :: sidebar}">
+  </aside>
 
-    <!-- Contenido dinámico de la vista hija -->
-    <main th:replace="${content}"></main>
-  </div>
+  <!-- ============================================================
+  CONTENIDO PRINCIPAL DE LA PÁGINA HIJA
+  ============================================================ -->
+  <main th:replace="${content}"></main>
 
   <!-- ============================================================
   PIE DE PÁGINA
@@ -72,56 +46,3 @@ será null y el layout no insertará nada en su lugar.
   <div th:if="${scripts != null}" th:replace="${scripts}"></div>
 </body>
 </html>
-
-<!-- ============================================================
-NOTAS DE DISEÑO Y FUNCIONAMIENTO
-============================================================ -->
-<!--
-1. ESTRUCTURA GENERAL
-----------------------
-Este layout proporciona la estructura base del sitio:
-cabecera condicional, menú lateral condicional, contenido y pie de página.
-
-2. FRAGMENTOS REUTILIZADOS
----------------------------
-- `fragments/header.html`  → cabecera superior con nombre del usuario.
-- `fragments/sidebar.html` → menú lateral (solo visible con sesión activa).
-- `fragments/footer.html`  → pie de página común.
-
-3. CONTROL DE SESIÓN
----------------------
-Tanto el header como el sidebar se muestran únicamente cuando existe
-una sesión activa, es decir, cuando `session.user` no es null.
-
-De esta forma, las páginas públicas (como login, register o index)
-no muestran ni la cabecera ni el menú lateral.
-
-4. VALOR POR DEFECTO DEL TÍTULO
---------------------------------
-La expresión `th:text="${title} ?: 'HtmlApp'"` usa el operador Elvis (`?:`)
-para establecer un valor por defecto. Si no se pasa ningún título,
-se mostrará "HtmlApp" en la pestaña del navegador.
-
-5. BLOQUE OPCIONAL DE SCRIPTS
-------------------------------
-El parámetro `scripts` permite que las plantillas hijas inyecten
-código JavaScript específico al final del body. Si no se define,
-el layout no renderiza nada en esa posición.
-
-6. COMPATIBILIDAD CON EL SISTEMA DE SESIÓN
--------------------------------------------
-Gracias a que el objeto `User` completo se guarda en sesión (`session.user`),
-las vistas pueden acceder directamente a sus propiedades:
- - `${session.user.fullName}` → nombre del usuario logado.
- - `${session.user.admin}`    → true si es administrador.
- - `${session.user.id}`       → identificador del usuario.
-
-7. OBJETIVO PEDAGÓGICO
-------------------------
-Este layout enseña cómo:
- - Crear un layout base parametrizable con título, contenido y scripts.
- - Reutilizar fragmentos mediante `th:replace`.
- - Controlar visibilidad de secciones según sesión o rol.
- - Integrar menús laterales y cabeceras de forma modular.
- - Simplificar la estructura global de las vistas sin duplicar código.
--->

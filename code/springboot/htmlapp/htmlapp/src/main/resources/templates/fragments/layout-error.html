@@ -1,26 +1,5 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 
-<!-- ============================================================
-FRAGMENTO: LAYOUT-ERROR
-============================================================ -->
-<!--
-Este layout define la estructura base para todas las páginas de error.
-
-Recibe dos parámetros:
- - errorCode     → código numérico del error (por ejemplo, 404, 403, 500...).
- - errorMessage  → mensaje explicativo que se muestra al usuario.
-
-Es usado por todas las plantillas dentro de `html/error/` mediante:
-
-<html th:replace="~{fragments/layout-error :: layoutError(
-    errorCode=${errorCode} ?: 500,
-    errorMessage=${errorMessage} ?: 'Ha ocurrido un error inesperado.'
-)}">
-
-Si alguno de los parámetros no se pasa desde el modelo, se aplican
-los valores por defecto definidos en la llamada anterior.
--->
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:fragment="layoutError(errorCode, errorMessage)">
@@ -30,25 +9,32 @@ los valores por defecto definidos en la llamada anterior.
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title th:text="'Error ' + ${errorCode}">Error</title>
 
+  <!-- Estilos base y específicos -->
   <link rel="stylesheet" th:href="@{/css/base.css}" />
   <link rel="stylesheet" th:href="@{/css/error.css}" />
 </head>
 
-<body>
+<body class="error-body">
+  <!-- ============================================================
+  CONTENIDO PRINCIPAL DEL ERROR
+  ============================================================ -->
   <main class="error-container">
     <section class="error-box">
       <h1 th:text="'Error ' + ${errorCode}">Error 500</h1>
-      <p th:text="${errorMessage}">Ha ocurrido un error inesperado.</p>
+      <p class="error-message" th:text="${errorMessage}">
+        Ha ocurrido un error inesperado.
+      </p>
 
       <div class="error-actions">
-        <a th:href="@{/}" class="btn">Volver al inicio</a>
+        <a th:href="@{/}" class="btn btn-success">Volver al inicio</a>
       </div>
     </section>
   </main>
 
-  <footer>
-    <p>&copy; 2025 HtmlApp — Todos los derechos reservados</p>
-  </footer>
+  <!-- ============================================================
+  PIE DE PÁGINA UNIFICADO
+  ============================================================ -->
+  <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>
 
@@ -56,27 +42,29 @@ los valores por defecto definidos en la llamada anterior.
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. UNIFICACIÓN DE ESTILO
+1. ESTRUCTURA UNIFICADA
 -------------------------
-Este layout reemplaza la necesidad de duplicar estructuras HTML
-en cada plantilla de error. Todas heredan esta composición común.
+Usa el mismo footer global (`fragments/footer.html`) para mantener
+coherencia estética entre las páginas normales y las de error.
 
-2. PARÁMETROS REUTILIZABLES
-----------------------------
-- `errorCode`     → define el código numérico mostrado en el título y el cuerpo.
-- `errorMessage`  → texto descriptivo (mensaje del modelo o uno por defecto).
+2. CLASES DE ESTILO
+--------------------
+- `.error-body` y `.error-container` se definen en `error.css`.
+- `.error-box` es una caja centrada visualmente, con sombra y bordes suaves.
+- `.btn-success` mantiene la coherencia de botones del resto del sitio.
 
-3. ENLACE DE RETORNO
----------------------
-Siempre ofrece un botón “Volver al inicio”, que redirige a `/`.
+3. PARÁMETROS
+--------------
+- `errorCode` → se muestra tanto en <title> como en el encabezado <h1>.
+- `errorMessage` → texto descriptivo configurable.
 
-4. HOJAS DE ESTILO
--------------------
-- `base.css` → colores y tipografía general.
-- `error.css` → estilos visuales específicos para cajas de error.
+4. ACCESIBILIDAD Y SEMÁNTICA
+------------------------------
+Elimina duplicidad de pie de página e incluye el mismo fragmento
+de footer, asegurando consistencia semántica y visual.
 
 5. OBJETIVO PEDAGÓGICO
 ------------------------
-Demuestra cómo usar fragmentos parametrizados (`th:fragment`) en
-Thymeleaf para crear estructuras reutilizables con valores dinámicos.
+Demuestra cómo los layouts específicos (error, base) pueden reutilizar
+componentes globales sin romper la estructura general de la aplicación.
 -->
