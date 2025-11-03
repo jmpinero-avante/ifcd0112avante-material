@@ -63,6 +63,28 @@ public class PermissionsService {
 		return user;
 	}
 
+	/**
+	 * Verifica que el usuario autenticado tenga privilegios de administrador y no
+	 * 	sea el usuario al que se quiere acceder.
+	 *
+	 * @param  targetId ID del usuario al que se desea acceder.
+	 * @return Usuario autenticado (que es admin).
+	 * @throws SecurityException si el usuario no tiene permisos de admin.
+	 */
+	public User checkOtherAdminPermission(int targetId) {
+		User target = userRepository.findById(targetId).orElseThrow(
+			() -> new SecurityException("El usuario solicitado no existe.")
+		);
+
+		User current = checkLoggedUserPermission();
+
+		if (authService.isAdmin() && !current.getId().equals(targetId)) {
+			return target;
+		}
+
+		throw new SecurityException("No tiene permiso para acceder a este usuario.");
+	}
+
 	// -------------------------------------------------------------------------
 	// PERMISOS SOBRE USUARIOS ESPECÍFICOS
 	// -------------------------------------------------------------------------

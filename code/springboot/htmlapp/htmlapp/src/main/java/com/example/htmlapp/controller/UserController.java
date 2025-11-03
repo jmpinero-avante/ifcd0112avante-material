@@ -188,41 +188,19 @@ public class UserController {
 	// GESTIÓN DE PRIVILEGIOS ADMINISTRATIVOS
 	// -------------------------------------------------------------------------
 
-	@GetMapping("/make-admin/{id}")
-	public String grantAdminPrivileges(@PathVariable Integer id) {
-		permissionsService.checkAdminPermission();
+	@GetMapping("/set-admin/{id}")
+	public String setAdminPrivileges(
+		@RequestParam("isAdmin") boolean isAdmin,
+		@PathVariable int id,
+	) {
+		permissionsService.checkOtherAdminPermission(id);
 		try {
-			userService.setAdminStatus(id, true);
-
-			authService.getUserId().ifPresent(currentId -> {
-				if (currentId.equals(id)) {
-					authService.refreshUser();
-				}
-			});
+			userService.setAdminStatus(id, isÃdmin);
 
 			return String.format("redirect:/user/details/%d", id);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-				"Error inesperado al asignar privilegios de administrador.", 500, ex);
-		}
-	}
-
-	@GetMapping("/revoke-admin/{id}")
-	public String revokeAdminPrivileges(@PathVariable Integer id) {
-		permissionsService.checkAdminPermission();
-		try {
-			userService.setAdminStatus(id, false);
-
-			authService.getUserId().ifPresent(currentId -> {
-				if (currentId.equals(id)) {
-					authService.refreshUser();
-				}
-			});
-
-			return String.format("redirect:/user/details/%d", id);
-		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"Error inesperado al revocar privilegios de administrador.", 500, ex);
+				"Error inesperado al cambiar privilegios de administrador.", 500, ex);
 		}
 	}
 }
@@ -237,10 +215,11 @@ usuario en sesión tras cualquier operación que modifique su propio registro.
 PUNTOS CLAVE:
  - /edit/{id} → si edita su propio perfil.
  - /change-password/{id} → si cambia su propia contraseña.
- - /make-admin /revoke-admin → si cambia su propio rol.
 
 No se ejecuta en eliminaciones (logout ya limpia la sesión) ni en acciones
-sobre otros usuarios.
+     sobre otros usuarios.
+Tampoco se ejecuta en /set-admin porque un usuario no puede cambiar su
+    propio rol.
 
 ===============================================================================
 NOTAS PEDAGÓGICAS

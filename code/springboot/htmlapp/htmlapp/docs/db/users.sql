@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS users (
 		-- NOT NULL evita valores nulos y DEFAULT FALSE asegura que todos los
 		-- usuarios nuevos sean no administradores por defecto.
 
-		creation_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		creation_datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		-- Fecha y hora de creación del registro (puesta automáticamente por la BD)
 );
 

@@ -40,11 +40,11 @@ DETALLES DE USUARIO
 			<!-- Privilegios admin -->
 			<div th:if="${session.user.admin and session.user.id != user.id}">
 				<a th:if="${!user.admin}"
-				   th:href="@{/user/make-admin/{id}(id=${user.id})}" class="btn btn-success">
+				   th:href="@{/user/set-admin/{id}?isAdmin=true(id=${user.id})}" class="btn btn-success">
 					Hacer administrador
 				</a>
 				<a th:if="${user.admin}"
-				   th:href="@{/user/revoke-admin/{id}(id=${user.id})}" class="btn btn-danger">
+				   th:href="@{/user/set-admin/{id}?isAdmin=false(id=${user.id})}" class="btn btn-danger">
 					Quitar privilegios
 				</a>
 			</div>
