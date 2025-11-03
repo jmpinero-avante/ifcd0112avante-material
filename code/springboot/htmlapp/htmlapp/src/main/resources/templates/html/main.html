@@ -1,62 +1,73 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html th:replace="~{fragments/layout :: layout(
-    title='Panel principal',
-    content=~{::main},
-    scripts=~{::scriptsBlock}
-)}">
 
-<!-- ============================================================
-PÁGINA PRINCIPAL TRAS EL LOGIN
-============================================================ -->
 <!--
-Esta es la página principal que se muestra tras iniciar sesión.
-Incluye un fondo con efecto parallax, implementado con la librería
-Rellax.js (cargada desde un CDN para mayor simplicidad).
+===============================================================================
+MAIN.HTML — PÁGINA PRINCIPAL CON EFECTO PARALLAX
+===============================================================================
+Esta vista representa la página principal mostrada tras iniciar sesión.
+Demuestra el uso del layout base con tres parámetros:
+
+  title   → texto de la pestaña del navegador.
+  content → contenido principal (esta sección).
+  scripts → bloque de scripts opcionales (inicialización de Rellax.js).
+
+También ilustra cómo integrar un efecto parallax multicapa usando imágenes
+definidas en base.css (.layer-back y .layer-front) y la librería Rellax.js.
+
+Se asume que las imágenes:
+ - /static/img/layer-back.jpg
+ - /static/img/layer-front.png
+existen y tienen la profundidad deseada (fondo y frente).
+
+El layout utilizado es fragments/layout.html.
+===============================================================================
 -->
 
+<html th:replace="~{fragments/layout :: layout(
+	title='Página principal',
+	content=~{::main},
+	scripts=~{::script}
+)}">
+
 <main>
-  <section class="text-center">
-    <h1 th:text="'Hola, ' + ${session.userName} + '!'">Hola, usuario</h1>
-    <p>Bienvenido al panel principal de HtmlApp.</p>
+	<!-- Capas del efecto parallax -->
+	<div class="parallax layer-back" data-rellax-speed="-1"></div>
+	<div class="parallax layer-front" data-rellax-speed="-3"></div>
 
-    <div class="mt-4">
-      <a th:href="@{/user/details/{id}(id=${session.userId})}" class="btn">
-        Ver perfil
-      </a>
-      <a th:href="@{/logout}" class="btn">Cerrar sesión</a>
-    </div>
-  </section>
+	<section class="text-center">
+		<h1>Bienvenido a HtmlApp</h1>
+		<p>
+			Has iniciado sesión correctamente.
+			Explora las funcionalidades disponibles a través del menú lateral.
+		</p>
 
-  <!-- Fondo parallax decorativo -->
-  <div class="parallax" data-rellax-speed="-2"></div>
+		<p class="mt-4">
+			Este ejemplo muestra un <strong>efecto parallax multicapa</strong>,
+			en el que distintas imágenes se desplazan a velocidades diferentes
+			para crear una sensación de profundidad.
+		</p>
+
+		<div class="mt-4">
+			<a href="/user/details"
+			   class="btn btn-success">Ver mi perfil</a>
+			<a href="/userlist/list"
+			   class="btn btn-primary">Administrar usuarios</a>
+		</div>
+	</section>
 </main>
 
 <!-- ============================================================
-SCRIPTS (agrupados en un bloque)
+SCRIPTS — INICIALIZACIÓN DEL EFECTO PARALLAX
 ============================================================ -->
-<th:block th:fragment="scriptsBlock">
-  <!-- Importar la librería Rellax desde un CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"
-          integrity="sha384-kt9hmQ8W07xRHwO2HqWgO8Rtm5s3OCg4EKpHqVG3R3vPt7A4lXCKK6v4xzLprV8P"
-          crossorigin="anonymous"></script>
-
-  <!-- Inicialización del efecto Parallax -->
-  <script th:inline="javascript">
-    /*
-     * Inicializa el efecto parallax con la librería Rellax.
-     * El atributo data-rellax-speed define la velocidad de desplazamiento.
-     * Un valor negativo provoca un movimiento más lento que el scroll normal.
-     *
-     * Ambas etiquetas <script> se agrupan dentro de este bloque
-     * y se inyectan al layout como un único fragmento.
-     */
-    document.addEventListener('DOMContentLoaded', () => {
-      const rellax = new Rellax('.parallax', {
-        center: true
-      });
-    });
-  </script>
-</th:block>
+<script th:inline="javascript">
+	/* Carga la librería Rellax desde CDN */
+	const script = document.createElement('script');
+	script.src = "https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js";
+	script.onload = () => {
+		console.log("Rellax.js cargado correctamente.");
+		new Rellax('.parallax', { center: true });
+	};
+	document.body.appendChild(script);
+</script>
 
 </html>
