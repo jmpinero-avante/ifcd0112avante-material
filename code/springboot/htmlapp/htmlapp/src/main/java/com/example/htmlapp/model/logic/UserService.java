@@ -2,46 +2,39 @@
 
 package com.example.htmlapp.model.logic;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.htmlapp.model.db.User;
 import com.example.htmlapp.model.db.UserRepository;
+import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Servicio responsable de la gestión de usuarios.
+ * Servicio de gestión de usuarios.
  *
- * Centraliza toda la lógica de negocio relacionada con los usuarios:
- *  - Creación de nuevos usuarios.
- *  - Actualización de datos personales.
- *  - Borrado de cuentas.
- *  - Asignación o retirada de privilegios de administrador.
- *  - Listado de usuarios (para la parte administrativa).
+ * Gestiona la creación, actualización y eliminación de usuarios,
+ * así como el cambio de contraseñas. Centraliza la lógica de negocio
+ * relacionada con la entidad `User`.
  *
  * ----------------------------------------------------------------------------
- * SOBRE LA ANOTACIÓN @Service
+ * RESPONSABILIDADES
+ * ----------------------------------------------------------------------------
+ * - Registrar nuevos usuarios con hash seguro de contraseña.
+ * - Actualizar datos personales (email, nombre completo).
+ * - Cambiar contraseñas.
+ * - Eliminar usuarios de la base de datos.
+ * - Mantener la integridad y validación de datos.
+ *
+ * ----------------------------------------------------------------------------
+ * SOBRE @Service
  * ----------------------------------------------------------------------------
  * Indica que esta clase pertenece a la capa de lógica de negocio.
- * Spring la detecta automáticamente y la registra como bean.
- *
- * Esto permite inyectarla fácilmente en controladores o en otros
- * servicios que necesiten manipular usuarios.
- *
- * ----------------------------------------------------------------------------
- * SOBRE LA SEPARACIÓN ENTRE REPOSITORIO Y SERVICIO
- * ----------------------------------------------------------------------------
- * El repositorio (UserRepository) se encarga exclusivamente del acceso
- * a la base de datos: buscar, insertar, actualizar o borrar registros.
- *
- * El servicio añade la "lógica de negocio": validaciones, control de
- * errores, comprobaciones de permisos, y operaciones más complejas que
- * combinan varias consultas o reglas de aplicación.
+ * Puede ser inyectada en controladores u otros servicios mediante
+ * el sistema de inyección de dependencias de Spring.
  */
 @Service
 @RequiredArgsConstructor
@@ -49,30 +42,32 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final PasswordService passwordService;
-	private final AuthService authService;
+
+	// -------------------------------------------------------------------------
+	// REGISTRO DE NUEVO USUARIO
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Crea un nuevo usuario con su salt y hash de contraseña.
+	 * Registra un nuevo usuario con salt y hash de contraseña.
 	 *
-	 * Se utiliza el patrón Builder (de Lombok) para construir
-	 * el objeto de manera clara y legible.
+	 * @param fullName  Nombre completo.
+	 * @param email     Email (único).
+	 * @param password  Contraseña en texto plano.
+	 * @return El objeto User recién creado.
 	 *
-	 * Por seguridad, el campo isAdmin se fuerza siempre a false
-	 * durante el registro. Solo un administrador existente puede
-	 * modificar este valor, o puede ajustarse manualmente en la
-	 * base de datos para inicializar el primer administrador.
-	 *
-	 * @param fullName Nombre completo del usuario.
-	 * @param email    Email único.
-	 * @param password Contraseña en texto plano.
-	 * @return El usuario recién creado.
+	 * @throws OperationFailedException si el email ya existe.
 	 */
+	@SuppressWarnings("null")
 	@Transactional
 	public User registerUser(String fullName, String email, String password) {
+		if (userRepository.findByEmail(email).isPresent()) {
+			throw new OperationFailedException("El email ya está registrado.", 400);
+		}
+
 		String salt = passwordService.generateSalt();
 		String hash = passwordService.hashPassword(password, salt);
 
-		User user = User.builder()
+		User newUser = User.builder()
 			.fullName(fullName)
 			.email(email)
 			.salt(salt)
@@ -80,201 +75,137 @@ public class UserService {
 			.isAdmin(false)
 			.build();
 
-		try {
-			return userRepository.insert(user);
-		} catch (DataIntegrityViolationException ex) {
-			throw new IllegalArgumentException(
-				"Ya existe un usuario con ese correo electrónico."
-			);
-		}
+		return userRepository.save(newUser);
 	}
 
+	// -------------------------------------------------------------------------
+	// ACTUALIZACIÓN DE DATOS PERSONALES
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Actualiza los datos personales de un usuario.
+	 * Actualiza los datos de un usuario (nombre, email).
 	 *
-	 * Este método ignora cualquier intento de modificar los campos
-	 * sensibles (isAdmin, salt o passwordHash), copiando siempre
-	 * sus valores originales desde la base de datos antes de guardar.
-	 *
-	 * @param user Usuario con los nuevos datos personales.
-	 * @return El usuario actualizado.
+	 * @param user Usuario con los datos actualizados.
 	 */
 	@Transactional
-	public User updateUser(User user) {
-		Integer id = user.getId();
-		if (id == null) {
+	public void updateUser(User user) {
+		if (user.getId() == null) {
 			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
 		}
 
-		User existing = userRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+		Optional<User> existing = userRepository.findByEmail(user.getEmail());
+		if (existing.isPresent() && !existing.get().getId().equals(user.getId())) {
+			throw new IllegalArgumentException("El email ya está en uso por otro usuario.");
+		}
 
-		// Conserva los valores originales de los campos sensibles
-		user.setIsAdmin(existing.isAdmin());
-		user.setSalt(existing.getSalt());
-		user.setPasswordHash(existing.getPasswordHash());
-
-		return userRepository.save(user);
+		userRepository.save(user);
 	}
+
+	// -------------------------------------------------------------------------
+	// CAMBIO DE CONTRASEÑA
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Cambia la contraseña de un usuario.
 	 *
-	 * @param user     Usuario al que se le cambia la contraseña.
-	 * @param password Nueva contraseña en texto plano.
+	 * @param user        Usuario al que pertenece la contraseña.
+	 * @param newPassword Nueva contraseña en texto plano.
 	 */
 	@Transactional
-	public void changePassword(User user, String password) {
+	public void changePassword(User user, String newPassword) {
 		String newSalt = passwordService.generateSalt();
-		String newHash = passwordService.hashPassword(password, newSalt);
+		String newHash = passwordService.hashPassword(newPassword, newSalt);
+
 		user.setSalt(newSalt);
 		user.setPasswordHash(newHash);
+
 		userRepository.save(user);
 	}
 
+	// -------------------------------------------------------------------------
+	// GESTIÓN DE PRIVILEGIOS
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Borra un usuario por su ID.
+	 * Asigna o revoca privilegios de administrador.
 	 *
-	 * @param id Identificador del usuario a eliminar.
+	 * @param id      ID del usuario objetivo.
+	 * @param isAdmin true para otorgar privilegios, false para revocarlos.
 	 */
 	@Transactional
-	public void deleteUser(Integer id) {
-		if (id == null) {
-			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
+	public void setAdminStatus(int id, boolean isAdmin) {
+		User user = userRepository.findById(id)
+			.orElseThrow(() -> new OperationFailedException("Usuario no encontrado.", 404));
+
+		user.setIsAdmin(isAdmin);
+		userRepository.save(user);
+	}
+
+	// -------------------------------------------------------------------------
+	// ELIMINACIÓN DE USUARIO
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Elimina un usuario por ID.
+	 *
+	 * @param id ID del usuario a eliminar.
+	 */
+	@Transactional
+	public void deleteUser(int id) {
+		if (!userRepository.existsById(id)) {
+			throw new OperationFailedException("El usuario no existe.", 404);
 		}
-
-		userRepository.findById(id)
-			.orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
-
 		userRepository.deleteById(id);
 	}
 
-	/**
-	 * Devuelve un usuario a partir de su ID.
-	 *
-	 * @param id Identificador.
-	 * @return Optional<User> con el usuario o vacío si no existe.
-	 */
-	public Optional<User> findById(Integer id) {
-		if (id == null) {
-			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
-		}
+	// -------------------------------------------------------------------------
+	// UTILIDADES
+	// -------------------------------------------------------------------------
 
+	/**
+	 * Recupera un usuario por ID.
+	 *
+	 * @param id ID del usuario.
+	 * @return Optional<User> con el usuario si existe.
+	 */
+	public Optional<User> findById(int id) {
 		return userRepository.findById(id);
-	}
-
-	/**
-	 * Devuelve la lista completa de usuarios.
-	 *
-	 * @return Lista de usuarios ordenados por fecha de creación.
-	 */
-	public List<User> findAll() {
-		return userRepository.findAll();
-	}
-
-	/**
-	 * Cambia el estado de administrador de un usuario.
-	 *
-	 * Usa un estilo funcional con los métodos encadenados de Optional:
-	 * map() para modificar el valor si existe,
-	 * y orElseThrow() para manejar el caso en que no haya usuario.
-	 *
-	 * @param id      ID del usuario.
-	 * @param isAdmin Nuevo valor del campo isAdmin.
-	 * @return Usuario actualizado.
-	 */
-	@Transactional
-	public User setAdminStatus(Integer id, boolean isAdmin) {
-		if (id == null) {
-			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
-		}
-
-		User updatedUser = userRepository.findById(id)
-			.map(user -> {
-				user.setIsAdmin(isAdmin);
-				return userRepository.save(user);
-			})
-			.orElseThrow(() ->
-				new IllegalArgumentException("El usuario no existe.")
-			);
-
-		return updatedUser;
-	}
-
-	/**
-	 * Verifica que el usuario actual tiene privilegios de administrador.
-	 *
-	 * Este método se utiliza en servicios o controladores que necesiten
-	 * asegurar que la operación solo puede realizarla un usuario con
-	 * rol de administrador.
-	 *
-	 * Si no hay usuario logado o no es administrador, lanza una excepción.
-	 *
-	 * @throws SecurityException si el usuario no está autorizado.
-	 */
-	public void checkAdminPrivileges() {
-		authService.getLoggedUser().ifPresentOrElse(
-			user -> {
-				if (!user.isAdmin()) {
-					throw new SecurityException(
-						"Acceso denegado: el usuario no tiene privilegios de administrador."
-					);
-				}
-			},
-			() -> {
-				throw new SecurityException(
-					"Acceso denegado: no hay usuario logado."
-				);
-			}
-		);
 	}
 }
 
 /*
- * ----------------------------------------------------------------------------
- * SOBRE EL CONTROL DE CAMPOS SENSIBLES EN UPDATE
- * ----------------------------------------------------------------------------
- *
- * El método updateUser no permite modificar los campos:
- *   - isAdmin       → privilegios del usuario.
- *   - salt          → semilla criptográfica usada para el hash.
- *   - passwordHash  → contraseña cifrada del usuario.
- *
- * Estos valores se preservan desde el registro original en la base
- * de datos antes de realizar la actualización. Esto evita que un
- * usuario malintencionado manipule el formulario para escalar sus
- * privilegios o alterar su contraseña sin pasar por los métodos
- * adecuados (como changePassword o setAdminStatus).
- *
- * ----------------------------------------------------------------------------
- * SOBRE EL USO DE @RequiredArgsConstructor
- * ----------------------------------------------------------------------------
- * @RequiredArgsConstructor (de Lombok) genera automáticamente un constructor
- * con todos los campos declarados como final o anotados con @NonNull.
- *
- * ----------------------------------------------------------------------------
- * SOBRE Optional, map(), orElseThrow(), orElse(), orElseGet()
- * ----------------------------------------------------------------------------
- * - map(): transforma el valor si está presente.
- * - orElseThrow(): lanza una excepción si está vacío.
- * - orElse(): devuelve un valor alternativo (evaluado siempre).
- * - orElseGet(): devuelve un valor alternativo (evaluado solo si está vacío).
- *
- * ----------------------------------------------------------------------------
- * SOBRE EL USO DEL PATRÓN BUILDER
- * ----------------------------------------------------------------------------
- * Lombok permite crear instancias de forma legible y segura:
- *
- *   User user = User.builder()
- *       .fullName("Juan Pérez")
- *       .email("juan@example.com")
- *       .salt("abc123")
- *       .passwordHash("...")
- *       .isAdmin(false)
- *       .build();
- *
- * Ventajas:
- *  - Legibilidad y reducción de errores.
- *  - Objetos más seguros e inmutables.
- *  - Facilita mantener un diseño limpio.
- */
+===============================================================================
+NOTAS PEDAGÓGICAS
+===============================================================================
+1. SEPARACIÓN DE CAPAS
+-----------------------
+Este servicio actúa como intermediario entre los controladores y la capa
+de acceso a datos (UserRepository). Contiene las validaciones y reglas
+de negocio relacionadas con la entidad User.
+
+2. GESTIÓN DE CONTRASEÑAS
+--------------------------
+Las contraseñas nunca se almacenan en texto plano:
+   - Se genera un salt único por usuario.
+   - Se calcula el hash con PasswordService.
+   - El resultado se guarda en `password_hash`.
+
+3. VALIDACIÓN DE EMAIL
+-----------------------
+Durante el registro y actualización se comprueba que el email sea único
+y no pertenezca a otro usuario existente.
+
+4. USO DE @Transactional
+-------------------------
+Garantiza que las operaciones de escritura (registro, actualización,
+eliminación) se ejecuten de forma atómica.
+
+5. OBJETIVO PEDAGÓGICO
+------------------------
+Este servicio ejemplifica buenas prácticas de diseño en una aplicación
+Spring MVC:
+ - Cohesión y claridad en la lógica de negocio.
+ - Separación estricta de capas.
+ - Buenas prácticas de seguridad en el manejo de contraseñas.
+===============================================================================
+*/

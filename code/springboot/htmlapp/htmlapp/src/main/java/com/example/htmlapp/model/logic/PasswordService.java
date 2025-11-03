@@ -2,7 +2,6 @@
 
 package com.example.htmlapp.model.logic;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -11,169 +10,117 @@ import java.util.Base64;
 import org.springframework.stereotype.Service;
 
 /**
- * Servicio responsable de la gestión y cifrado de contraseñas.
- *
- * En esta versión didáctica, el hash se calcula manualmente
- * usando un algoritmo de MessageDigest (SHA-256).
+ * Servicio encargado de la gestión de contraseñas:
+ * generación de salts, hashing y verificación.
  *
  * ----------------------------------------------------------------------------
- * SOBRE LA ANOTACIÓN @Service
+ * RESPONSABILIDADES
  * ----------------------------------------------------------------------------
- * Indica que esta clase pertenece a la capa de negocio o de
- * "servicios" (lógica de aplicación).
- *
- * Spring detecta automáticamente las clases anotadas con @Service
- * durante el escaneo de componentes (@ComponentScan) y las registra
- * como beans dentro del contexto de la aplicación.
- *
- * Esto permite inyectarlas fácilmente en otras clases mediante
- * constructor o campo (@Autowired, @RequiredArgsConstructor, etc.).
+ * - Generar salts aleatorios seguros (SecureRandom).
+ * - Generar el hash de una contraseña combinada con su salt.
+ * - Verificar si una contraseña en texto plano coincide con el hash almacenado.
  *
  * ----------------------------------------------------------------------------
- * SOBRE EL USO DE BASE64
+ * SOBRE EL ALGORITMO DE HASHING
  * ----------------------------------------------------------------------------
- * Base64 es una forma de codificar datos binarios (como bytes o
- * caracteres no imprimibles) en texto plano seguro para transmitir
- * o almacenar.
+ * Se usa SHA-256 como algoritmo de hash, combinando la contraseña
+ * y el salt:  hash = SHA256(password + salt)
  *
- * Cada grupo de 3 bytes binarios se convierte en 4 caracteres de
- * texto, utilizando solo letras, números y los símbolos '+' y '/'.
+ * El resultado se codifica en Base64 para facilitar su almacenamiento
+ * en base de datos (campo VARCHAR).
  *
- * Ejemplo:
- *   - Bytes originales:  [ 72, 111, 108, 97 ]   (que representa "Hola")
- *   - Codificado Base64: "SG9sYQ=="
- *
- * En este servicio, usamos Base64 para representar la salt (una
- * secuencia de bytes aleatorios) en forma de texto, de modo que
- * se pueda almacenar sin problemas en la base de datos o enviarse
- * por JSON sin perder información.
- *
- * El método Base64.getEncoder().encodeToString(byte[])
- * crea exactamente esta representación textual, devolviendo una
- * cadena de caracteres ASCII imprimibles (sin bytes binarios),
- * lo que hace posible guardar o transmitir los datos de forma
- * segura y portable.
+ * ----------------------------------------------------------------------------
+ * CONSIDERACIONES DE SEGURIDAD
+ * ----------------------------------------------------------------------------
+ * - SHA-256 es un hash rápido; para entornos de producción se recomienda
+ *   usar algoritmos más resistentes a fuerza bruta (como bcrypt, scrypt o Argon2).
+ * - En este contexto educativo se mantiene SHA-256 por simplicidad y portabilidad.
  */
 @Service
 public class PasswordService {
 
-	private static final int SALT_LENGTH = 16; // bytes
+	// -------------------------------------------------------------------------
+	// GENERACIÓN DE SALTS
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Genera una salt aleatoria codificada en Base64.
+	 * Genera una cadena aleatoria segura (salt) en Base64.
 	 *
-	 * encodeToString convierte los bytes en texto ASCII seguro,
-	 * ideal para almacenar en una columna VARCHAR.
+	 * @return Salt aleatorio de 16 bytes, codificado en Base64.
 	 */
 	public String generateSalt() {
-		byte[] saltBytes = new byte[SALT_LENGTH];
-		new SecureRandom().nextBytes(saltBytes);
-		return Base64.getEncoder().encodeToString(saltBytes);
+		byte[] salt = new byte[16];
+		new SecureRandom().nextBytes(salt);
+		return Base64.getEncoder().encodeToString(salt);
 	}
 
+	// -------------------------------------------------------------------------
+	// HASHING DE CONTRASEÑAS
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Calcula el hash de una contraseña concatenada con la salt.
-	 *
-	 * En este ejemplo usamos el algoritmo SHA-256 de forma manual
-	 * para que los alumnos vean el proceso paso a paso.
+	 * Genera el hash de una contraseña combinada con su salt.
 	 *
 	 * @param password Contraseña en texto plano.
-	 * @param salt     Salt generada y almacenada junto al usuario.
-	 * @return Hash resultante codificado en Base64.
+	 * @param salt     Salt asociado al usuario.
+	 * @return Hash resultante en Base64.
 	 */
 	public String hashPassword(String password, String salt) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			String combined = password + salt;
-			byte[] hashBytes = digest.digest(
-				combined.getBytes(StandardCharsets.UTF_8)
-			);
-			return Base64.getEncoder().encodeToString(hashBytes);
+			byte[] hash = digest.digest((password + salt).getBytes());
+			return Base64.getEncoder().encodeToString(hash);
 		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException("Error: algoritmo SHA-256 no disponible", e);
+			throw new RuntimeException("Algoritmo SHA-256 no disponible.", e);
 		}
 	}
 
+	// -------------------------------------------------------------------------
+	// VERIFICACIÓN DE CONTRASEÑAS
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Verifica si una contraseña introducida coincide con su hash.
+	 * Verifica si una contraseña coincide con el hash almacenado.
 	 *
-	 * @param rawPassword Contraseña en texto plano introducida por
-	 *                    el usuario.
-	 * @param salt        Salt asociada al usuario.
-	 * @param hash        Hash almacenado en la base de datos.
-	 * @return true si coincide, false en caso contrario.
+	 * @param rawPassword  Contraseña introducida por el usuario (texto plano).
+	 * @param salt         Salt almacenado en la base de datos.
+	 * @param storedHash   Hash almacenado en la base de datos.
+	 * @return true si la contraseña es válida, false si no coincide.
 	 */
-	public boolean verifyPassword(String rawPassword, String salt, String hash) {
-		String candidateHash = hashPassword(rawPassword, salt);
-		return candidateHash.equals(hash);
+	public boolean verifyPassword(String rawPassword, String salt, String storedHash) {
+		String computedHash = hashPassword(rawPassword, salt);
+		return computedHash.equals(storedHash);
 	}
 }
 
 /*
- * ----------------------------------------------------------------------------
- * ALTERNATIVA: USANDO BCryptPasswordEncoder (PRODUCCIÓN)
- * ----------------------------------------------------------------------------
- *
- * En un entorno real, en lugar de calcular el hash manualmente, se recomienda
- * usar el componente BCryptPasswordEncoder de Spring Security.
- *
- * ----------------------------------------------------------------------------
- * POR QUÉ BCRYPT ES MÁS SEGURO QUE SHA-256
- * ----------------------------------------------------------------------------
- * 1. BCrypt es un algoritmo lento a propósito. Esto hace que los ataques
- *    de fuerza bruta (probar millones de contraseñas por segundo) sean
- *    mucho más difíciles que con SHA-256, que es extremadamente rápido.
- *
- * 2. BCrypt incluye automáticamente su propia salt interna, distinta para
- *    cada contraseña. Por eso, incluso si dos usuarios tienen la misma
- *    contraseña, los hashes serán diferentes.
- *
- * 3. BCrypt usa una función de coste configurable (por defecto 10 rondas)
- *    que determina cuántas veces se ejecuta el algoritmo. Aumentar el coste
- *    hace el hash más lento y más seguro frente a ataques modernos.
- *
- * ----------------------------------------------------------------------------
- * GESTIÓN DE LA SALT EN BCRYPT
- * ----------------------------------------------------------------------------
- * No es necesario guardar la salt aparte en la base de datos.
- *
- * BCrypt ya incluye su propia salt dentro del hash resultante.
- * La salt se codifica como parte del string del hash (entre el
- * coste y el hash final).
- *
- * Cuando se llama a encoder.matches(), Spring Security extrae
- * automáticamente esa salt del propio hash y la usa para
- * recalcular y verificar la contraseña.
- *
- * Esto simplifica la gestión de usuarios: basta con almacenar
- * un único campo password_hash.
- *
- * ----------------------------------------------------------------------------
- * VERSIÓN DE LA CLASE USANDO BCRYPT
- * ----------------------------------------------------------------------------
- *
- * import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
- * import org.springframework.stereotype.Service;
- *
- * @Service
- * public class PasswordService {
- *
- *     private final BCryptPasswordEncoder encoder =
- *         new BCryptPasswordEncoder();
- *
- *     public String hashPassword(String password) {
- *         return encoder.encode(password);
- *     }
- *
- *     public boolean verifyPassword(String rawPassword, String hash) {
- *         return encoder.matches(rawPassword, hash);
- *     }
- * }
- *
- * ----------------------------------------------------------------------------
- * RESUMEN
- * ----------------------------------------------------------------------------
- * - SHA-256 (manual): bueno para entender el proceso.
- * - BCrypt: más seguro, más lento y con salt interna automática.
- * - En producción, BCrypt o Argon2 son las opciones recomendadas.
- */
+===============================================================================
+NOTAS PEDAGÓGICAS
+===============================================================================
+1. SEPARACIÓN DE RESPONSABILIDADES
+----------------------------------
+   Este servicio encapsula toda la lógica relacionada con contraseñas,
+   manteniendo AuthService y UserService centrados en la sesión y la
+   persistencia respectivamente.
+
+2. ALGORITMO DE HASH
+--------------------
+   SHA-256 ofrece una base sólida y fácil de entender. En un entorno real
+   debería reemplazarse por bcrypt o Argon2 para resistir ataques de fuerza
+   bruta.
+
+3. USO TÍPICO
+--------------
+   - En registro:
+         String salt = passwordService.generateSalt();
+         String hash = passwordService.hashPassword(plainPassword, salt);
+
+   - En login o cambio de contraseña:
+         boolean ok = passwordService.verifyPassword(plainPassword, salt, hash);
+
+4. OBJETIVO PEDAGÓGICO
+-----------------------
+   Mostrar un flujo completo de autenticación con salts y hash seguro,
+   ilustrando buenas prácticas sin añadir complejidad innecesaria.
+===============================================================================
+*/
