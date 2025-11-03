@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
 
 # -----------------------------------------------------------------------------
@@ -9,9 +9,18 @@
 # o sin argumentos para introducirla manualmente.
 # -----------------------------------------------------------------------------
 
-set -e
+set -euo pipefail
 
 echo "=== Ejecutando GeneratePasswordHash ==="
+
+typeset SCRIPT FOLDER
+
+SCRIPT=${(%):-'%x'}
+SCRIPT=${SCRIPT:a}
+FOLDER=${SCRIPT:h:h:h}
+
+cd "${FOLDER}"
+
 mvn exec:java \
   -Dexec.mainClass="com.example.htmlapp.tools.GeneratePasswordHash" \
-  -Dexec.args="$*"
+  -Dexec.args="${(j. .)${(qq)@}}"

@@ -11,4 +11,4 @@ REM Si no se pasan argumentos, se pedirán interactivamente.
 REM -----------------------------------------------------------------------------
 
 echo === Ejecutando VerifyPassword ===
-mvn exec:java -Dexec.mainClass="com.example.htmlapp.tools.VerifyPassword" -Dexec.args="%*"
+mvn exec:java -Dexec.mainClass="com.example.htmlapp.tools.GenerateUserInsert" -Dexec.args="%*"

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
 
 # -----------------------------------------------------------------------------
@@ -10,9 +10,22 @@
 # Si no se pasan argumentos, se pedirán interactivamente.
 # -----------------------------------------------------------------------------
 
-set -e
+set -euo pipefail
 
 echo "=== Ejecutando VerifyPassword ==="
+
+typeset SCRIPT FOLDER
+
+SCRIPT=${(%):-'%x'}
+SCRIPT=${SCRIPT:a}
+FOLDER=${SCRIPT:h:h:h}
+
+cd "${FOLDER}"
+
+print - ${PWD}
+exit 0
+
+
 mvn exec:java \
   -Dexec.mainClass="com.example.htmlapp.tools.VerifyPassword" \
-  -Dexec.args="$*"
+  -Dexec.args="${(j. .)${(qq)@}}"

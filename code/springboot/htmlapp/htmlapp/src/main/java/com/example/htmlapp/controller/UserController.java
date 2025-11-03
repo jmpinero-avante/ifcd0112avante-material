@@ -191,11 +191,11 @@ public class UserController {
 	@GetMapping("/set-admin/{id}")
 	public String setAdminPrivileges(
 		@RequestParam("isAdmin") boolean isAdmin,
-		@PathVariable int id,
+		@PathVariable int id
 	) {
 		permissionsService.checkOtherAdminPermission(id);
 		try {
-			userService.setAdminStatus(id, isÃdmin);
+			userService.setAdminStatus(id, isAdmin);
 
 			return String.format("redirect:/user/details/%d", id);
 		} catch (Exception ex) {

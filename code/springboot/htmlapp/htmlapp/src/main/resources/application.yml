@@ -90,7 +90,7 @@ logging:
     rollingpolicy:
 
       # tamaño máximo de cada archivo
-      max-file_size: 10MB
+      max-file_size: 500KB
 
       # número máximo de archivos que se dejan
       max-history: 7
