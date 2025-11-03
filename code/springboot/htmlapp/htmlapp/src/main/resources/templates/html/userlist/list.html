@@ -7,6 +7,7 @@ LISTADO DE USUARIOS (ADMIN)
 	content=~{::main},
 	scripts=~{}
 )}">
+
 <main>
 	<section class="info-box">
 		<h1>Gestión de usuarios</h1>
@@ -22,8 +23,10 @@ LISTADO DE USUARIOS (ADMIN)
 							<th>Nombre completo</th>
 							<th>Administrador</th>
 							<th>Fecha de creación</th>
+							<th style="text-align: right;">Acciones</th>
 						</tr>
 					</thead>
+
 					<tbody>
 						<tr th:each="user : ${users}">
 							<td>
@@ -31,11 +34,32 @@ LISTADO DE USUARIOS (ADMIN)
 								       th:value="${user.id}"
 								       th:disabled="${session.user.id == user.id}" />
 							</td>
+
 							<td th:text="${user.email}">correo@ejemplo.com</td>
 							<td th:text="${user.fullName}">Nombre Apellido</td>
 							<td th:text="${user.admin ? 'Sí' : 'No'}">No</td>
 							<td th:text="${#temporals.format(user.creationTimestamp, 'yyyy-MM-dd HH:mm')}">
 								2025-11-03 14:00
+							</td>
+
+							<!-- Nueva columna: acciones -->
+							<td class="table-actions">
+								<a th:href="@{'/user/details/' + ${user.id}}"
+								   class="icon-btn" title="Ver detalles">
+									🔍
+								</a>
+
+								<a th:href="@{'/user/edit/' + ${user.id}}"
+								   class="icon-btn" title="Editar usuario">
+									✏️
+								</a>
+
+								<a th:href="@{'/user/delete/' + ${user.id}}"
+								   class="icon-btn"
+								   th:if="${session.user.id != user.id}"
+								   title="Eliminar usuario">
+									🗑️
+								</a>
 							</td>
 						</tr>
 					</tbody>
