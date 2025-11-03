@@ -1,68 +1,51 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
 <html th:replace="~{fragments/layout :: layout(
-    title='Crear cuenta',
+    title='Registrar usuario',
     content=~{::main}
 )}">
 
+<main>
+	<section>
+		<h2>Registrar nuevo usuario</h2>
+
+		<form th:action="@{/register}" method="post" th:object="${userForm}">
+			<label for="fullName">Nombre completo:</label>
+			<input type="text" id="fullName" name="fullName"
+			       th:field="*{fullName}" placeholder="Introduce el nombre completo" />
+
+			<label for="email">Correo electrónico:</label>
+			<input type="email" id="email" name="email"
+			       th:field="*{email}" placeholder="Introduce el correo electrónico" required />
+
+			<label for="passwordPlain">Contraseña:</label>
+			<input type="password" id="passwordPlain" name="passwordPlain" required />
+
+			<label for="passwordConfirm">Confirmar contraseña:</label>
+			<input type="password" id="passwordConfirm" name="passwordConfirm" required />
+
+			<div class="mt-2">
+				<input type="submit" class="btn btn-success" value="Registrar" />
+			</div>
+
+			<!-- Mensaje de error (si existe) -->
+			<p th:if="${errorMessage}" th:text="${errorMessage}"
+			   style="color:var(--color-error); margin-top:1rem;"></p>
+		</form>
+	</section>
+</main>
+</html>
+
 <!-- ============================================================
-FORMULARIO DE REGISTRO DE USUARIO
+NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-Esta plantilla muestra el formulario de alta de usuario.
-El formulario se envía a POST /register, gestionado por AuthController.
-Si el registro tiene éxito, el usuario se autentica automáticamente
-y es redirigido a /main.
+Esta plantilla sirve tanto para:
+ - Usuarios nuevos no logados (registro normal).
+ - Administradores autenticados (alta de nuevo usuario).
 
-Si ocurre un error (email duplicado, contraseñas no coincidentes, etc.),
-el controlador vuelve a esta misma vista con un mensaje de error.
+En ambos casos utiliza el mismo controlador `/register`.
+Si hay un usuario logado y no es admin, se redirige a `/main`.
+
+La condición se valida en el controlador con:
+   if (authService.isLogged() && !authService.isAdmin()) redirect:/main
 -->
-
-<main>
-  <section class="text-center">
-    <h1>Crear cuenta</h1>
-    <p>Completa el formulario para registrarte en HtmlApp.</p>
-  </section>
-
-  <section>
-    <!-- Mensaje de error (si lo hay) -->
-    <div th:if="${errorMessage}" class="alert alert-danger mb-2"
-         th:text="${errorMessage}">
-      Ha ocurrido un error durante el registro.
-    </div>
-
-    <!-- Formulario de registro -->
-    <form th:action="@{/register}" method="post" th:object="${userForm}" novalidate>
-      <!-- Campo nombre completo -->
-      <label for="fullName">Nombre completo</label>
-      <input type="text" id="fullName" th:field="*{fullName}"
-             placeholder="Tu nombre completo" />
-
-      <!-- Campo correo electrónico -->
-      <label for="email">Correo electrónico</label>
-      <input type="email" id="email" th:field="*{email}"
-             placeholder="tu@correo.com" required />
-
-      <!-- Campo contraseña -->
-      <label for="passwordPlain">Contraseña</label>
-      <input type="password" id="passwordPlain" name="passwordPlain"
-             placeholder="••••••••" required minlength="6" />
-
-      <!-- Campo repetir contraseña -->
-      <label for="passwordConfirm">Confirmar contraseña</label>
-      <input type="password" id="passwordConfirm" name="passwordConfirm"
-             placeholder="Repite la contraseña" required minlength="6" />
-
-      <input type="submit" value="Registrarse" class="btn mt-2" />
-    </form>
-
-    <!-- Enlace a inicio de sesión -->
-    <div class="text-center mt-2">
-      <p>¿Ya tienes cuenta?
-        <a th:href="@{/login}">Inicia sesión aquí</a>.
-      </p>
-    </div>
-  </section>
-</main>
-
-</html>

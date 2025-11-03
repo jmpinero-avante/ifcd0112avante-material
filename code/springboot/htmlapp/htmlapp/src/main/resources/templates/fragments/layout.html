@@ -31,6 +31,11 @@ será null y el layout no insertará nada en su lugar.
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--
+  Si la variable `title` no está definida en la plantilla hija,
+  se usará el valor por defecto "HtmlApp".
+  -->
   <title th:text="${title} ?: 'HtmlApp'">HtmlApp</title>
   <link rel="stylesheet" th:href="@{/css/base.css}" />
 </head>
@@ -39,7 +44,7 @@ será null y el layout no insertará nada en su lugar.
   <!-- ============================================================
   CABECERA SUPERIOR (solo si hay usuario logado)
   ============================================================ -->
-  <header th:if="${session.userId}"
+  <header th:if="${session.user != null}"
           th:replace="~{fragments/header :: header}">
   </header>
 
@@ -48,7 +53,7 @@ será null y el layout no insertará nada en su lugar.
   ============================================================ -->
   <div class="page-container">
     <!-- Menú lateral, visible solo con sesión activa -->
-    <aside th:if="${session.userId}"
+    <aside th:if="${session.user != null}"
            th:replace="~{fragments/sidebar :: sidebar}">
     </aside>
 
@@ -79,15 +84,17 @@ cabecera condicional, menú lateral condicional, contenido y pie de página.
 
 2. FRAGMENTOS REUTILIZADOS
 ---------------------------
-- `fragments/header.html` → cabecera superior con nombre del usuario.
+- `fragments/header.html`  → cabecera superior con nombre del usuario.
 - `fragments/sidebar.html` → menú lateral (solo visible con sesión activa).
-- `fragments/footer.html` → pie de página común.
+- `fragments/footer.html`  → pie de página común.
 
 3. CONTROL DE SESIÓN
 ---------------------
-Ya no se incluye el fragmento de mensajes de logout aquí.
-El mensaje de cierre de sesión se muestra exclusivamente
-en la página de inicio (`index.html`) tras `redirect:/?logout`.
+Tanto el header como el sidebar se muestran únicamente cuando existe
+una sesión activa, es decir, cuando `session.user` no es null.
+
+De esta forma, las páginas públicas (como login, register o index)
+no muestran ni la cabecera ni el menú lateral.
 
 4. VALOR POR DEFECTO DEL TÍTULO
 --------------------------------
@@ -101,13 +108,20 @@ El parámetro `scripts` permite que las plantillas hijas inyecten
 código JavaScript específico al final del body. Si no se define,
 el layout no renderiza nada en esa posición.
 
-6. OBJETIVO PEDAGÓGICO
+6. COMPATIBILIDAD CON EL SISTEMA DE SESIÓN
+-------------------------------------------
+Gracias a que el objeto `User` completo se guarda en sesión (`session.user`),
+las vistas pueden acceder directamente a sus propiedades:
+ - `${session.user.fullName}` → nombre del usuario logado.
+ - `${session.user.admin}`    → true si es administrador.
+ - `${session.user.id}`       → identificador del usuario.
+
+7. OBJETIVO PEDAGÓGICO
 ------------------------
 Este layout enseña cómo:
- - Crear un layout base con parámetros (title, content, scripts).
- - Reutilizar fragmentos con `th:replace`.
- - Controlar la visibilidad de elementos según la sesión.
- - Definir valores por defecto en Thymeleaf.
- - Inyectar fragmentos opcionales de scripts.
- - Centralizar la estructura sin duplicar mensajes globales.
+ - Crear un layout base parametrizable con título, contenido y scripts.
+ - Reutilizar fragmentos mediante `th:replace`.
+ - Controlar visibilidad de secciones según sesión o rol.
+ - Integrar menús laterales y cabeceras de forma modular.
+ - Simplificar la estructura global de las vistas sin duplicar código.
 -->
