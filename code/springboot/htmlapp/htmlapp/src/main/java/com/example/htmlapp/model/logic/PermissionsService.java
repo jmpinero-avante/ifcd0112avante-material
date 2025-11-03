@@ -79,7 +79,7 @@ public class PermissionsService {
 	 * @return El objeto `User` de destino (si existe y hay permiso).
 	 * @throws SecurityException si no hay permiso o el usuario no existe.
 	 */
-	public User checkAdminOrLoggedUserPermission(Integer targetId) {
+	public User checkAdminOrLoggedUserPermission(int targetId) {
 		User target = userRepository.findById(targetId).orElseThrow(
 			() -> new SecurityException("El usuario solicitado no existe.")
 		);
