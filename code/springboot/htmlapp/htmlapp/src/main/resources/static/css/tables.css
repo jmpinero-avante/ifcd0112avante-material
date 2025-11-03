@@ -147,31 +147,7 @@ RESPONSIVE TABLE WRAPPER
 	}
 }
 
-/* ==========================================================================
-TABLAS ANCHAS DENTRO DE CAJAS (listados de usuarios, informes, etc.)
-========================================================================== */
 
-/* 
-Permite que las tablas dentro de .info-box.table-wide aprovechen
-todo el ancho del contenido principal, anulando los límites de max-width.
-*/
-.info-box.table-wide {
-	max-width: 100%;
-	width: calc(100% + 2rem); /* Compensa padding del main */
-	margin-left: -1rem;       /* Alinea la caja con los bordes del contenido */
-	margin-right: -1rem;
-	padding: 1.5rem 2rem;
-	box-shadow: var(--box-shadow-md);
-}
-
-/* En pantallas pequeñas, vuelve a encajar en el flujo normal */
-@media (max-width: 768px) {
-	.info-box.table-wide {
-		width: 100%;
-		margin: 0;
-		padding: 1rem;
-	}
-}
 
 /* ==========================================================================
 OBJETIVO PEDAGÓGICO

@@ -103,23 +103,37 @@ CONTENIDO PRINCIPAL
 
 main {
 	flex: 1;
-	margin-left: var(--sidebar-width);
 	padding: 2rem 1.5rem;
 	background-color: var(--color-bg);
 	box-sizing: border-box;
-	min-height: calc(100vh - var(--topbar-height));
+	min-height: calc(100vh - 60px);
 	transition: margin-left 0.3s ease;
-	padding-top: calc(var(--topbar-height) + 1rem);
 }
 
-/* Cajas informativas */
+/* Solo dejar margen cuando el sidebar está presente (vistas logadas) */
+body:has(.sidebar) main {
+	margin-left: 220px;
+}
+
+/* Cajas informativas estándar */
 .info-box {
-	background-color: var(--color-surface);
+	background-color: var(--color-surface, #fff);
 	border-radius: var(--border-radius);
 	padding: 2rem;
 	box-shadow: var(--box-shadow-md);
 	max-width: var(--max-width, 900px);
 	margin: 2rem auto;
+}
+
+/* ==========================================================================
+TABLAS O CONTENIDOS AMPLIOS
+========================================================================== */
+
+.info-box.table-wide {
+	max-width: none;
+	width: 100%;
+	margin: 1.5rem 0;
+	padding: 1.5rem 2rem;
 }
 
 /* ==========================================================================
