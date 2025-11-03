@@ -75,7 +75,7 @@ public class UserService {
 			.isAdmin(false)
 			.build();
 
-		return userRepository.save(newUser);
+		return userRepository.insert(newUser);
 	}
 
 	// -------------------------------------------------------------------------

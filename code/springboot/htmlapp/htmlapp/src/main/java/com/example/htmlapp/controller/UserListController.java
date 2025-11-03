@@ -16,6 +16,7 @@ import com.example.htmlapp.model.enums.BulkActionType;
 import com.example.htmlapp.model.enums.SortDirection;
 import com.example.htmlapp.model.enums.UserOrderField;
 import com.example.htmlapp.model.logic.AuthService;
+import com.example.htmlapp.model.logic.PermissionsService;
 import com.example.htmlapp.model.logic.UserListService;
 import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 
@@ -39,8 +40,8 @@ import lombok.RequiredArgsConstructor;
  * ----------------------------------------------------------------------------
  * SOBRE LA SEPARACIÓN DE RESPONSABILIDADES
  * ----------------------------------------------------------------------------
- * - UserListService contiene la lógica de negocio y seguridad.
- * - Este controlador solo gestiona el flujo de vistas y parámetros.
+ * - UserListService contiene solo la lógica de negocio (sin permisos).
+ * - Este controlador gestiona la autenticación y la autorización.
  */
 @Controller
 @RequestMapping("/userlist")
@@ -49,13 +50,14 @@ public class UserListController {
 
 	private final UserListService userListService;
 	private final AuthService authService;
+	private final PermissionsService permissionsService;
 
 	// -------------------------------------------------------------------------
 	// LISTADO DE USUARIOS
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Muestra la página de listado de usuarios.
+	 * Muestra la página de listado de usuarios (solo para administradores).
 	 *
 	 * Acepta parámetros opcionales de ordenación y dirección.
 	 * Si no se indican, se aplican los valores por defecto:
@@ -72,10 +74,8 @@ public class UserListController {
 		@RequestParam(name = "direction", required = false) SortDirection direction,
 		Model model
 	) {
-		// Verificación explícita de sesión (autenticación)
-		if (!authService.isLogged()) {
-			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
-		}
+		// Validar sesión y permisos de administrador
+		permissionsService.checkAdminPermission();
 
 		try {
 			List<User> users = userListService.listAllUsers(
@@ -91,9 +91,8 @@ public class UserListController {
 
 			return "html/userlist/list";
 
-		} catch (SecurityException ex) {
-			throw new OperationFailedException(
-				"No tiene permisos para acceder a esta página.", 403, ex);
+		} catch (Exception ex) {
+			throw new OperationFailedException("Error al cargar el listado de usuarios.", 500, ex);
 		}
 	}
 
@@ -104,8 +103,8 @@ public class UserListController {
 	/**
 	 * Muestra una vista de confirmación antes de ejecutar una operación masiva.
 	 *
-	 * Se usa cuando el administrador selecciona varios usuarios y escoge una
-	 * acción (otorgar, revocar o eliminar).
+	 * Solo los administradores pueden acceder a esta vista.
+	 * Excluye siempre al usuario logado de la lista de destino.
 	 *
 	 * @param action Tipo de acción (GRANT, REVOKE, DELETE).
 	 * @param ids    Lista de IDs de usuarios seleccionados.
@@ -118,28 +117,31 @@ public class UserListController {
 		@RequestParam("ids") List<Integer> ids,
 		Model model
 	) {
-		if (!authService.isLogged()) {
-			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		permissionsService.checkAdminPermission();
+
+		if (ids == null || ids.isEmpty()) {
+			throw new OperationFailedException("Debe seleccionar al menos un usuario.", 400);
 		}
 
-		try {
-			List<User> users = userListService.listFilteredUsers(ids);
-			String idsString = String.join(",", ids.stream()
-				.map(String::valueOf)
-				.toList());
+		Integer currentUserId = authService.getUserId().orElse(null);
+		List<User> users = userListService.listUsersByIds(ids).stream()
+			.filter(u -> !u.getId().equals(currentUserId)) // excluye al logado
+			.toList();
 
-			model.addAttribute("action", action);
-			model.addAttribute("users", users);
-			model.addAttribute("count", users.size());
-			model.addAttribute("idsString", idsString);
-
-			return "html/userlist/bulk-confirm";
-
-		} catch (IllegalArgumentException ex) {
-			throw new OperationFailedException("Error en la selección de usuarios.", 400, ex);
-		} catch (SecurityException ex) {
-			throw new OperationFailedException("No tiene permisos para realizar esta acción.", 403, ex);
+		if (users.isEmpty()) {
+			throw new OperationFailedException("No hay usuarios válidos para procesar.", 400);
 		}
+
+		String idsString = String.join(",", users.stream()
+			.map(u -> String.valueOf(u.getId()))
+			.toList());
+
+		model.addAttribute("action", action);
+		model.addAttribute("users", users);
+		model.addAttribute("count", users.size());
+		model.addAttribute("idsString", idsString);
+
+		return "html/userlist/bulk-confirm";
 	}
 
 	// -------------------------------------------------------------------------
@@ -148,6 +150,8 @@ public class UserListController {
 
 	/**
 	 * Ejecuta la operación masiva (otorgar, revocar o borrar) y muestra resultado.
+	 *
+	 * Solo accesible para administradores.
 	 *
 	 * @param action Tipo de acción.
 	 * @param ids    Lista de IDs a modificar.
@@ -160,25 +164,35 @@ public class UserListController {
 		@RequestParam("ids") List<Integer> ids,
 		Model model
 	) {
-		if (!authService.isLogged()) {
-			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		permissionsService.checkAdminPermission();
+
+		if (ids == null || ids.isEmpty()) {
+			throw new OperationFailedException("Debe seleccionar al menos un usuario.", 400);
+		}
+
+		Integer currentUserId = authService.getUserId().orElse(null);
+		List<Integer> validIds = ids.stream()
+			.filter(id -> !id.equals(currentUserId)) // excluye el propio usuario
+			.toList();
+
+		if (validIds.isEmpty()) {
+			throw new OperationFailedException("No hay usuarios válidos para procesar.", 400);
 		}
 
 		try {
 			switch (action) {
-				case GRANT -> userListService.setAdminStatusBulk(ids, true);
-				case REVOKE -> userListService.setAdminStatusBulk(ids, false);
-				case DELETE -> userListService.deleteUsersBulk(ids);
+				case GRANT -> userListService.setAdminStatusBulk(validIds, true);
+				case REVOKE -> userListService.setAdminStatusBulk(validIds, false);
+				case DELETE -> userListService.deleteUsersBulk(validIds);
 				default -> throw new IllegalArgumentException("Acción no válida.");
 			}
 
 			model.addAttribute("action", action);
+			model.addAttribute("count", validIds.size());
 			return "html/userlist/bulk-success";
 
 		} catch (IllegalArgumentException ex) {
 			throw new OperationFailedException("Error al procesar la operación.", 400, ex);
-		} catch (SecurityException ex) {
-			throw new OperationFailedException("No tiene permisos para realizar esta acción.", 403, ex);
 		} catch (Exception ex) {
 			throw new OperationFailedException("Error inesperado al ejecutar la operación.", 500, ex);
 		}
@@ -187,47 +201,41 @@ public class UserListController {
 
 /*
 ===============================================================================
-CONTROL EXPLÍCITO DE ACCESO
+CONTROL DE ACCESO Y PERMISOS
 ===============================================================================
-Este controlador incluye comprobaciones explícitas de autenticación mediante
-`authService.isLogged()`, antes de mostrar o modificar listas de usuarios.
+Este controlador valida explícitamente los permisos de administrador antes de
+realizar cualquier operación, delegando la lógica de negocio al servicio.
 
-Esto permite distinguir entre:
- - Autenticación: comprobar que existe sesión activa.
- - Autorización: validar permisos concretos (en UserListService).
+ - `permissionsService.checkAdminPermission()` asegura que el usuario tenga rol admin.
+ - El usuario logado se excluye de cualquier operación masiva (seguridad adicional).
+ - Si no hay sesión activa o no es admin, se lanza una `SecurityException` (403).
 
 ===============================================================================
 NOTAS PEDAGÓGICAS
 ===============================================================================
 1. CONVERSIÓN AUTOMÁTICA DE ENUMS
 ---------------------------------
-Spring convierte automáticamente los parámetros String de la URL o formulario
-en valores de enumerados (UserOrderField, SortDirection, BulkActionType),
-siempre que los nombres coincidan.
-
-Si el valor no coincide con ningún miembro del enum, Spring lanza una
-MethodArgumentTypeMismatchException antes de ejecutar el método, que es
-manejada por el controlador de errores global (ErrorControllerAdvice).
+Spring convierte automáticamente parámetros String en enumerados (UserOrderField,
+SortDirection, BulkActionType) siempre que los nombres coincidan.
 
 2. FLUJO DE ACCIONES MASIVAS
 -----------------------------
 - /list muestra el listado principal.
-- /bulk-confirm pide confirmación al administrador antes de actuar.
-- /bulk-success ejecuta la acción y muestra una confirmación.
+- /bulk-confirm confirma antes de ejecutar.
+- /bulk-success ejecuta y muestra resultado.
 
-3. EXCEPCIONES
----------------
-Se usa OperationFailedException para centralizar el manejo de errores:
- - 400 → errores de validación o selección incorrecta.
+3. EXCEPCIONES Y MANEJO GLOBAL
+-------------------------------
+Este controlador lanza `OperationFailedException` con códigos específicos:
+ - 400 → errores de validación.
  - 403 → falta de permisos.
- - 500 → errores internos o inesperados.
+ - 500 → errores internos.
 
 4. OBJETIVO PEDAGÓGICO
 ------------------------
-Este controlador enseña cómo:
- - Estructurar rutas jerárquicas coherentes.
- - Usar enumerados en formularios y parámetros.
- - Separar vistas de confirmación y ejecución real.
- - Controlar autenticación y autorización de manera clara y centralizada.
+Ilustra cómo:
+ - Delegar la seguridad al controlador y mantener los servicios puros.
+ - Filtrar el usuario logado de las operaciones masivas.
+ - Mantener coherencia y trazabilidad en el manejo de errores.
 ===============================================================================
 */

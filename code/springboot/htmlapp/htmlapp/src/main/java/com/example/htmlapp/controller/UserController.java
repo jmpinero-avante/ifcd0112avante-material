@@ -47,14 +47,11 @@ public class UserController {
 
 	@GetMapping("/details/{id}")
 	public String showUserDetails(@PathVariable Integer id, Model model) {
-		// Comprobación explícita de sesión (redundante, pero pedagógica)
-		if (!authService.isLogged()) {
-			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
-		}
-
+		// Verificación centralizada (admin o usuario propio)
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
+
 		model.addAttribute("user", target);
-		model.addAttribute("loggedUser", authService.getLoggedUser().orElse(null));
+		model.addAttribute("loggedUser", authService.getUser().orElse(null));
 		return "html/user/details";
 	}
 
@@ -64,23 +61,20 @@ public class UserController {
 
 	@GetMapping("/edit/{id}")
 	public String showEditForm(@PathVariable Integer id, Model model) {
-		if (!authService.isLogged()) {
-			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
-		}
-
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
-		model.addAttribute("loggedUser", authService.getLoggedUser().orElse(null));
+		model.addAttribute("loggedUser", authService.getUser().orElse(null));
 		return "html/user/edit";
 	}
 
 	@PostMapping("/edit/{id}")
 	@Transactional
-	public String processEditForm(@PathVariable Integer id,
-			@RequestParam String email,
-			@RequestParam(required = false) String fullName,
-			Model model) {
-
+	public String processEditForm(
+		@PathVariable Integer id,
+		@RequestParam String email,
+		@RequestParam(required = false) String fullName,
+		Model model
+	) {
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 
 		try {
@@ -92,10 +86,10 @@ public class UserController {
 
 		} catch (IllegalArgumentException ex) {
 			throw new OperationFailedException(
-					"Error al actualizar los datos del usuario.", 400, ex);
+				"Error al actualizar los datos del usuario.", 400, ex);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-					"Error inesperado al procesar la actualización.", 500, ex);
+				"Error inesperado al procesar la actualización.", 500, ex);
 		}
 	}
 
@@ -105,10 +99,6 @@ public class UserController {
 
 	@GetMapping("/change-password/{id}")
 	public String showChangePasswordForm(@PathVariable Integer id, Model model) {
-		if (!authService.isLogged()) {
-			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
-		}
-
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		return "html/user/change-password";
@@ -116,25 +106,25 @@ public class UserController {
 
 	@PostMapping("/change-password/{id}")
 	@Transactional
-	public String processChangePassword(@PathVariable Integer id,
-			@RequestParam String currentPassword,
-			@RequestParam String newPassword,
-			@RequestParam String confirmPassword,
-			Model model) {
-
+	public String processChangePassword(
+		@PathVariable Integer id,
+		@RequestParam String currentPassword,
+		@RequestParam String newPassword,
+		@RequestParam String confirmPassword,
+		Model model
+	) {
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 
 		if (!newPassword.equals(confirmPassword)) {
 			throw new OperationFailedException("Las contraseñas no coinciden.", 400);
 		}
 
-		boolean isSelfChange = authService.getLoggedUser()
-				.map(u -> u.getId().equals(id))
-				.orElse(false);
+		boolean isSelfChange = authService.getUser()
+			.map(u -> u.getId().equals(id))
+			.orElse(false);
 
 		if (isSelfChange && !authService.verifyPassword(id, currentPassword)) {
-			throw new OperationFailedException(
-					"La contraseña actual no es válida.", 403);
+			throw new OperationFailedException("La contraseña actual no es válida.", 403);
 		}
 
 		try {
@@ -142,8 +132,7 @@ public class UserController {
 			return "html/user/change-password-success";
 
 		} catch (Exception ex) {
-			throw new OperationFailedException(
-					"Error al cambiar la contraseña.", 500, ex);
+			throw new OperationFailedException("Error al cambiar la contraseña.", 500, ex);
 		}
 	}
 
@@ -153,10 +142,6 @@ public class UserController {
 
 	@GetMapping("/delete/{id}")
 	public String showDeleteConfirmation(@PathVariable Integer id, Model model) {
-		if (!authService.isLogged()) {
-			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
-		}
-
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		return "html/user/delete-confirm";
@@ -165,16 +150,16 @@ public class UserController {
 	@PostMapping("/delete/{id}")
 	@Transactional
 	public String processDelete(@PathVariable Integer id, Model model) {
+		User current = permissionsService.checkAdminOrLoggedUserPermission(id);
+
 		try {
-			userService.deleteUser(id);
+			userService.deleteUser(current.getId());
 
-			authService.getLoggedUser().ifPresent(logged -> {
-				if (logged.getId().equals(id)) {
-					authService.logout();
-				}
-			});
-
-			if (authService.getLoggedUser().isEmpty()) {
+			// Si el usuario se elimina a sí mismo → cerrar sesión
+			if (authService.getUser()
+					.map(u -> u.getId().equals(id))
+					.orElse(false)) {
+				authService.logout();
 				return "redirect:/?logout";
 			}
 
@@ -182,11 +167,11 @@ public class UserController {
 
 		} catch (SecurityException ex) {
 			throw new OperationFailedException(
-					"No tiene permisos para eliminar este usuario.", 403, ex);
+				"No tiene permisos para eliminar este usuario.", 403, ex);
 
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-					"Error inesperado al eliminar el usuario.", 500, ex);
+				"Error inesperado al eliminar el usuario.", 500, ex);
 		}
 	}
 
@@ -196,31 +181,25 @@ public class UserController {
 
 	@GetMapping("/make-admin/{id}")
 	public String grantAdminPrivileges(@PathVariable Integer id) {
+		permissionsService.checkAdminPermission();
 		try {
-			permissionsService.checkAdminPermission();
 			userService.setAdminStatus(id, true);
 			return String.format("redirect:/user/details/%d", id);
-		} catch (SecurityException ex) {
-			throw new OperationFailedException(
-					"Acceso denegado. No tiene privilegios para otorgar permisos.", 403, ex);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-					"Error inesperado al asignar privilegios de administrador.", 500, ex);
+				"Error inesperado al asignar privilegios de administrador.", 500, ex);
 		}
 	}
 
 	@GetMapping("/revoke-admin/{id}")
 	public String revokeAdminPrivileges(@PathVariable Integer id) {
+		permissionsService.checkAdminPermission();
 		try {
-			permissionsService.checkAdminPermission();
 			userService.setAdminStatus(id, false);
 			return String.format("redirect:/user/details/%d", id);
-		} catch (SecurityException ex) {
-			throw new OperationFailedException(
-					"Acceso denegado. No tiene privilegios para revocar permisos.", 403, ex);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-					"Error inesperado al revocar privilegios de administrador.", 500, ex);
+				"Error inesperado al revocar privilegios de administrador.", 500, ex);
 		}
 	}
 }
@@ -229,13 +208,13 @@ public class UserController {
 ===============================================================================
 CONTROL EXPLÍCITO DE ACCESO
 ===============================================================================
-Este controlador incluye comprobaciones explícitas de sesión con
-`authService.isLogged()` antes de mostrar o modificar datos.
+Las comprobaciones de autenticación redundantes (`authService.isLogged()`)
+se han reemplazado por llamadas centralizadas a `permissionsService`, que
+valida tanto la sesión como los permisos necesarios en cada caso.
 
-Aunque PermissionsService ya valida los permisos, esta verificación inicial
-sirve como refuerzo didáctico para mostrar la diferencia entre:
- - Autenticación (estar logado)
- - Autorización (tener permisos adecuados)
+ - `checkAdminOrLoggedUserPermission(id)` asegura acceso al propio perfil
+   o acceso total si es administrador.
+ - `checkAdminPermission()` protege las operaciones de privilegios.
 
 ===============================================================================
 NOTAS PEDAGÓGICAS
@@ -279,7 +258,7 @@ el manejador global (ErrorControllerAdvice).
 ------------------------
 Este controlador enseña cómo:
  - Separar la lógica de edición y privilegios.
- - Controlar permisos con precisión.
+ - Centralizar la autorización en PermissionsService.
  - Mantener la integridad de la sesión y los datos.
  - Asignar códigos de error coherentes para depuración y trazabilidad.
 ===============================================================================
