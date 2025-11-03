@@ -1,23 +1,26 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 
 <!-- ============================================================
-FRAGMENTO: LAYOUT DE PÁGINAS DE ERROR
+FRAGMENTO: LAYOUT-ERROR
 ============================================================ -->
 <!--
-Define la estructura común para todas las páginas de error.
-Se usa en los ficheros de /html/error para mostrar mensajes coherentes
-sin duplicar el HTML base.
+Este layout define la estructura base para todas las páginas de error.
 
-Parámetros:
- - errorCode: número del error (por ejemplo 403, 404, 500)
- - errorMessage: texto descriptivo del error
+Recibe dos parámetros:
+ - errorCode     → código numérico del error (por ejemplo, 404, 403, 500...).
+ - errorMessage  → mensaje explicativo que se muestra al usuario.
 
-La vista se invoca con:
+Es usado por todas las plantillas dentro de `html/error/` mediante:
+
 <html th:replace="~{fragments/layout-error :: layoutError(
-	errorCode=403,
-	errorMessage='Acceso denegado.'
+    errorCode=${errorCode} ?: 500,
+    errorMessage=${errorMessage} ?: 'Ha ocurrido un error inesperado.'
 )}">
+
+Si alguno de los parámetros no se pasa desde el modelo, se aplican
+los valores por defecto definidos en la llamada anterior.
 -->
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:fragment="layoutError(errorCode, errorMessage)">
@@ -25,30 +28,27 @@ La vista se invoca con:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title th:text="'Error ' + ${errorCode} + ' - HtmlApp'">HtmlApp - Error</title>
+  <title th:text="'Error ' + ${errorCode}">Error</title>
+
+  <link rel="stylesheet" th:href="@{/css/base.css}" />
   <link rel="stylesheet" th:href="@{/css/error.css}" />
 </head>
 
 <body>
-  <div class="error-container">
-    <!-- Código del error -->
-    <h1 class="error-code" th:text="${errorCode} ?: 'Error'">Error</h1>
+  <main class="error-container">
+    <section class="error-box">
+      <h1 th:text="'Error ' + ${errorCode}">Error 500</h1>
+      <p th:text="${errorMessage}">Ha ocurrido un error inesperado.</p>
 
-    <!-- Descripción del error -->
-    <p class="error-message"
-       th:text="${errorMessage} ?: 'Ha ocurrido un error inesperado.'">
-       Ha ocurrido un error inesperado.
-    </p>
+      <div class="error-actions">
+        <a th:href="@{/}" class="btn">Volver al inicio</a>
+      </div>
+    </section>
+  </main>
 
-    <!-- Enlace principal adaptado al estado de sesión -->
-    <a th:if="${session.user != null}"
-       th:href="@{/main}"
-       class="error-link">Volver a la página principal</a>
-
-    <a th:if="${session.user == null}"
-       th:href="@{/}"
-       class="error-link">Volver al inicio</a>
-  </div>
+  <footer>
+    <p>&copy; 2025 HtmlApp — Todos los derechos reservados</p>
+  </footer>
 </body>
 </html>
 
@@ -56,9 +56,27 @@ La vista se invoca con:
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. Los estilos de `error.css` aseguran consistencia visual con el resto del sitio.
-2. Se usa `session.user` para decidir el destino del enlace principal.
-3. Este layout evita repetir estructura en cada plantilla de error.
-4. Compatible con el manejador global de excepciones (ErrorControllerAdvice).
-5. Ya no incluye `errorLink`: todos los enlaces se gestionan de forma estándar.
+1. UNIFICACIÓN DE ESTILO
+-------------------------
+Este layout reemplaza la necesidad de duplicar estructuras HTML
+en cada plantilla de error. Todas heredan esta composición común.
+
+2. PARÁMETROS REUTILIZABLES
+----------------------------
+- `errorCode`     → define el código numérico mostrado en el título y el cuerpo.
+- `errorMessage`  → texto descriptivo (mensaje del modelo o uno por defecto).
+
+3. ENLACE DE RETORNO
+---------------------
+Siempre ofrece un botón “Volver al inicio”, que redirige a `/`.
+
+4. HOJAS DE ESTILO
+-------------------
+- `base.css` → colores y tipografía general.
+- `error.css` → estilos visuales específicos para cajas de error.
+
+5. OBJETIVO PEDAGÓGICO
+------------------------
+Demuestra cómo usar fragmentos parametrizados (`th:fragment`) en
+Thymeleaf para crear estructuras reutilizables con valores dinámicos.
 -->
