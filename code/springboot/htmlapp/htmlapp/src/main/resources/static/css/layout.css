@@ -115,26 +115,44 @@ body:has(.sidebar) main {
 	margin-left: 220px;
 }
 
-/* Cajas informativas estándar */
-.info-box {
-	background-color: var(--color-surface, #fff);
-	border-radius: var(--border-radius);
-	padding: 2rem;
-	box-shadow: var(--box-shadow-md);
-	max-width: var(--max-width, 900px);
-	margin: 2rem auto;
-}
-
 /* ==========================================================================
-TABLAS O CONTENIDOS AMPLIOS
+INFO-BOX – CAJAS DE CONTENIDO DENTRO DEL LAYOUT
 ========================================================================== */
 
-.info-box.table-wide {
-	max-width: none;
-	width: 100%;
-	margin: 1.5rem 0;
-	padding: 1.5rem 2rem;
+/* Caja genérica de información: hereda el diseño base desde base.css,
+   pero se adapta al flujo del layout (centrada, con más padding y sombra media) */
+.info-box {
+  background-color: var(--color-surface, #fff);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: var(--box-shadow-md);
+  max-width: var(--max-width, 900px);
+  margin: 2rem auto;
+  box-sizing: border-box;
 }
+
+/* Variante ancha: pensada para listados y tablas administrativas.
+   Ocupa más ancho y ajusta el padding para mayor legibilidad. */
+.info-box.table-wide {
+  max-width: 100%;
+  width: calc(100% - 3rem);
+  padding: 2.5rem;
+  box-shadow: var(--box-shadow-md);
+}
+
+/* En pantallas pequeñas, reduce el margen y el padding */
+@media (max-width: 768px) {
+  .info-box {
+    padding: 1.5rem;
+    margin: 1.5rem auto;
+  }
+
+  .info-box.table-wide {
+    width: 100%;
+    padding: 1.5rem;
+  }
+}
+
 
 /* ==========================================================================
 FOOTER
