@@ -13,6 +13,7 @@ IMPORTS DE MÓDULOS COMUNES
 ------------------------------------------------------------ */
 @import url('core/variables.css');
 @import url('core/utilities.css');
+@import url('core/responsive.css');
 
 /* ==========================================================================
 CONFIGURACIÓN GLOBAL
