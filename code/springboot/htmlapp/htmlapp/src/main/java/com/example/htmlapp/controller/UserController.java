@@ -65,7 +65,7 @@ public class UserController {
 		return "html/user/user-edit";
 	}
 
-	@PostMapping("/update/{id}")
+	@PostMapping("/edit/{id}")
 	@Transactional
 	public String processEditForm(@PathVariable Integer id,
 	                              @RequestParam String email,
@@ -210,8 +210,9 @@ Cada acción valida los permisos con PermissionsService:
 
 2. FLUJO DE EDICIÓN
 --------------------
-El formulario de edición usa updateUser() de UserService, que ignora campos
-sensibles (passwordHash, salt, isAdmin) para garantizar seguridad.
+El formulario de edición usa el mismo endpoint /user/edit/{id}
+para GET (mostrar formulario) y POST (procesar datos).
+El servicio updateUser() garantiza la integridad de los campos sensibles.
 
 3. CAMBIO DE CONTRASEÑA
 ------------------------
@@ -241,7 +242,7 @@ el manejador global (ErrorControllerAdvice).
 ------------------------
 Este controlador enseña cómo:
  - Mantener coherencia en la jerarquía de rutas (/user/...).
- - Separar la lógica de edición y privilegios.
+ - Reutilizar un mismo endpoint para GET/POST de formularios.
  - Controlar permisos con precisión.
  - Mantener la integridad de la sesión y los datos.
  - Asignar códigos de error coherentes para depuración y trazabilidad.

@@ -1,77 +1,95 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(
-        title='Editar usuario',
-        content=~{::main}
-      )}">
 
 <!--
 ===============================================================================
 PLANTILLA: user-edit.html
 ===============================================================================
-Formulario para modificar los datos personales de un usuario.  
-Puede ser utilizado tanto por el propio usuario como por un administrador.
+Propósito:
+-----------
+Permite modificar los datos personales de un usuario existente (email y nombre).
+Solo puede acceder el propio usuario o un administrador, verificado en el
+UserController mediante PermissionsService.
+
+Estructura general:
+-------------------
+Esta plantilla hereda del layout principal (`fragments/layout.html`) y define
+su contenido dentro del bloque <main>, pasado como parámetro `content`.
+
+El formulario:
+--------------
+- Envía los datos por POST a /user/edit/{id}.
+- Incluye validaciones HTML5 (email obligatorio, nombre opcional).
+- Si el cambio se realiza correctamente, el controlador redirige a:
+  /user/details/{id} mostrando un mensaje de éxito.
+
+Seguridad:
+----------
+- El campo `isAdmin` no se muestra ni se puede editar aquí.
+- Solo se modifican `email` y `fullName`.
+
+Objetivo pedagógico:
+--------------------
+Mostrar cómo usar Thymeleaf para crear formularios dinámicos reutilizando
+layouts y cómo establecer el endpoint POST a la misma ruta que el GET.
 ===============================================================================
 -->
 
+<html th:replace="~{fragments/layout :: layout(
+	title='Editar datos personales',
+	content=~{::main}
+)}">
+
 <main>
-  <section class="user-edit">
-    <h1>Editar usuario</h1>
+	<section class="text-center mb-2">
+		<h1>Editar datos personales</h1>
+		<p>Modifica tu dirección de correo electrónico o tu nombre completo.</p>
+	</section>
 
-    <!-- Formulario principal -->
-    <form th:action="@{'/user/update/' + ${user.id}}" method="post">
-      <div class="form-group">
-        <label for="fullName">Nombre completo:</label>
-        <input type="text"
-               id="fullName"
-               name="fullName"
-               th:value="${user.fullName}" />
-      </div>
+	<form th:action="@{/user/edit/{id}(id=${user.id})}" method="post">
+		<label for="email">Correo electrónico</label>
+		<input type="email" id="email" name="email" th:value="${user.email}" 
+		       required placeholder="correo@ejemplo.com" />
 
-      <div class="form-group">
-        <label for="email">Correo electrónico:</label>
-        <input type="email"
-               id="email"
-               name="email"
-               th:value="${user.email}"
-               required />
-      </div>
+		<label for="fullName">Nombre completo</label>
+		<input type="text" id="fullName" name="fullName" 
+		       th:value="${user.fullName}" placeholder="Tu nombre completo" />
 
-      <div class="form-actions">
-        <button type="submit" class="btn">Guardar cambios</button>
-        <a th:href="@{'/user/details/' + ${user.id}}" class="btn btn-secondary">Cancelar</a>
-      </div>
-    </form>
-
-  </section>
+		<div class="text-center mt-2">
+			<button type="submit" class="btn">Guardar cambios</button>
+			<a th:href="@{/user/details/{id}(id=${user.id})}" 
+			   class="btn btn-secondary">Cancelar</a>
+		</div>
+	</form>
 </main>
+</html>
 
 <!--
 ===============================================================================
-NOTAS DE DISEÑO
+NOTAS ADICIONALES
 ===============================================================================
-1. ESTRUCTURA DEL FORMULARIO
------------------------------
-- Usa método POST y apunta a /user/update/{id}.
-- Incluye validación HTML5 (`required`) en los campos de texto y email.
-- Los valores iniciales se rellenan con Thymeleaf (`th:value`).
+1. ESTRUCTURA DE HERENCIA (LAYOUT)
+----------------------------------
+La plantilla se integra con el layout principal:
+<html th:replace="~{fragments/layout :: layout(title='...', content=~{::main})}">
+Esto inserta el bloque <main> en el layout base, junto con cabecera, sidebar y footer.
 
-2. CAMPOS EDITABLES
--------------------
-- Solo se permiten nombre completo y correo electrónico.
-- Campos sensibles (contraseña, rol, salt, etc.) se gestionan desde otros flujos.
+2. FLUJO DE NAVEGACIÓN
+-----------------------
+- GET  /user/edit/{id} → muestra este formulario con los datos actuales.
+- POST /user/edit/{id} → procesa los cambios y redirige a /user/details/{id}.
 
-3. USO DEL LAYOUT
------------------
-- Esta plantilla se renderiza dentro del layout principal (layout.html),
-  que ya incluye header, sidebar, mensajes y footer.
+3. VALIDACIÓN HTML5
+--------------------
+- `required` en el email obliga a introducir un correo válido.
+- `type="email"` fuerza formato de correo.
+- El nombre completo (`fullName`) es opcional, pero si se borra se guardará vacío.
 
-4. ACCESIBILIDAD Y ESTILO
---------------------------
-- Las clases `.form-group` y `.form-actions` siguen la convención usada
-  en el resto de formularios de la aplicación.
-- Los estilos se definen en base.css (bordes, sombras, tipografía, botones).
+4. OBJETIVO PEDAGÓGICO
+------------------------
+Este ejemplo muestra cómo:
+ - Reutilizar layouts en Thymeleaf.
+ - Construir formularios seguros y accesibles.
+ - Mantener un diseño limpio y coherente.
+ - Usar `th:action` con parámetros dinámicos (id del usuario).
 ===============================================================================
 -->
-</html>
