@@ -83,11 +83,9 @@ public class UserController {
 			return String.format("redirect:/user/details/%d", id);
 
 		} catch (IllegalArgumentException ex) {
-			// Error 400: datos inválidos o duplicados
 			throw new OperationFailedException(
 				"Error al actualizar los datos del usuario.", 400, ex);
 		} catch (Exception ex) {
-			// Error 500: fallo inesperado
 			throw new OperationFailedException(
 				"Error inesperado al procesar la actualización.", 500, ex);
 		}
@@ -115,7 +113,6 @@ public class UserController {
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 
 		if (!newPassword.equals(confirmPassword)) {
-			// Error 400: contraseñas no coinciden
 			throw new OperationFailedException("Las contraseñas no coinciden.", 400);
 		}
 
@@ -123,9 +120,7 @@ public class UserController {
 			.map(u -> u.getId().equals(id))
 			.orElse(false);
 
-		// Verifica la contraseña actual sin alterar la sesión
 		if (isSelfChange && !authService.verifyPassword(id, currentPassword)) {
-			// Error 403: contraseña actual incorrecta
 			throw new OperationFailedException("La contraseña actual no es válida.", 403);
 		}
 
@@ -153,12 +148,9 @@ public class UserController {
 	@PostMapping("/delete/{id}")
 	@Transactional
 	public String processDelete(@PathVariable Integer id, Model model) {
-		permissionsService.checkAdminOrLoggedUserPermission(id);
-
 		try {
 			userService.deleteUser(id);
 
-			// Si el usuario se elimina a sí mismo, cerrar sesión
 			authService.getLoggedUser().ifPresent(logged -> {
 				if (logged.getId().equals(id)) {
 					authService.logout();
@@ -169,11 +161,9 @@ public class UserController {
 			return "html/user/user-delete-success";
 
 		} catch (SecurityException ex) {
-			throw new OperationFailedException(
-				"No tiene permisos para eliminar este usuario.", 403, ex);
+			throw new OperationFailedException("No tiene permisos para eliminar este usuario.", 403, ex);
 		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"Error inesperado al eliminar el usuario.", 500, ex);
+			throw new OperationFailedException("Error inesperado al eliminar el usuario.", 500, ex);
 		}
 	}
 
@@ -188,11 +178,9 @@ public class UserController {
 			userService.setAdminStatus(id, true);
 			return String.format("redirect:/user/details/%d", id);
 		} catch (SecurityException ex) {
-			throw new OperationFailedException(
-				"Acceso denegado. No tiene privilegios para otorgar permisos.", 403, ex);
+			throw new OperationFailedException("Acceso denegado. No tiene privilegios para otorgar permisos.", 403, ex);
 		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"Error inesperado al asignar privilegios de administrador.", 500, ex);
+			throw new OperationFailedException("Error inesperado al asignar privilegios de administrador.", 500, ex);
 		}
 	}
 
@@ -203,11 +191,9 @@ public class UserController {
 			userService.setAdminStatus(id, false);
 			return String.format("redirect:/user/details/%d", id);
 		} catch (SecurityException ex) {
-			throw new OperationFailedException(
-				"Acceso denegado. No tiene privilegios para revocar permisos.", 403, ex);
+			throw new OperationFailedException("Acceso denegado. No tiene privilegios para revocar permisos.", 403, ex);
 		} catch (Exception ex) {
-			throw new OperationFailedException(
-				"Error inesperado al revocar privilegios de administrador.", 500, ex);
+			throw new OperationFailedException("Error inesperado al revocar privilegios de administrador.", 500, ex);
 		}
 	}
 }
@@ -232,10 +218,6 @@ sensibles (passwordHash, salt, isAdmin) para garantizar seguridad.
 El usuario debe introducir su contraseña actual (si no es admin).
 Las contraseñas nuevas deben coincidir antes de aplicar el cambio.
 
-Se utiliza authService.verifyPassword(int id, String rawPassword)
-para comprobar la validez de la contraseña actual sin provocar
-efectos secundarios en la sesión.
-
 4. ELIMINACIÓN DE USUARIO
 --------------------------
 Si el usuario logado se borra a sí mismo, se cierra la sesión.
@@ -258,6 +240,7 @@ el manejador global (ErrorControllerAdvice).
 7. OBJETIVO PEDAGÓGICO
 ------------------------
 Este controlador enseña cómo:
+ - Mantener coherencia en la jerarquía de rutas (/user/...).
  - Separar la lógica de edición y privilegios.
  - Controlar permisos con precisión.
  - Mantener la integridad de la sesión y los datos.

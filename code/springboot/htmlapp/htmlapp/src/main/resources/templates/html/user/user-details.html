@@ -1,149 +1,108 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-
-<!--
-===============================================================================
-PLANTILLA: DETALLES DE USUARIO
-===============================================================================
-Muestra la información completa del usuario, incluyendo:
- - Correo y nombre completo.
- - Estado de privilegios (admin o no).
- - Fecha de creación.
-Incluye botones de acción según permisos y contexto.
-===============================================================================
--->
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(
-        title='Detalles de usuario',
-        content=~{::main},
-        scripts=~{::script}
+        title='Datos del usuario',
+        content=~{::main}
       )}">
-
-<main>
-	<section class="text-center mb-3">
-		<h1>Detalles de usuario</h1>
-		<p class="text-muted">Consulta o gestiona la información del usuario.</p>
-	</section>
-
-	<div class="user-details-card">
-		<table class="details-table">
-			<tbody>
-				<tr>
-					<th>ID</th>
-					<td th:text="${user.id}">1</td>
-				</tr>
-				<tr>
-					<th>Correo electrónico</th>
-					<td th:text="${user.email}">usuario@example.com</td>
-				</tr>
-				<tr>
-					<th>Nombre completo</th>
-					<td th:text="${user.fullName}">Nombre Apellido</td>
-				</tr>
-				<tr>
-					<th>Administrador</th>
-					<td>
-						<span th:if="${user.isAdmin}" class="badge-admin">Sí</span>
-						<span th:if="${!user.isAdmin}" class="badge-normal">No</span>
-					</td>
-				</tr>
-				<tr>
-					<th>Fecha de creación</th>
-					<td th:text="${#temporals.format(user.creationTimestamp, 'yyyy-MM-dd HH:mm')}">
-						2025-01-01 12:00
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-
-	<div class="text-center mt-4">
-		<!-- Botón de edición (solo para el usuario dueño) -->
-		<a th:if="${loggedUser.id == user.id}"
-		   class="btn"
-		   th:href="@{'/user/edit/' + ${user.id}}">
-			Editar mis datos
-		</a>
-
-		<!-- Botón de cambiar contraseña -->
-		<a class="btn"
-		   th:href="@{'/user/change-password/' + ${user.id}}">
-			Cambiar contraseña
-		</a>
-
-		<!-- Botón de borrar usuario -->
-		<a class="btn btn-danger"
-		   th:href="@{'/user/delete/' + ${user.id}}">
-			Borrar usuario
-		</a>
-
-		<!-- Botones especiales para administradores -->
-		<div th:if="${loggedUser.isAdmin() and loggedUser.id != user.id}">
-			<a th:if="${!user.isAdmin()}"
-			   class="btn"
-			   th:href="@{'/user/make-admin/' + ${user.id}}">
-				Hacer administrador
-			</a>
-
-			<a th:if="${user.isAdmin()}"
-			   class="btn btn-muted"
-			   th:href="@{'/user/revoke-admin/' + ${user.id}}">
-				Quitar privilegios de administrador
-			</a>
-		</div>
-
-		<!-- Enlace de regreso -->
-		<a class="btn btn-muted" th:href="@{/main}">Volver</a>
-	</div>
-</main>
-
-<script>
-/**
- * Mejora visual: aplica estilos a las insignias de roles.
- */
-document.addEventListener("DOMContentLoaded", () => {
-	const badgeAdmin = document.querySelector(".badge-admin");
-	if (badgeAdmin) {
-		badgeAdmin.style.backgroundColor = "#198754";
-		badgeAdmin.style.color = "#fff";
-		badgeAdmin.style.padding = "0.3rem 0.6rem";
-		badgeAdmin.style.borderRadius = "6px";
-	}
-
-	const badgeNormal = document.querySelector(".badge-normal");
-	if (badgeNormal) {
-		badgeNormal.style.backgroundColor = "#6c757d";
-		badgeNormal.style.color = "#fff";
-		badgeNormal.style.padding = "0.3rem 0.6rem";
-		badgeNormal.style.borderRadius = "6px";
-	}
-});
-</script>
-
-</html>
 
 <!--
 ===============================================================================
-NOTAS PEDAGÓGICAS
+PLANTILLA: user-details.html
 ===============================================================================
-1. CONTROL DE VISIBILIDAD
---------------------------
-- Si el usuario logado ve su perfil, puede editar, cambiar contraseña o
-  borrar su cuenta.
-- Si es administrador y ve otro usuario, puede modificar su rol (admin / no admin).
-- Si es administrador y ve su propio perfil, solo se muestra que es admin,
-  sin botones de cambio.
-
-2. USO DEL LAYOUT
-------------------
-La vista se integra con el layout general, heredando cabecera, sidebar y pie.
-
-3. OBJETIVO PEDAGÓGICO
-------------------------
-Esta plantilla enseña cómo:
- - Renderizar condicionalmente acciones según permisos.
- - Usar Thymeleaf con estructuras condicionales y enlaces dinámicos.
- - Mantener coherencia entre permisos del servidor y botones visibles.
+Muestra los datos personales de un usuario.  
+El contenido visible varía según el rol del usuario logado y la cuenta
+que se esté visualizando:
+ - Usuario normal → ve solo sus propios datos.
+ - Administrador → puede ver y gestionar cualquier cuenta.
 ===============================================================================
 -->
+
+<main>
+  <section class="user-details">
+
+    <h1>Datos del usuario</h1>
+
+    <div class="user-info-card">
+      <p><strong>ID:</strong> <span th:text="${user.id}">1</span></p>
+      <p><strong>Nombre completo:</strong>
+         <span th:text="${user.fullName ?: '—'}">Juan Pérez</span></p>
+      <p><strong>Email:</strong>
+         <span th:text="${user.email}">juan@example.com</span></p>
+      <p><strong>Fecha de creación:</strong>
+         <span th:text="${#temporals.format(user.creationTimestamp, 'dd/MM/yyyy HH:mm')}">
+           01/01/2025 12:00
+         </span></p>
+
+      <!-- Solo los administradores ven el rol del usuario mostrado -->
+      <div th:if="${loggedUser != null and loggedUser.isAdmin}">
+        <p th:if="${user.isAdmin}" class="admin-label">
+          <strong>Rol:</strong> <span class="badge-admin">Administrador</span>
+        </p>
+        <p th:if="${!user.isAdmin}" class="user-label">
+          <strong>Rol:</strong> <span class="badge-user">Usuario estándar</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         BOTONES DE ACCIÓN
+    ============================================================ -->
+    <div class="actions">
+
+      <!-- Caso 1: Usuario logado (normal o admin) viendo su propio perfil -->
+      <div th:if="${loggedUser != null and loggedUser.id == user.id}">
+        <a th:href="@{'/user/edit/' + ${user.id}}" class="btn">Modificar datos</a>
+        <a th:href="@{'/user/change-password/' + ${user.id}}" class="btn">Cambiar contraseña</a>
+        <a th:href="@{'/user/delete/' + ${user.id}}" class="btn btn-danger">Darse de baja</a>
+      </div>
+
+      <!-- Caso 2: Administrador viendo la cuenta de otro usuario -->
+      <div th:if="${loggedUser != null and loggedUser.isAdmin and loggedUser.id != user.id}">
+        <a th:href="@{'/user/edit/' + ${user.id}}" class="btn">Modificar datos</a>
+        <a th:href="@{'/user/change-password/' + ${user.id}}" class="btn">Cambiar contraseña</a>
+        <a th:href="@{'/user/delete/' + ${user.id}}" class="btn btn-danger">Eliminar usuario</a>
+
+        <a th:if="${!user.isAdmin}"
+           th:href="@{'/user/make-admin/' + ${user.id}}"
+           class="btn btn-accent">Hacer administrador</a>
+
+        <a th:if="${user.isAdmin}"
+           th:href="@{'/user/revoke-admin/' + ${user.id}}"
+           class="btn btn-warning">Quitar privilegios</a>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<!--
+===============================================================================
+ESTILOS SUGERIDOS
+===============================================================================
+- .user-info-card → fondo blanco, borde sutil, sombra ligera, padding amplio.
+- .actions → margen superior (p. ej. margin-top: 1.5rem).
+- .btn, .btn-danger, .btn-accent, .btn-warning → definidos en base.css.
+- .badge-admin → color distintivo (azul oscuro, dorado o verde).
+- .badge-user → color neutro gris-azulado.
+===============================================================================
+
+NOTAS PEDAGÓGICAS
+===============================================================================
+1. VISIBILIDAD CONDICIONAL
+--------------------------
+- Los bloques <div th:if="..."> permiten mostrar elementos según el usuario.
+- Esto evita mostrar botones o información sensible a usuarios sin permiso.
+
+2. FORMATEO DE FECHAS
+---------------------
+- Se usa `#temporals.format(...)` para renderizar LocalDateTime con formato
+  legible para el usuario (día/mes/año y hora).
+
+3. USO DE LAYOUT
+----------------
+- Esta plantilla no incluye header, footer ni sidebar directamente.
+- El layout base (layout.html) los inserta automáticamente.
+===============================================================================
+-->
+</html>

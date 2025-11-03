@@ -1,118 +1,77 @@
-c<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-
-<!--
-===============================================================================
-PLANTILLA: EDICIÓN DE DATOS DE USUARIO
-===============================================================================
-Permite modificar los datos personales de un usuario existente.
-Esta vista es accesible para:
- - El propio usuario (para editar sus datos personales).
- - Un administrador (para editar cualquier usuario).
-===============================================================================
--->
-
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(
         title='Editar usuario',
-        content=~{::main},
-        scripts=~{::script}
+        content=~{::main}
       )}">
-
-<main>
-	<section class="text-center mb-3">
-		<h1>Editar usuario</h1>
-		<p class="text-muted">
-			Modifica la información del usuario y guarda los cambios.
-		</p>
-	</section>
-
-	<form th:action="@{'/user/update/' + ${user.id}}" method="post">
-		<input type="hidden" th:name="id" th:value="${user.id}" />
-
-		<label for="email">Correo electrónico</label>
-		<input type="email" id="email" name="email" required
-		       th:value="${user.email}" />
-
-		<label for="fullName">Nombre completo</label>
-		<input type="text" id="fullName" name="fullName"
-		       placeholder="Introduce tu nombre completo"
-		       th:value="${user.fullName}" />
-
-		<!-- Campo visible solo si el usuario logado es administrador -->
-		<div th:if="${loggedUser.isAdmin}">
-			<label for="isAdmin">Privilegios de administrador</label>
-			<select id="isAdmin" name="isAdmin">
-				<option th:value="true"
-				        th:selected="${user.isAdmin}">Sí</option>
-				<option th:value="false"
-				        th:selected="${!user.isAdmin}">No</option>
-			</select>
-		</div>
-
-		<div class="text-center mt-3">
-			<button type="submit" class="btn">Guardar cambios</button>
-			<a class="btn btn-muted" th:href="@{'/user/details/' + ${user.id}}">
-				Cancelar
-			</a>
-		</div>
-	</form>
-</main>
-
-<!-- =======================
-     BLOQUE DE SCRIPTS INYECTABLE (opcional)
-     ======================= -->
-<script>
-/**
- * Validación HTML5 reforzada para campos vacíos o incorrectos.
- */
-document.addEventListener("DOMContentLoaded", () => {
-	const form = document.querySelector("form");
-	form.addEventListener("submit", (e) => {
-		if (!form.checkValidity()) {
-			e.preventDefault();
-			alert("Por favor, completa todos los campos requeridos correctamente.");
-		}
-	});
-});
-</script>
-
-</html>
 
 <!--
 ===============================================================================
-NOTAS PEDAGÓGICAS
+PLANTILLA: user-edit.html
 ===============================================================================
-1. CONTROL DE ACCESO
---------------------
-Esta vista debe estar protegida por el controlador:
- - Solo el usuario dueño o un administrador puede acceder a ella.
- - Si no hay permisos, el sistema redirige a un error 403.
-
-2. CAMPOS DEL FORMULARIO
--------------------------
-- `email`: obligatorio, validado por HTML5.
-- `fullName`: opcional (nullable en la base de datos).
-- `isAdmin`: solo visible para administradores.
-
-3. VALIDACIÓN
---------------
-La validación principal se realiza con HTML5 (`required`, `type="email"`).
-Adicionalmente, se incluye un control en JavaScript para reforzar la experiencia.
-
-4. ESTILO Y ACCESIBILIDAD
---------------------------
-El formulario hereda los estilos de `base.css`:
- - Bordes redondeados y sombras suaves.
- - Diseño centrado y limpio.
- - Botones coherentes con la línea visual general.
-
-5. OBJETIVO PEDAGÓGICO
-------------------------
-Esta plantilla enseña cómo:
- - Combinar Thymeleaf con validación HTML5.
- - Mostrar campos condicionales según permisos.
- - Estructurar formularios seguros y limpios.
- - Separar la vista de la lógica (controladores y servicios).
+Formulario para modificar los datos personales de un usuario.  
+Puede ser utilizado tanto por el propio usuario como por un administrador.
 ===============================================================================
 -->
+
+<main>
+  <section class="user-edit">
+    <h1>Editar usuario</h1>
+
+    <!-- Formulario principal -->
+    <form th:action="@{'/user/update/' + ${user.id}}" method="post">
+      <div class="form-group">
+        <label for="fullName">Nombre completo:</label>
+        <input type="text"
+               id="fullName"
+               name="fullName"
+               th:value="${user.fullName}" />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo electrónico:</label>
+        <input type="email"
+               id="email"
+               name="email"
+               th:value="${user.email}"
+               required />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn">Guardar cambios</button>
+        <a th:href="@{'/user/details/' + ${user.id}}" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+
+  </section>
+</main>
+
+<!--
+===============================================================================
+NOTAS DE DISEÑO
+===============================================================================
+1. ESTRUCTURA DEL FORMULARIO
+-----------------------------
+- Usa método POST y apunta a /user/update/{id}.
+- Incluye validación HTML5 (`required`) en los campos de texto y email.
+- Los valores iniciales se rellenan con Thymeleaf (`th:value`).
+
+2. CAMPOS EDITABLES
+-------------------
+- Solo se permiten nombre completo y correo electrónico.
+- Campos sensibles (contraseña, rol, salt, etc.) se gestionan desde otros flujos.
+
+3. USO DEL LAYOUT
+-----------------
+- Esta plantilla se renderiza dentro del layout principal (layout.html),
+  que ya incluye header, sidebar, mensajes y footer.
+
+4. ACCESIBILIDAD Y ESTILO
+--------------------------
+- Las clases `.form-group` y `.form-actions` siguen la convención usada
+  en el resto de formularios de la aplicación.
+- Los estilos se definen en base.css (bordes, sombras, tipografía, botones).
+===============================================================================
+-->
+</html>
