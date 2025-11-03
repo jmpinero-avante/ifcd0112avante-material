@@ -9,20 +9,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title th:text="'Error ' + ${errorCode}">Error</title>
 
-  <!-- Estilos base y específicos -->
+  <!-- CSS unificado -->
   <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 
 <body class="error-page">
-  <!-- ============================================================
-  CONTENIDO PRINCIPAL DEL ERROR
-  ============================================================ -->
-  <main class="error-container">
+  <main>
     <section class="error-box">
       <h1 th:text="'Error ' + ${errorCode}">Error 500</h1>
-      <p class="error-message" th:text="${errorMessage}">
-        Ha ocurrido un error inesperado.
-      </p>
+      <p th:text="${errorMessage}">Ha ocurrido un error inesperado.</p>
 
       <div class="error-actions">
         <a th:href="@{/}" class="btn btn-success">Volver al inicio</a>
@@ -30,40 +25,8 @@
     </section>
   </main>
 
-  <!-- ============================================================
-  PIE DE PÁGINA UNIFICADO
-  ============================================================ -->
-  <footer th:replace="~{fragments/footer :: footer}"></footer>
+  <footer>
+    <p>&copy; 2025 HtmlApp — Todos los derechos reservados.</p>
+  </footer>
 </body>
 </html>
-
-<!-- ============================================================
-NOTAS DE DISEÑO Y FUNCIONAMIENTO
-============================================================ -->
-<!--
-1. ESTRUCTURA UNIFICADA
--------------------------
-Usa el mismo footer global (`fragments/footer.html`) para mantener
-coherencia estética entre las páginas normales y las de error.
-
-2. CLASES DE ESTILO
---------------------
-- `.error-body` y `.error-container` se definen en `error.css`.
-- `.error-box` es una caja centrada visualmente, con sombra y bordes suaves.
-- `.btn-success` mantiene la coherencia de botones del resto del sitio.
-
-3. PARÁMETROS
---------------
-- `errorCode` → se muestra tanto en <title> como en el encabezado <h1>.
-- `errorMessage` → texto descriptivo configurable.
-
-4. ACCESIBILIDAD Y SEMÁNTICA
-------------------------------
-Elimina duplicidad de pie de página e incluye el mismo fragmento
-de footer, asegurando consistencia semántica y visual.
-
-5. OBJETIVO PEDAGÓGICO
-------------------------
-Demuestra cómo los layouts específicos (error, base) pueden reutilizar
-componentes globales sin romper la estructura general de la aplicación.
--->
