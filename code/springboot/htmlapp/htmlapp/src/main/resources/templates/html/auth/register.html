@@ -18,22 +18,31 @@ siempre que el usuario no esté logado o tenga privilegios de admin.
 <main>
 	<section class="info-box">
 		<h1 th:text="${session.user != null and session.user.admin} ?
-			'Dar de alta nuevo usuario' : 'Crear cuenta nueva'">Registro</h1>
+			'Dar de alta nuevo usuario' : 'Crear cuenta nueva'">
+			Registro
+		</h1>
 
 		<form th:action="@{/register}" method="post" th:object="${userForm}" class="form-auth">
-			<label for="fullName">Nombre completo:</label>
-			<input type="text" id="fullName" name="fullName"
-			       th:value="*{fullName}" />
+			
+			<div class="form-group">
+				<label for="fullName">Nombre completo:</label>
+				<input type="text" id="fullName" name="fullName" th:value="*{fullName}" />
+			</div>
 
-			<label for="email">Correo electrónico:</label>
-			<input type="email" id="email" name="email"
-			       th:value="*{email}" required />
+			<div class="form-group">
+				<label for="email">Correo electrónico:</label>
+				<input type="email" id="email" name="email" th:value="*{email}" required />
+			</div>
 
-			<label for="passwordPlain">Contraseña:</label>
-			<input type="password" id="passwordPlain" name="passwordPlain" required />
+			<div class="form-group">
+				<label for="passwordPlain">Contraseña:</label>
+				<input type="password" id="passwordPlain" name="passwordPlain" required />
+			</div>
 
-			<label for="passwordConfirm">Confirmar contraseña:</label>
-			<input type="password" id="passwordConfirm" name="passwordConfirm" required />
+			<div class="form-group">
+				<label for="passwordConfirm">Confirmar contraseña:</label>
+				<input type="password" id="passwordConfirm" name="passwordConfirm" required />
+			</div>
 
 			<div class="form-actions">
 				<button type="submit" class="btn btn-success"
@@ -44,8 +53,7 @@ siempre que el usuario no esté logado o tenga privilegios de admin.
 				<a th:href="@{/}" class="btn">Cancelar</a>
 			</div>
 
-			<!-- Mensaje de error -->
-			<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red; margin-top:1rem;">
+			<p th:if="${errorMessage}" th:text="${errorMessage}" class="error-message">
 				Error en el registro.
 			</p>
 		</form>

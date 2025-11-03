@@ -23,15 +23,27 @@ ESTRUCTURA GENERAL
 form {
 	display: flex;
 	flex-direction: column;
-	gap: 1rem; /* separa cada grupo de campos */
+	gap: 1rem;
 	max-width: 420px;
 	margin: 0 auto;
 	padding: 1rem 0;
 }
 
-form label {
+/* Cada grupo de campos (label + input) ocupa su propio bloque */
+.form-group {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+LABELS
+========================================================================== */
+
+form label,
+.form-group label {
 	font-weight: 600;
-	margin-bottom: 0.25rem;
+	margin-bottom: 0.3rem;
 	display: block;
 	color: var(--color-text);
 }
@@ -42,7 +54,8 @@ CAMPOS DE ENTRADA
 
 form input[type="text"],
 form input[type="email"],
-form input[type="password"] {
+form input[type="password"],
+.form-group input {
 	width: 100%;
 	padding: 0.6rem 0.8rem;
 	border: 1px solid var(--color-border, #ccc);
@@ -113,7 +126,7 @@ OBJETIVO PEDAGÓGICO
 /*
 Este archivo demuestra:
  - Cómo estructurar formularios verticalmente con flexbox.
+ - Cómo agrupar campos mediante .form-group para mayor legibilidad.
  - Cómo usar variables globales para coherencia visual.
- - Cómo centrar el formulario y controlar el ancho máximo.
- - Cómo hacer formularios accesibles y adaptables (responsive).
+ - Cómo centrar el formulario y hacerlo adaptable (responsive).
 */
