@@ -43,6 +43,10 @@ para mantener coherencia visual.
 	--color-sidebar-bg: #f8f9fa;
 	--color-border: #dee2e6;
 
+	/* Dimensiones estructurales */
+	--topbar-height: 56px;
+	--sidebar-width: 220px;
+
 	/* ----------------------------------------------------------------------
 	TIPOGRAFÍA
 	---------------------------------------------------------------------- */
@@ -63,30 +67,11 @@ para mantener coherencia visual.
 }
 
 /* ==========================================================================
-MODO OSCURO (OPCIONAL)
-========================================================================== */
-/*
-Estas variables se activan si en el futuro se quiere soportar modo oscuro
-mediante la clase .dark o la media query prefers-color-scheme: dark.
-*/
-@media (prefers-color-scheme: dark) {
-	:root.dark {
-		--color-bg: #121212;
-		--color-surface: #1e1e1e;
-		--color-text: #e0e0e0;
-		--color-muted: #9ca3af;
-		--color-border: #333;
-		--color-header-bg: #0a0a0a;
-		--color-sidebar-bg: #1a1a1a;
-	}
-}
-
-/* ==========================================================================
 OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
 Este archivo enseña cómo:
  - Centralizar la configuración visual global de una aplicación.
  - Mantener coherencia estética mediante variables CSS reutilizables.
- - Preparar la base para temas claros/oscuro sin frameworks externos.
+ - Controlar la disposición estructural (topbar y sidebar) desde variables.
 */

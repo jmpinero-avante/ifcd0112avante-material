@@ -4,15 +4,10 @@
 BASE CSS – ESTILOS GLOBALES DE LA APLICACIÓN HTMLAPP
 ========================================================================== */
 /*
-Este archivo actúa como la hoja de estilos raíz de toda la aplicación.
+Hoja de estilo raíz de la aplicación.
 
-Su función principal es:
- - Establecer el estilo visual base (fuentes, colores, fondo, botones).
- - Importar las hojas modulares de estilo comunes.
- - Garantizar coherencia y uniformidad visual en todas las páginas.
-
-Se carga en el layout principal (`layout.html`) y aplica sus reglas a
-todas las vistas salvo las de error (que usan `error.css`).
+Define estilos globales, importa los módulos y garantiza coherencia visual
+entre todas las vistas (excepto las de error, que usan `error.css`).
 */
 
 /* ------------------------------------------------------------
@@ -48,7 +43,7 @@ html {
 
 body {
 	min-height: 100vh;
-	line-height: 1.6;
+	line-height: var(--line-height-base);
 	display: flex;
 	flex-direction: column;
 }
@@ -70,13 +65,10 @@ p {
 /* ==========================================================================
 CABECERA (TOPBAR)
 ========================================================================== */
-/*
-Define la barra superior que aparece en las páginas con usuario logado.
-Incluye nombre del usuario, fecha y enlaces básicos.
-*/
 
 .topbar {
 	width: 100%;
+	height: var(--topbar-height);
 	background-color: var(--color-header-bg);
 	color: var(--color-header-text);
 	padding: 0.75rem 1.5rem;
@@ -84,7 +76,9 @@ Incluye nombre del usuario, fecha y enlaces básicos.
 	justify-content: space-between;
 	align-items: center;
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-	z-index: 10;
+	position: sticky;
+	top: 0;
+	z-index: 1000;
 }
 
 .topbar-left span,
@@ -130,7 +124,7 @@ BOTONES
 }
 
 .btn-danger:hover {
-	background-color: #b02a37;
+	background-color: var(--color-error-hover);
 }
 
 /* Botón de éxito (verde) */
@@ -139,7 +133,7 @@ BOTONES
 }
 
 .btn-success:hover {
-	background-color: #146c43;
+	background-color: var(--color-success-hover);
 }
 
 /* ==========================================================================
@@ -147,17 +141,18 @@ CONTENIDO GENERAL
 ========================================================================== */
 
 main {
-	max-width: var(--max-width);
-	margin: 0 auto;
-	padding: 2rem 1rem;
 	flex: 1;
+	max-width: var(--max-width);
+	margin-left: var(--sidebar-width);
+	margin-right: 1rem;
+	padding: 2rem 1.5rem;
 	background-color: var(--color-bg);
+	box-sizing: border-box;
 }
 
 section {
 	margin-bottom: 2rem;
 }
-
 
 /* ==========================================================================
 FOOTER
@@ -176,19 +171,17 @@ footer {
 COMPONENTES ESPECIALES
 ========================================================================== */
 
-/* Aviso de usuario administrador */
 .user-admin {
 	color: var(--color-success);
 	font-weight: 700;
 	margin-left: 0.5rem;
 }
 
-/* Cajas de información genéricas */
 .info-box {
-	background-color: white;
+	background-color: var(--color-surface);
 	border-radius: var(--border-radius);
 	padding: 1rem 1.5rem;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--box-shadow-sm);
 }
 
 /* ==========================================================================
@@ -199,8 +192,11 @@ RESPONSIVE
 	.topbar {
 		flex-direction: column;
 		text-align: center;
+		height: auto;
 	}
 	main {
+		margin-left: 0;
+		margin-right: 0;
 		padding: 1.5rem 1rem;
 	}
 }
@@ -216,10 +212,9 @@ RESPONSIVE
 OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
-Este archivo ilustra:
- - Cómo organizar estilos globales sin mezclar responsabilidades.
- - Cómo utilizar imports para mantener la modularidad CSS.
- - Cómo reutilizar variables y utilidades globales.
- - Cómo aplicar un diseño profesional sin frameworks externos.
- - Cómo asegurar coherencia entre todas las vistas de la aplicación.
+Este archivo enseña:
+ - Cómo estructurar estilos globales sin mezclar responsabilidades.
+ - Cómo usar variables CSS para coherencia visual.
+ - Cómo integrar layout, formularios y tablas de forma modular.
+ - Cómo mantener un diseño flexible y responsive sin frameworks.
 */
