@@ -124,6 +124,7 @@ RESPONSIVE TABLE WRAPPER
 
 .table-container {
 	width: 100%;
+	max-width: 100%;
 	overflow-x: auto;
 	border-radius: var(--border-radius, 8px);
 	-webkit-overflow-scrolling: touch;

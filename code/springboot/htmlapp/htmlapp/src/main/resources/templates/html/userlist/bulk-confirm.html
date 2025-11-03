@@ -6,6 +6,7 @@ CONFIRMACIÓN DE OPERACIÓN MASIVA (ADMIN)
 	content=~{::main},
 	scripts=~{}
 )}">
+
 <main>
 	<section class="info-box">
 		<h1>Confirmar operación</h1>
@@ -13,27 +14,31 @@ CONFIRMACIÓN DE OPERACIÓN MASIVA (ADMIN)
 		<p th:text="'Acción seleccionada: ' + ${action}">Acción seleccionada</p>
 		<p th:text="'Usuarios afectados: ' + ${count}">Usuarios afectados</p>
 
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Email</th>
-					<th>Nombre</th>
-					<th>Administrador</th>
-					<th>Creación</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="u : ${users}">
-					<td th:text="${u.email}">correo@ejemplo.com</td>
-					<td th:text="${u.fullName}">Nombre Apellido</td>
-					<td th:text="${u.admin ? 'Sí' : 'No'}">No</td>
-					<td th:text="${#temporals.format(u.creationTimestamp, 'yyyy-MM-dd HH:mm')}">
-						2025-11-03 14:00
-					</td>
-				</tr>
-			</tbody>
-		</table>
+		<!-- Contenedor para mantener la tabla dentro de los márgenes -->
+		<div class="table-container">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Email</th>
+						<th>Nombre</th>
+						<th>Administrador</th>
+						<th>Creación</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="u : ${users}">
+						<td th:text="${u.email}">correo@ejemplo.com</td>
+						<td th:text="${u.fullName}">Nombre Apellido</td>
+						<td th:text="${u.admin ? 'Sí' : 'No'}">No</td>
+						<td th:text="${#temporals.format(u.creationTimestamp, 'yyyy-MM-dd HH:mm')}">
+							2025-11-03 14:00
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
+		<!-- Formulario de confirmación -->
 		<form th:action="@{/userlist/bulk-success}" method="post">
 			<input type="hidden" name="action" th:value="${action}" />
 			<input type="hidden" name="ids" th:value="${idsString}" />

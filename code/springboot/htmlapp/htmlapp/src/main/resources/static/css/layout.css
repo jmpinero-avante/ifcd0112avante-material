@@ -113,7 +113,7 @@ main {
 .info-box {
 	background-color: var(--color-surface, #fff);
 	border-radius: var(--border-radius);
-	padding: 1.5rem 2rem;
+	padding: 2rem;
 	box-shadow: var(--box-shadow-md);
 	max-width: var(--max-width, 900px);
 	margin: 2rem auto;
