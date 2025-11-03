@@ -50,7 +50,7 @@ public class UserController {
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		model.addAttribute("loggedUser", authService.getLoggedUser().orElse(null));
-		return "html/user/user-details";
+		return "html/user/details";
 	}
 
 	// -------------------------------------------------------------------------
@@ -62,7 +62,7 @@ public class UserController {
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		model.addAttribute("loggedUser", authService.getLoggedUser().orElse(null));
-		return "html/user/user-edit";
+		return "html/user/edit";
 	}
 
 	@PostMapping("/edit/{id}")
@@ -79,7 +79,6 @@ public class UserController {
 			target.setFullName(fullName);
 
 			userService.updateUser(target);
-			model.addAttribute("message", "Los datos se han actualizado correctamente.");
 			return String.format("redirect:/user/details/%d", id);
 
 		} catch (IllegalArgumentException ex) {
@@ -99,7 +98,7 @@ public class UserController {
 	public String showChangePasswordForm(@PathVariable Integer id, Model model) {
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
-		return "html/user/user-change-password";
+		return "html/user/change-password";
 	}
 
 	@PostMapping("/change-password/{id}")
@@ -121,16 +120,17 @@ public class UserController {
 			.orElse(false);
 
 		if (isSelfChange && !authService.verifyPassword(id, currentPassword)) {
-			throw new OperationFailedException("La contraseña actual no es válida.", 403);
+			throw new OperationFailedException(
+				"La contraseña actual no es válida.", 403);
 		}
 
 		try {
 			userService.changePassword(target, newPassword);
-			model.addAttribute("message", "Contraseña cambiada correctamente.");
-			return "html/user/user-change-success";
+			return "html/user/change-password-success";
 
 		} catch (Exception ex) {
-			throw new OperationFailedException("Error al cambiar la contraseña.", 500, ex);
+			throw new OperationFailedException(
+				"Error al cambiar la contraseña.", 500, ex);
 		}
 	}
 
@@ -142,28 +142,30 @@ public class UserController {
 	public String showDeleteConfirmation(@PathVariable Integer id, Model model) {
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
-		return "html/user/user-delete-confirm";
+		return "html/user/delete-confirm";
 	}
 
 	@PostMapping("/delete/{id}")
 	@Transactional
-	public String processDelete(@PathVariable Integer id, Model model) {
+	public String processDelete(@PathVariable Integer id) {
 		try {
 			userService.deleteUser(id);
 
+			// Si el usuario se elimina a sí mismo, cerrar sesión
 			authService.getLoggedUser().ifPresent(logged -> {
 				if (logged.getId().equals(id)) {
 					authService.logout();
 				}
 			});
 
-			model.addAttribute("message", "La cuenta ha sido eliminada correctamente.");
-			return "html/user/user-delete-success";
+			return "html/user/delete-success";
 
 		} catch (SecurityException ex) {
-			throw new OperationFailedException("No tiene permisos para eliminar este usuario.", 403, ex);
+			throw new OperationFailedException(
+				"No tiene permisos para eliminar este usuario.", 403, ex);
 		} catch (Exception ex) {
-			throw new OperationFailedException("Error inesperado al eliminar el usuario.", 500, ex);
+			throw new OperationFailedException(
+				"Error inesperado al eliminar el usuario.", 500, ex);
 		}
 	}
 
@@ -178,9 +180,11 @@ public class UserController {
 			userService.setAdminStatus(id, true);
 			return String.format("redirect:/user/details/%d", id);
 		} catch (SecurityException ex) {
-			throw new OperationFailedException("Acceso denegado. No tiene privilegios para otorgar permisos.", 403, ex);
+			throw new OperationFailedException(
+				"Acceso denegado. No tiene privilegios para otorgar permisos.", 403, ex);
 		} catch (Exception ex) {
-			throw new OperationFailedException("Error inesperado al asignar privilegios de administrador.", 500, ex);
+			throw new OperationFailedException(
+				"Error inesperado al asignar privilegios de administrador.", 500, ex);
 		}
 	}
 
@@ -191,9 +195,11 @@ public class UserController {
 			userService.setAdminStatus(id, false);
 			return String.format("redirect:/user/details/%d", id);
 		} catch (SecurityException ex) {
-			throw new OperationFailedException("Acceso denegado. No tiene privilegios para revocar permisos.", 403, ex);
+			throw new OperationFailedException(
+				"Acceso denegado. No tiene privilegios para revocar permisos.", 403, ex);
 		} catch (Exception ex) {
-			throw new OperationFailedException("Error inesperado al revocar privilegios de administrador.", 500, ex);
+			throw new OperationFailedException(
+				"Error inesperado al revocar privilegios de administrador.", 500, ex);
 		}
 	}
 }
@@ -210,9 +216,8 @@ Cada acción valida los permisos con PermissionsService:
 
 2. FLUJO DE EDICIÓN
 --------------------
-El formulario de edición usa el mismo endpoint /user/edit/{id}
-para GET (mostrar formulario) y POST (procesar datos).
-El servicio updateUser() garantiza la integridad de los campos sensibles.
+El formulario de edición usa updateUser() de UserService, que ignora campos
+sensibles (passwordHash, salt, isAdmin) para garantizar seguridad.
 
 3. CAMBIO DE CONTRASEÑA
 ------------------------
@@ -241,8 +246,7 @@ el manejador global (ErrorControllerAdvice).
 7. OBJETIVO PEDAGÓGICO
 ------------------------
 Este controlador enseña cómo:
- - Mantener coherencia en la jerarquía de rutas (/user/...).
- - Reutilizar un mismo endpoint para GET/POST de formularios.
+ - Separar la lógica de edición y privilegios.
  - Controlar permisos con precisión.
  - Mantener la integridad de la sesión y los datos.
  - Asignar códigos de error coherentes para depuración y trazabilidad.

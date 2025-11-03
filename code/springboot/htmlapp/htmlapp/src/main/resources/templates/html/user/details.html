@@ -1,0 +1,72 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+
+<!--
+===============================================================================
+PLANTILLA: details.html
+===============================================================================
+Propósito:
+-----------
+Muestra los datos personales de un usuario.
+El contenido visible y las acciones disponibles dependen de si:
+ - El usuario logado es el mismo (perfil propio).
+ - El usuario logado es administrador.
+
+Flujo:
+-------
+GET /user/details/{id} → muestra esta vista.
+
+===============================================================================
+-->
+
+<html th:replace="~{fragments/layout :: layout(
+	title='Datos personales',
+	content=~{::main}
+)}">
+
+<main>
+	<section class="text-center mb-2">
+		<h1 th:text="'Datos personales de ' + ${user.fullName}">Datos personales</h1>
+	</section>
+
+	<table class="user-details">
+		<tr>
+			<th>Correo electrónico</th>
+			<td th:text="${user.email}">correo@ejemplo.com</td>
+		</tr>
+		<tr>
+			<th>Nombre completo</th>
+			<td th:text="${user.fullName} ?: 'Sin nombre'">Sin nombre</td>
+		</tr>
+		<tr>
+			<th>Fecha de creación</th>
+			<td th:text="${#temporals.format(user.creationTimestamp, 'dd/MM/yyyy HH:mm')}">
+				01/01/2025 12:00
+			</td>
+		</tr>
+		<tr th:if="${loggedUser != null and loggedUser.isAdmin()}">
+			<th>Privilegios</th>
+			<td>
+				<span th:if="${user.isAdmin()}" class="text-success">Administrador</span>
+				<span th:unless="${user.isAdmin()}" class="text-muted">Usuario normal</span>
+			</td>
+		</tr>
+	</table>
+
+	<div class="text-center mt-4">
+		<!-- Botones disponibles -->
+		<a th:href="@{/user/edit/{id}(id=${user.id})}" class="btn">Modificar datos</a>
+		<a th:href="@{/user/change-password/{id}(id=${user.id})}" class="btn">Cambiar contraseña</a>
+		<a th:href="@{/user/delete/{id}(id=${user.id})}" class="btn btn-danger">Eliminar cuenta</a>
+
+		<!-- Solo admin viendo otro usuario -->
+		<div th:if="${loggedUser != null and loggedUser.isAdmin() and loggedUser.id != user.id}">
+			<a th:if="${!user.isAdmin()}"
+			   th:href="@{/user/make-admin/{id}(id=${user.id})}"
+			   class="btn btn-accent">Otorgar admin</a>
+			<a th:if="${user.isAdmin()}"
+			   th:href="@{/user/revoke-admin/{id}(id=${user.id})}"
+			   class="btn btn-secondary">Quitar admin</a>
+		</div>
+	</div>
+</main>
+</html>

@@ -1,53 +1,68 @@
-c<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!DOCTYPE html>
 <html th:replace="~{fragments/layout :: layout(
-	title='Página principal - HtmlApp',
-	content=~{::main}
+    title='Crear cuenta',
+    content=~{::main}
 )}">
 
 <!-- ============================================================
-PÁGINA PRINCIPAL (PRIVADA)
+FORMULARIO DE REGISTRO DE USUARIO
 ============================================================ -->
 <!--
-Página principal accesible solo para usuarios autenticados.
-Muestra un texto largo con efecto "parallax" para explicar su uso.
-Incluye la barra superior y el menú lateral (renderizados desde el layout).
+Esta plantilla muestra el formulario de alta de usuario.
+El formulario se envía a POST /register, gestionado por AuthController.
+Si el registro tiene éxito, el usuario se autentica automáticamente
+y es redirigido a /main.
+
+Si ocurre un error (email duplicado, contraseñas no coincidentes, etc.),
+el controlador vuelve a esta misma vista con un mensaje de error.
 -->
 
 <main>
-	<!-- Fondo Parallax -->
-	<div class="parallax" data-rellax-speed="-3"></div>
+  <section class="text-center">
+    <h1>Crear cuenta</h1>
+    <p>Completa el formulario para registrarte en HtmlApp.</p>
+  </section>
 
-	<section>
-		<h1 th:text="'Bienvenido, ' + ${loggedUser.fullName}">Bienvenido</h1>
+  <section>
+    <!-- Mensaje de error (si lo hay) -->
+    <div th:if="${errorMessage}" class="alert alert-danger mb-2"
+         th:text="${errorMessage}">
+      Ha ocurrido un error durante el registro.
+    </div>
 
-		<p>
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam viverra
-			vehicula erat, nec suscipit nisl egestas nec. Suspendisse potenti.
-			Integer non ligula eget turpis malesuada tincidunt. Pellentesque
-			habitant morbi tristique senectus et netus et malesuada fames ac turpis
-			egestas. Curabitur ac orci in sapien facilisis sagittis. Duis eu
-			laoreet urna, ut sollicitudin leo. Fusce id est nisi. Aenean quis dolor
-			eu est facilisis egestas at vel felis. Sed congue lorem eget justo
-			consequat, vel dignissim neque mattis.
-		</p>
+    <!-- Formulario de registro -->
+    <form th:action="@{/register}" method="post" th:object="${userForm}" novalidate>
+      <!-- Campo nombre completo -->
+      <label for="fullName">Nombre completo</label>
+      <input type="text" id="fullName" th:field="*{fullName}"
+             placeholder="Tu nombre completo" />
 
-		<p>
-			Vivamus tincidunt, justo in posuere laoreet, nunc erat tincidunt arcu,
-			eu dictum sapien turpis at ex. Praesent commodo elit at lacus blandit,
-			a dictum elit efficitur. Donec congue tortor nec tortor vehicula,
-			nec faucibus nisl placerat. Donec viverra laoreet bibendum. Nulla
-			convallis sem vel sapien pulvinar convallis. In id nisi at magna
-			malesuada porttitor non vitae erat.
-		</p>
+      <!-- Campo correo electrónico -->
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" th:field="*{email}"
+             placeholder="tu@correo.com" required />
 
-		<!-- Librería para efecto Parallax -->
-		<script src="https://unpkg.com/rellax@1.12.1/rellax.min.js"></script>
-		<script>
-			document.addEventListener("DOMContentLoaded", () => {
-				new Rellax('.parallax', { speed: -3 });
-			});
-		</script>
-	</section>
+      <!-- Campo contraseña -->
+      <label for="passwordPlain">Contraseña</label>
+      <input type="password" id="passwordPlain" name="passwordPlain"
+             placeholder="••••••••" required minlength="6" />
+
+      <!-- Campo repetir contraseña -->
+      <label for="passwordConfirm">Confirmar contraseña</label>
+      <input type="password" id="passwordConfirm" name="passwordConfirm"
+             placeholder="Repite la contraseña" required minlength="6" />
+
+      <input type="submit" value="Registrarse" class="btn mt-2" />
+    </form>
+
+    <!-- Enlace a inicio de sesión -->
+    <div class="text-center mt-2">
+      <p>¿Ya tienes cuenta?
+        <a th:href="@{/login}">Inicia sesión aquí</a>.
+      </p>
+    </div>
+  </section>
 </main>
 
 </html>

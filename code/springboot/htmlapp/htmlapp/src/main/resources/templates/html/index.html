@@ -1,30 +1,24 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!DOCTYPE html>
 <html th:replace="~{fragments/layout :: layout(
-	title='Inicio - HtmlApp',
-	content=~{::main}
+    title='Bienvenido a HtmlApp',
+    content=~{::main}
 )}">
 
 <!-- ============================================================
-PÁGINA INICIAL (PÚBLICA)
+PÁGINA DE INICIO (INDEX)
 ============================================================ -->
-<!--
-Esta página se muestra a los usuarios no autenticados.
-Permite elegir entre iniciar sesión o registrarse.
-
-Si el usuario ya está logado, el controlador redirige
-automáticamente a /main.
--->
 
 <main>
-	<section class="text-center">
-		<h1>Bienvenido a HtmlApp</h1>
-		<p>Accede o crea una cuenta para continuar.</p>
+  <section class="text-center">
+    <h1>Bienvenido a HtmlApp</h1>
+    <p>Tu aplicación de ejemplo con Spring Boot y Thymeleaf.</p>
 
-		<div class="mt-4">
-			<a class="btn" th:href="@{/login}">Iniciar sesión</a>
-			<a class="btn" th:href="@{/register}">Registrarse</a>
-		</div>
-	</section>
+    <div class="mt-4">
+      <a th:href="@{/login}" class="btn">Iniciar sesión</a>
+      <a th:href="@{/register}" class="btn">Registrarse</a>
+    </div>
+  </section>
 </main>
 
 </html>

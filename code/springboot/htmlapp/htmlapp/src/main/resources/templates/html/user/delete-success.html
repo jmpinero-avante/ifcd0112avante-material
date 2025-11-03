@@ -1,0 +1,18 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+
+<html th:replace="~{fragments/layout :: layout(
+	title='Cuenta eliminada',
+	content=~{::main}
+)}">
+
+<main class="text-center">
+	<section class="message-box">
+		<h1>Cuenta eliminada correctamente</h1>
+		<p>La cuenta ha sido borrada del sistema.</p>
+
+		<div class="mt-4">
+			<a th:href="@{/}" class="btn">Volver a la página principal</a>
+		</div>
+	</section>
+</main>
+</html>

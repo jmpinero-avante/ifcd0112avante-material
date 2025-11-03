@@ -1,0 +1,30 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+
+<html th:replace="~{fragments/layout :: layout(
+	title='Editar datos personales',
+	content=~{::main}
+)}">
+
+<main>
+	<section class="text-center mb-2">
+		<h1>Editar datos personales</h1>
+		<p>Modifica tu dirección de correo electrónico o tu nombre completo.</p>
+	</section>
+
+	<form th:action="@{/user/edit/{id}(id=${user.id})}" method="post">
+		<label for="email">Correo electrónico</label>
+		<input type="email" id="email" name="email" th:value="${user.email}" 
+		       required placeholder="correo@ejemplo.com" />
+
+		<label for="fullName">Nombre completo</label>
+		<input type="text" id="fullName" name="fullName" 
+		       th:value="${user.fullName}" placeholder="Tu nombre completo" />
+
+		<div class="text-center mt-2">
+			<button type="submit" class="btn">Guardar cambios</button>
+			<a th:href="@{/user/details/{id}(id=${user.id})}" 
+			   class="btn btn-secondary">Cancelar</a>
+		</div>
+	</form>
+</main>
+</html>

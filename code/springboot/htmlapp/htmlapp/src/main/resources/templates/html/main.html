@@ -1,90 +1,62 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!DOCTYPE html>
 <html th:replace="~{fragments/layout :: layout(
-	title='Página principal - HtmlApp',
-	content=~{::main}
+    title='Panel principal',
+    content=~{::main},
+    scripts=~{::scriptsBlock}
 )}">
 
 <!-- ============================================================
-PÁGINA PRINCIPAL (PRIVADA)
+PÁGINA PRINCIPAL TRAS EL LOGIN
 ============================================================ -->
 <!--
-Esta página es accesible únicamente para usuarios autenticados.
-
-Muestra un texto largo con un efecto Parallax, que se implementa
-mediante la librería externa Rellax.js y el script local
-parallax-init.js (ubicado en /static/js).
-
-La barra superior y el menú lateral se renderizan automáticamente
-desde el layout (fragments/layout.html) cuando hay sesión activa.
+Esta es la página principal que se muestra tras iniciar sesión.
+Incluye un fondo con efecto parallax, implementado con la librería
+Rellax.js (cargada desde un CDN para mayor simplicidad).
 -->
 
 <main>
-	<!-- ============================================================
-	FONDO PARALLAX
-	============================================================ -->
-	<!--
-	El elemento con clase "parallax" sirve de capa de fondo sobre la
-	cual se aplica el efecto de desplazamiento.
+  <section class="text-center">
+    <h1 th:text="'Hola, ' + ${session.userName} + '!'">Hola, usuario</h1>
+    <p>Bienvenido al panel principal de HtmlApp.</p>
 
-	El atributo `data-rellax-speed` define la velocidad del efecto.
-	Valores negativos hacen que el fondo se mueva más lentamente
-	que el contenido en primer plano (efecto de profundidad).
+    <div class="mt-4">
+      <a th:href="@{/user/details/{id}(id=${session.userId})}" class="btn">
+        Ver perfil
+      </a>
+      <a th:href="@{/logout}" class="btn">Cerrar sesión</a>
+    </div>
+  </section>
 
-	Ejemplo:
-	  data-rellax-speed="-3" → fondo se mueve lentamente.
-	  data-rellax-speed="5"  → fondo se mueve más rápido.
-	-->
-	<div class="parallax" data-rellax-speed="-3"></div>
-
-	<!-- ============================================================
-	CONTENIDO PRINCIPAL
-	============================================================ -->
-	<section>
-		<h1 th:text="'Bienvenido, ' + ${loggedUser.fullName}">Bienvenido</h1>
-
-		<p>
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam viverra
-			vehicula erat, nec suscipit nisl egestas nec. Suspendisse potenti.
-			Integer non ligula eget turpis malesuada tincidunt. Pellentesque
-			habitant morbi tristique senectus et netus et malesuada fames ac turpis
-			egestas. Curabitur ac orci in sapien facilisis sagittis. Duis eu
-			laoreet urna, ut sollicitudin leo. Fusce id est nisi. Aenean quis dolor
-			eu est facilisis egestas at vel felis. Sed congue lorem eget justo
-			consequat, vel dignissim neque mattis.
-		</p>
-
-		<p>
-			Vivamus tincidunt, justo in posuere laoreet, nunc erat tincidunt arcu,
-			eu dictum sapien turpis at ex. Praesent commodo elit at lacus blandit,
-			a dictum elit efficitur. Donec congue tortor nec tortor vehicula,
-			nec faucibus nisl placerat. Donec viverra laoreet bibendum. Nulla
-			convallis sem vel sapien pulvinar convallis. In id nisi at magna
-			malesuada porttitor non vitae erat.
-		</p>
-	</section>
-
-	<!-- ============================================================
-	SCRIPTS DE PARALLAX
-	============================================================ -->
-	<!--
-	1. Se carga la librería Rellax.js desde un CDN público.
-	   Esta librería lee los atributos `data-rellax-*` de cada
-	   elemento HTML y aplica el efecto Parallax automáticamente.
-
-	2. Se carga el script local `parallax-init.js`, ubicado en
-	   src/main/resources/static/js/parallax-init.js.
-
-	   Spring Boot sirve automáticamente todos los archivos dentro
-	   de /static como recursos públicos.
-	   Por tanto, el archivo estará disponible en la URL:
-	       http://localhost:8080/js/parallax-init.js
-
-	3. En este proyecto, la velocidad del efecto se define en el
-	   atributo `data-rellax-speed` del HTML, por lo que el script
-	   parallax-init.js solo inicializa la librería (sin pasar speed).
-	-->
-	<script src="https://unpkg.com/rellax@1.12.1/rellax.min.js"></script>
-	<script th:src="@{/js/parallax-init.js}"></script>
+  <!-- Fondo parallax decorativo -->
+  <div class="parallax" data-rellax-speed="-2"></div>
 </main>
+
+<!-- ============================================================
+SCRIPTS (agrupados en un bloque)
+============================================================ -->
+<th:block th:fragment="scriptsBlock">
+  <!-- Importar la librería Rellax desde un CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"
+          integrity="sha384-kt9hmQ8W07xRHwO2HqWgO8Rtm5s3OCg4EKpHqVG3R3vPt7A4lXCKK6v4xzLprV8P"
+          crossorigin="anonymous"></script>
+
+  <!-- Inicialización del efecto Parallax -->
+  <script th:inline="javascript">
+    /*
+     * Inicializa el efecto parallax con la librería Rellax.
+     * El atributo data-rellax-speed define la velocidad de desplazamiento.
+     * Un valor negativo provoca un movimiento más lento que el scroll normal.
+     *
+     * Ambas etiquetas <script> se agrupan dentro de este bloque
+     * y se inyectan al layout como un único fragmento.
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+      const rellax = new Rellax('.parallax', {
+        center: true
+      });
+    });
+  </script>
+</th:block>
 
 </html>

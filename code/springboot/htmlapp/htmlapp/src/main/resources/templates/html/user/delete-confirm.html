@@ -1,0 +1,42 @@
+<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: layout(
+    title='Confirmar eliminación',
+    content=~{::main},
+    scripts=~{::script}
+)}">
+
+<!-- ============================================================
+CONFIRMACIÓN DE ELIMINACIÓN DE USUARIO
+============================================================ -->
+
+<main>
+  <section class="text-center">
+    <h1>¿Seguro que deseas eliminar tu cuenta?</h1>
+    <p>Esta acción no se puede deshacer.</p>
+
+    <form th:action="@{/user/delete/{id}(id=${user.id})}" method="post">
+      <button type="submit" class="btn btn-danger">Eliminar cuenta</button>
+      <a th:href="@{/user/details/{id}(id=${user.id})}" class="btn">Cancelar</a>
+    </form>
+  </section>
+</main>
+
+<!-- ============================================================
+SCRIPTS
+============================================================ -->
+<script th:inline="javascript">
+  /*
+   * Confirma la eliminación antes de enviar el formulario.
+   * Se usa el evento submit para interceptar el envío y pedir confirmación.
+   */
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', event => {
+      const confirmed = confirm('¿Estás seguro de que deseas eliminar tu cuenta?');
+      if (!confirmed) event.preventDefault();
+    });
+  });
+</script>
+
+</html>
