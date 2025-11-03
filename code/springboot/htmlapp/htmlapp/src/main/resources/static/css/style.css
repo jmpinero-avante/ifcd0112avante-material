@@ -1,0 +1,286 @@
+/* ==========================================================================
+ESTILOS BÁSICOS DE LAYOUT – HTMLAPP (versión mínima sin responsive)
+========================================================================== */
+
+/* Variables simples */
+:root {
+  --color-bg: #f4f6f8;
+  --color-surface: #fff;
+  --color-header-bg: #0d1b2a;
+  --color-header-text: #e0e0e0;
+  --color-sidebar-bg: #f8f9fa;
+  --color-text: #222;
+  --color-accent: #0b5ed7;
+  --color-accent-hover: #094db6;
+  --color-success: #198754;
+  --color-error: #dc3545;
+  --border-radius: 10px;
+  --sidebar-width: 240px;
+  --topbar-height: 60px;
+  --font-family: system-ui, sans-serif;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base */
+body {
+  background-color: var(--color-bg);
+  font-family: var(--font-family);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+HEADER (TOPBAR)
+========================================================================== */
+header.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--topbar-height);
+  background-color: var(--color-header-bg);
+  color: var(--color-header-text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+}
+header .app-name {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+header .user {
+  font-weight: 600;
+}
+header .role-tag {
+  margin-left: 0.5rem;
+  color: #ffc107;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+SIDEBAR
+========================================================================== */
+.sidebar {
+  position: fixed;
+  top: var(--topbar-height);
+  left: 0;
+  width: var(--sidebar-width);
+  bottom: 0;
+  background-color: var(--color-sidebar-bg);
+  border-right: 1px solid #ddd;
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar ul {
+  list-style: none;
+}
+.sidebar li {
+  margin: 0.5rem 0;
+}
+.sidebar a {
+  display: block;
+  text-decoration: none;
+  color: var(--color-accent);
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+.sidebar a:hover {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+
+/* ==========================================================================
+MAIN CONTENT
+========================================================================== */
+main {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--topbar-height);
+  padding: 2rem;
+  flex: 1;
+}
+
+.info-box {
+  background-color: var(--color-surface);
+  padding: 1.5rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+  max-width: 1000px;
+}
+
+h1 {
+  color: var(--color-header-bg);
+  margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+TABLAS
+========================================================================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+th, td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+tr:hover {
+  background-color: #f1f3f5;
+}
+.table-actions {
+  text-align: right;
+}
+.icon-btn {
+  text-decoration: none;
+  margin-left: 0.5rem;
+  color: var(--color-accent);
+}
+.icon-btn:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ==========================================================================
+FORMULARIOS
+========================================================================== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 400px;
+}
+label {
+  font-weight: 600;
+}
+input, select {
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 100%;
+}
+input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(11, 94, 215, 0.2);
+}
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+.btn {
+  background-color: #e0e0e0;
+  color: #222;
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.btn-success {
+  background-color: var(--color-success);
+  color: #fff;
+}
+.btn-success:hover {
+  background-color: #146c43;
+}
+.btn-danger {
+  background-color: var(--color-error);
+  color: #fff;
+}
+.btn-danger:hover {
+  background-color: #b02a37;
+}
+
+/* ==========================================================================
+FOOTER
+========================================================================== */
+footer {
+  background-color: var(--color-header-bg);
+  color: var(--color-header-text);
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  margin-left: var(--sidebar-width);
+}
+
+/* ==========================================================================
+AJUSTE AUTOMÁTICO SIN SIDEBAR (login, register)
+========================================================================== */
+body:not(:has(.sidebar)) main,
+body:not(:has(.sidebar)) footer {
+  margin-left: 0;
+  margin-top: var(--topbar-height);
+}
+
+/* ==========================================================================
+PÁGINAS DE ERROR
+========================================================================== */
+
+body.error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  margin: 0;
+}
+
+.error-box {
+  background-color: var(--color-surface);
+  padding: 3rem 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  max-width: 500px;
+}
+
+.error-box h1 {
+  color: var(--color-error);
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.error-box p {
+  color: var(--color-text);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.error-box .error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+body.error-page footer {
+  margin-left: 0;
+  width: 100%;
+}
