@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.htmlapp.model.db.User;
 import com.example.htmlapp.model.db.UserRepository;
-import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +40,7 @@ import lombok.RequiredArgsConstructor;
  * a la base de datos: buscar, insertar, actualizar o borrar registros.
  *
  * El servicio añade la "lógica de negocio": validaciones, control de
- * errores, comprobaciones de permisos y operaciones más complejas que
+ * errores, comprobaciones de permisos, y operaciones más complejas que
  * combinan varias consultas o reglas de aplicación.
  */
 @Service
@@ -84,9 +83,8 @@ public class UserService {
 		try {
 			return userRepository.insert(user);
 		} catch (DataIntegrityViolationException ex) {
-			// 409 Conflict → registro duplicado
-			throw new OperationFailedException(
-				"Ya existe un usuario con ese correo electrónico.", 409
+			throw new IllegalArgumentException(
+				"Ya existe un usuario con ese correo electrónico."
 			);
 		}
 	}
@@ -103,10 +101,13 @@ public class UserService {
 	 */
 	@Transactional
 	public User updateUser(User user) {
-		User existing = userRepository.findById(user.getId())
-			.orElseThrow(() ->
-				new OperationFailedException("El usuario especificado no existe.", 404)
-			);
+		Integer id = user.getId();
+		if (id == null) {
+			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
+		}
+
+		User existing = userRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
 
 		// Conserva los valores originales de los campos sensibles
 		user.setIsAdmin(existing.isAdmin());
@@ -138,6 +139,13 @@ public class UserService {
 	 */
 	@Transactional
 	public void deleteUser(Integer id) {
+		if (id == null) {
+			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
+		}
+
+		userRepository.findById(id)
+			.orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+
 		userRepository.deleteById(id);
 	}
 
@@ -148,6 +156,10 @@ public class UserService {
 	 * @return Optional<User> con el usuario o vacío si no existe.
 	 */
 	public Optional<User> findById(Integer id) {
+		if (id == null) {
+			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
+		}
+
 		return userRepository.findById(id);
 	}
 
@@ -173,13 +185,17 @@ public class UserService {
 	 */
 	@Transactional
 	public User setAdminStatus(Integer id, boolean isAdmin) {
+		if (id == null) {
+			throw new IllegalArgumentException("El ID del usuario no puede ser nulo.");
+		}
+
 		User updatedUser = userRepository.findById(id)
 			.map(user -> {
 				user.setIsAdmin(isAdmin);
 				return userRepository.save(user);
 			})
 			.orElseThrow(() ->
-				new OperationFailedException("El usuario no existe.", 404)
+				new IllegalArgumentException("El usuario no existe.")
 			);
 
 		return updatedUser;
@@ -218,6 +234,7 @@ public class UserService {
  * ----------------------------------------------------------------------------
  * SOBRE EL CONTROL DE CAMPOS SENSIBLES EN UPDATE
  * ----------------------------------------------------------------------------
+ *
  * El método updateUser no permite modificar los campos:
  *   - isAdmin       → privilegios del usuario.
  *   - salt          → semilla criptográfica usada para el hash.
@@ -228,6 +245,12 @@ public class UserService {
  * usuario malintencionado manipule el formulario para escalar sus
  * privilegios o alterar su contraseña sin pasar por los métodos
  * adecuados (como changePassword o setAdminStatus).
+ *
+ * ----------------------------------------------------------------------------
+ * SOBRE EL USO DE @RequiredArgsConstructor
+ * ----------------------------------------------------------------------------
+ * @RequiredArgsConstructor (de Lombok) genera automáticamente un constructor
+ * con todos los campos declarados como final o anotados con @NonNull.
  *
  * ----------------------------------------------------------------------------
  * SOBRE Optional, map(), orElseThrow(), orElse(), orElseGet()
@@ -249,4 +272,9 @@ public class UserService {
  *       .passwordHash("...")
  *       .isAdmin(false)
  *       .build();
+ *
+ * Ventajas:
+ *  - Legibilidad y reducción de errores.
+ *  - Objetos más seguros e inmutables.
+ *  - Facilita mantener un diseño limpio.
  */

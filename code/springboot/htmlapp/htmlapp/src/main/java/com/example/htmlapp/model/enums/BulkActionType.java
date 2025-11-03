@@ -3,24 +3,75 @@
 package com.example.htmlapp.model.enums;
 
 /**
- * Enumerado que define las acciones masivas disponibles
- * en la administración de usuarios.
+ * Enumerado que define los tipos de operaciones masivas
+ * que se pueden realizar sobre varios usuarios a la vez.
  *
- * Sustituye las cadenas literales ("grant", "revoke", "delete")
- * para hacer el código más seguro, claro y mantenible.
+ * Estas acciones se reciben desde los formularios de la vista
+ * de administración (userlist/list.html) y se procesan en el
+ * controlador UserListController.
  *
- * Spring convierte automáticamente los valores de la URL o
- * formularios en instancias de este enum, por ejemplo:
+ * ----------------------------------------------------------------------------
+ * OPCIONES DISPONIBLES
+ * ----------------------------------------------------------------------------
+ * - GRANT  → Otorgar privilegios de administrador.
+ * - REVOKE → Revocar privilegios de administrador.
+ * - DELETE → Eliminar los usuarios seleccionados.
  *
- *   action=GRANT_ADMIN   → BulkActionType.GRANT_ADMIN
- *   action=grant_admin   → BulkActionType.GRANT_ADMIN
+ * ----------------------------------------------------------------------------
+ * SOBRE LA CONVERSIÓN AUTOMÁTICA DE ENUMS
+ * ----------------------------------------------------------------------------
+ * Spring MVC convierte automáticamente los parámetros de texto
+ * recibidos en peticiones (GET o POST) a sus valores de enum
+ * correspondientes, siempre que los nombres coincidan.
  *
- * Si el valor no coincide con ningún miembro, Spring lanza una
- * MethodArgumentTypeMismatchException antes de ejecutar el método,
- * que será gestionada por ErrorControllerAdvice (error 400).
+ * Ejemplo:
+ *   POST /admin/users/bulk?action=GRANT
+ *
+ * En este caso, el parámetro "action" se convierte en
+ * BulkActionType.GRANT sin necesidad de código adicional.
+ *
+ * Si el valor recibido no coincide con ningún literal del enum,
+ * Spring lanza una excepción de tipo
+ * MethodArgumentTypeMismatchException, que es gestionada
+ * globalmente por el controlador de errores (ErrorControllerAdvice)
+ * para mostrar una página 400 Bad Request.
  */
 public enum BulkActionType {
-	GRANT_ADMIN,
-	REVOKE_ADMIN,
-	DELETE_USERS
+
+	/** Otorga privilegios de administrador a los usuarios seleccionados. */
+	GRANT,
+
+	/** Revoca los privilegios de administrador. */
+	REVOKE,
+
+	/** Elimina definitivamente los usuarios seleccionados. */
+	DELETE
 }
+
+/*
+ * ----------------------------------------------------------------------------
+ * NOTA PEDAGÓGICA
+ * ----------------------------------------------------------------------------
+ * Este enumerado permite sustituir cadenas literales ("grant", "revoke",
+ * "delete") por valores tipados, mejorando la legibilidad y reduciendo
+ * errores en tiempo de ejecución.
+ *
+ * Usar enums en lugar de strings facilita:
+ *  - Validación automática de parámetros en Spring.
+ *  - Autocompletado en IDEs.
+ *  - Mantenimiento más seguro y coherente.
+ *
+ * ----------------------------------------------------------------------------
+ * USO EN FORMULARIOS HTML (EJEMPLO)
+ * ----------------------------------------------------------------------------
+ * <form th:action="@{/admin/users/bulk}" method="post">
+ *   <input type="hidden" name="ids" th:value="${user.id}" />
+ *
+ *   <button type="submit" name="action" value="GRANT">Dar admin</button>
+ *   <button type="submit" name="action" value="REVOKE">Quitar admin</button>
+ *   <button type="submit" name="action" value="DELETE">Eliminar</button>
+ * </form>
+ *
+ * Cuando el formulario se envía, Spring convierte automáticamente
+ * el parámetro "action" a la constante BulkActionType correspondiente.
+ */

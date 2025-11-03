@@ -48,10 +48,7 @@ public class UserListService {
 	/**
 	 * Devuelve una lista de todos los usuarios, con orden dinámico.
 	 *
-	 * El usuario logado (si es admin) también se devuelve en el listado.
-	 * En caso de que se quiera excluir, puede filtrarse en el controlador.
-	 *
-	 * @param orderBy   Campo por el que ordenar (EMAIL, FULL_NAME o null).
+	 * @param orderBy   Campo por el que ordenar (EMAIL, FULL_NAME o CREATION_DATETIME).
 	 * @param direction Dirección del orden (ASC o DESC).
 	 * @return Lista ordenada de usuarios.
 	 * @throws SecurityException si el usuario actual no tiene privilegios de administrador.
@@ -70,10 +67,8 @@ public class UserListService {
 		 * bloque 'default', que ordena por la fecha de creación (creationTimestamp).
 		 */
 		Comparator<User> comparator = switch (orderBy) {
-			case EMAIL -> Comparator.comparing(User::getEmail,
-				String.CASE_INSENSITIVE_ORDER);
-			case FULL_NAME -> Comparator.comparing(User::getFullName,
-				String.CASE_INSENSITIVE_ORDER);
+			case EMAIL -> Comparator.comparing(User::getEmail, String.CASE_INSENSITIVE_ORDER);
+			case FULL_NAME -> Comparator.comparing(User::getFullName, String.CASE_INSENSITIVE_ORDER);
 			default -> Comparator.comparing(User::getCreationTimestamp);
 		};
 
@@ -86,14 +81,68 @@ public class UserListService {
 		return users.stream().sorted(comparator).collect(Collectors.toList());
 	}
 
+	// =========================================================================
+	// MÉTODOS AUXILIARES DE FILTRADO
+	// =========================================================================
+
+	/**
+	 * Filtra una lista de IDs para eliminar el del usuario logado actual.
+	 *
+	 * Si tras el filtrado no queda ningún ID válido, lanza una excepción.
+	 *
+	 * @param ids Lista original de IDs recibida en la operación bulk.
+	 * @return Lista de IDs válidos tras excluir al usuario actual.
+	 * @throws SecurityException         si el usuario actual no tiene permisos.
+	 * @throws OperationFailedException  si la lista queda vacía tras el filtrado.
+	 */
+	public List<Integer> getFilteredUserIds(List<Integer> ids)
+		throws SecurityException, OperationFailedException {
+
+		User admin = permissionsService.checkAdminPermission();
+		Integer currentUserId = admin.getId();
+
+		List<Integer> filteredIds = ids.stream()
+			.filter(id -> id != null && !id.equals(currentUserId))
+			.collect(Collectors.toList());
+
+		if (filteredIds.isEmpty()) {
+			throw new OperationFailedException(
+				"No hay usuarios válidos para procesar la operación. " +
+				"El usuario actual no puede modificarse ni eliminarse a sí mismo.", 400);
+		}
+
+		return filteredIds;
+	}
+
+	/**
+	 * Recupera una lista de usuarios a partir de una lista de IDs, excluyendo
+	 * siempre al usuario logado actual.
+	 *
+	 * Este método combina la lógica de filtrado con la consulta a base de datos.
+	 *
+	 * @param ids Lista original de IDs.
+	 * @return Lista de entidades User válidas.
+	 * @throws SecurityException         si el usuario actual no tiene permisos.
+	 * @throws OperationFailedException  si no queda ningún usuario válido tras el filtrado.
+	 */
+	public List<User> listFilteredUsers(List<Integer> ids)
+		throws SecurityException, OperationFailedException {
+
+		List<Integer> validIds = getFilteredUserIds(ids);
+		return userRepository.findAllByIdIn(validIds);
+	}
+
+	// =========================================================================
+	// OPERACIONES MASIVAS
+	// =========================================================================
+
 	/**
 	 * Cambia el estado de administrador de una lista de usuarios.
 	 *
-	 * Ignora al usuario actualmente logado para evitar que se
-	 * elimine o modifique a sí mismo.
+	 * Utiliza la operación bulk del repositorio para mejorar el rendimiento,
+	 * ejecutando una sola sentencia SQL:
 	 *
-	 * Si, tras excluir al usuario actual, no queda ningún ID válido
-	 * en la lista, se lanza una OperationFailedException (HTTP 422).
+	 *   UPDATE users SET is_admin = ? WHERE id IN (...)
 	 *
 	 * @param ids     Lista de IDs de usuario.
 	 * @param isAdmin Nuevo valor para el campo isAdmin.
@@ -105,65 +154,28 @@ public class UserListService {
 		throws SecurityException, OperationFailedException {
 
 		List<Integer> targetIds = getFilteredUserIds(ids);
-
-		targetIds.forEach(id -> userRepository.findById(id).ifPresent(user -> {
-			user.setIsAdmin(isAdmin);
-			userRepository.save(user);
-		}));
+		userRepository.updateAdminStatusBulk(targetIds, isAdmin);
 	}
 
 	/**
-	 * Borra una lista de usuarios.
+	 * Borra una lista de usuarios en una única operación SQL.
 	 *
-	 * Este método no permite borrar al usuario logado.
+	 * Usa el método personalizado del repositorio:
 	 *
-	 * Si, tras excluir al usuario actual, no queda ningún ID válido
-	 * en la lista, se lanza una OperationFailedException (HTTP 422).
+	 *   DELETE FROM users WHERE id IN (...)
+	 *
+	 * Esto evita múltiples llamadas a deleteById() y mejora la eficiencia.
 	 *
 	 * @param ids Lista de IDs de usuario a eliminar.
 	 * @throws SecurityException         si el usuario no tiene permisos de administrador.
-	 * @throws OperationFailedException  si no hay usuarios válidos para borrar.
+	 * @throws OperationFailedException  si no hay usuarios válidos para eliminar.
 	 */
 	@Transactional
 	public void deleteUsersBulk(List<Integer> ids)
 		throws SecurityException, OperationFailedException {
 
 		List<Integer> targetIds = getFilteredUserIds(ids);
-
-		targetIds.forEach(userRepository::deleteById);
-	}
-
-	/**
-	 * Método auxiliar que filtra la lista de IDs recibida,
-	 * excluyendo siempre al usuario logado (para impedir que se
-	 * modifique o borre a sí mismo).
-	 *
-	 * Si tras el filtrado no queda ningún ID válido, lanza una excepción.
-	 *
-	 * @param ids Lista original de IDs recibida en la operación bulk.
-	 * @return Lista de IDs válidos tras excluir al usuario actual.
-	 * @throws SecurityException         si el usuario actual no tiene permisos.
-	 * @throws OperationFailedException  si la lista queda vacía tras el filtrado.
-	 */
-	private List<Integer> getFilteredUserIds(List<Integer> ids)
-		throws SecurityException, OperationFailedException {
-
-		User admin = permissionsService.checkAdminPermission();
-		Integer currentUserId = admin.getId();
-
-		List<Integer> filteredIds = ids.stream()
-			.filter(id -> !id.equals(currentUserId))
-			.collect(Collectors.toList());
-
-		if (filteredIds.isEmpty()) {
-			// 422 Unprocessable Entity → sin usuarios válidos tras el filtrado
-			throw new OperationFailedException(
-				"No hay usuarios válidos para procesar la operación. "
-				+ "El usuario actual no puede modificarse ni eliminarse a sí mismo.", 422
-			);
-		}
-
-		return filteredIds;
+		userRepository.deleteAllByIds(targetIds);
 	}
 }
 
@@ -185,25 +197,31 @@ public class UserListService {
  * Esto simplifica la lógica y evita bucles explícitos.
  *
  * ----------------------------------------------------------------------------
- * SOBRE LA SEGURIDAD
+ * SOBRE LA SEGURIDAD Y LAS EXCEPCIONES
  * ----------------------------------------------------------------------------
  * Cada método invoca permissionsService.checkAdminPermission() al principio.
  * Si el usuario no tiene privilegios de administrador, se lanza una
- * SecurityException que puede ser capturada por el controlador para
- * mostrar una página de error 403 (Forbidden).
+ * SecurityException que será gestionada por ErrorControllerAdvice.
  *
  * Además, se excluye siempre al usuario logado de las operaciones en bloque.
  * Si no queda ningún usuario tras esa exclusión, se lanza una excepción
- * OperationFailedException con código 422 (Unprocessable Entity),
- * que indica que la solicitud era válida pero no se puede ejecutar
- * en el contexto actual (por ejemplo, intentar borrarse a sí mismo).
+ * OperationFailedException con código 400 para notificarlo explícitamente.
  *
  * ----------------------------------------------------------------------------
- * SOBRE LA GESTIÓN DE EXCEPCIONES PERSONALIZADAS
+ * SOBRE EL USO DE OPERACIONES BULK EN REPOSITORIOS
  * ----------------------------------------------------------------------------
- * Las OperationFailedException se muestran en la vista
- * error/operation-error.html con un código y un mensaje claros.
+ * Los métodos deleteAllByIds() y updateAdminStatusBulk() ejecutan consultas
+ * JPQL masivas a través del repositorio, lo que:
+ *   - Reduce el número de consultas a la base de datos.
+ *   - Mejora el rendimiento en operaciones sobre grandes volúmenes de datos.
+ *   - Mantiene el servicio centrado en la lógica de negocio y permisos.
  *
- * Esto permite distinguir los errores de negocio (422, 409, etc.)
- * de los errores técnicos o de servidor (500).
+ * ----------------------------------------------------------------------------
+ * OBJETIVO PEDAGÓGICO
+ * ----------------------------------------------------------------------------
+ * Este servicio ejemplifica cómo:
+ *  - Separar responsabilidades entre capas (negocio ↔ persistencia).
+ *  - Controlar permisos y validar datos antes de acceder al repositorio.
+ *  - Usar operaciones bulk con Spring Data JPA de forma segura.
+ *  - Gestionar errores de forma coherente con la capa de presentación.
  */

@@ -8,36 +8,41 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.htmlapp.model.db.User;
+import com.example.htmlapp.model.enums.BulkActionType;
 import com.example.htmlapp.model.enums.SortDirection;
 import com.example.htmlapp.model.enums.UserOrderField;
-import com.example.htmlapp.model.enums.BulkActionType;
 import com.example.htmlapp.model.logic.UserListService;
 import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 
 import lombok.RequiredArgsConstructor;
 
 /**
- * Controlador encargado de la página de administración de usuarios.
+ * Controlador encargado de la administración y gestión de listas de usuarios.
  *
- * Gestiona el listado, la ordenación y las operaciones en bloque
- * (otorgar/quitar privilegios o borrar usuarios).
- *
- * ----------------------------------------------------------------------------
- * SOBRE EL USO DE @Controller
- * ----------------------------------------------------------------------------
- * Indica que esta clase forma parte de la capa de presentación (MVC).
- * Retorna nombres de vistas (plantillas HTML Thymeleaf) en lugar de datos JSON.
+ * Permite listar, ordenar y realizar operaciones masivas (otorgar o revocar
+ * privilegios de administrador, o eliminar usuarios).
  *
  * ----------------------------------------------------------------------------
- * SOBRE LA INYECCIÓN DE DEPENDENCIAS
+ * SOBRE LA ESTRUCTURA DE RUTAS
  * ----------------------------------------------------------------------------
- * @RequiredArgsConstructor (de Lombok) genera un constructor con los campos
- * marcados como final, lo que permite inyectar automáticamente el servicio.
+ * Este controlador responde bajo el prefijo común /userlist:
+ *
+ * - GET  /userlist/list          → listado de usuarios
+ * - POST /userlist/bulk-confirm  → pantalla de confirmación de acción masiva
+ * - POST /userlist/bulk-success  → ejecución final de la acción
+ *
+ * ----------------------------------------------------------------------------
+ * SOBRE LA SEPARACIÓN DE RESPONSABILIDADES
+ * ----------------------------------------------------------------------------
+ * - UserListService contiene la lógica de negocio y seguridad.
+ * - Este controlador solo gestiona el flujo de vistas y parámetros.
  */
 @Controller
+@RequestMapping("/userlist")
 @RequiredArgsConstructor
 public class UserListController {
 
@@ -51,17 +56,15 @@ public class UserListController {
 	 * Muestra la página de listado de usuarios.
 	 *
 	 * Acepta parámetros opcionales de ordenación y dirección.
-	 * Si no se indican, el listado se ordena por fecha de creación descendente.
+	 * Si no se indican, se aplican los valores por defecto:
+	 * orden por fecha de creación descendente.
 	 *
 	 * @param orderBy   Campo por el que ordenar (EMAIL, FULL_NAME...).
 	 * @param direction Dirección del orden (ASC o DESC).
 	 * @param model     Modelo de datos para la vista Thymeleaf.
-	 * @return Nombre de la plantilla HTML a renderizar.
-	 *
-	 * @throws org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
-	 *         Si los parámetros de la URL no coinciden con los valores del enum.
+	 * @return Plantilla de listado (list.html).
 	 */
-	@GetMapping("/admin/users")
+	@GetMapping("/list")
 	public String listUsers(
 		@RequestParam(name = "orderBy", required = false) UserOrderField orderBy,
 		@RequestParam(name = "direction", required = false) SortDirection direction,
@@ -79,88 +82,130 @@ public class UserListController {
 			model.addAttribute("direction",
 				direction != null ? direction : SortDirection.DESC);
 
-			return "html/admin/user-list";
+			return "html/userlist/list";
 
 		} catch (SecurityException ex) {
-			model.addAttribute("errorMessage", ex.getMessage());
-			return "error/403";
+			throw new OperationFailedException(
+				"No tiene permisos para acceder a esta página.", 403, ex);
 		}
 	}
 
 	// -------------------------------------------------------------------------
-	// OPERACIONES EN BLOQUE
+	// CONFIRMACIÓN DE ACCIÓN MASIVA
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Procesa una operación en bloque (otorgar admin, quitar admin o borrar).
+	 * Muestra una vista de confirmación antes de ejecutar una operación masiva.
 	 *
-	 * @param action Tipo de acción masiva (GRANT_ADMIN, REVOKE_ADMIN o DELETE_USERS).
-	 * @param ids    Lista de IDs seleccionados en el formulario.
-	 * @param model  Modelo de datos para la vista de confirmación o error.
-	 * @return Redirección o plantilla según el resultado.
+	 * Se usa cuando el administrador selecciona varios usuarios y escoge una
+	 * acción (otorgar, revocar o eliminar).
 	 *
-	 * ----------------------------------------------------------------------------
-	 * CONVERSIÓN AUTOMÁTICA DE ENUMS
-	 * ----------------------------------------------------------------------------
-	 * Spring convierte el parámetro "action" recibido (por GET o POST)
-	 * en un valor de BulkActionType automáticamente.
-	 *
-	 * Si el valor no coincide con ninguno de los definidos en el enum,
-	 * lanzará MethodArgumentTypeMismatchException antes de ejecutar el método,
-	 * que será gestionada por ErrorControllerAdvice → plantilla error/400.html.
+	 * @param action Tipo de acción (GRANT, REVOKE, DELETE).
+	 * @param ids    Lista de IDs de usuarios seleccionados.
+	 * @param model  Modelo para la vista de confirmación.
+	 * @return Plantilla de confirmación (bulk-confirm.html).
 	 */
-	@PostMapping("/admin/users/bulk")
-	public String bulkAction(
+	@PostMapping("/bulk-confirm")
+	public String confirmBulkAction(
+		@RequestParam("action") BulkActionType action,
+		@RequestParam("ids") List<Integer> ids,
+		Model model
+	) {
+		try {
+			List<User> users = userListService.listFilteredUsers(ids);
+			String idsString = String.join(",", ids.stream()
+				.map(String::valueOf)
+				.toList());
+
+			model.addAttribute("action", action);
+			model.addAttribute("users", users);
+			model.addAttribute("count", users.size());
+			model.addAttribute("idsString", idsString);
+
+			return "html/userlist/bulk-confirm";
+
+		} catch (IllegalArgumentException ex) {
+			throw new OperationFailedException("Error en la selección de usuarios.", 400, ex);
+		} catch (SecurityException ex) {
+			throw new OperationFailedException("No tiene permisos para realizar esta acción.", 403, ex);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// EJECUCIÓN DE ACCIÓN MASIVA
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Ejecuta la operación masiva (otorgar, revocar o borrar) y muestra resultado.
+	 *
+	 * @param action Tipo de acción.
+	 * @param ids    Lista de IDs a modificar.
+	 * @param model  Modelo de la vista.
+	 * @return Plantilla de éxito (bulk-success.html).
+	 */
+	@PostMapping("/bulk-success")
+	public String processBulkAction(
 		@RequestParam("action") BulkActionType action,
 		@RequestParam("ids") List<Integer> ids,
 		Model model
 	) {
 		try {
 			switch (action) {
-				case GRANT_ADMIN -> userListService.setAdminStatusBulk(ids, true);
-				case REVOKE_ADMIN -> userListService.setAdminStatusBulk(ids, false);
-				case DELETE_USERS -> userListService.deleteUsersBulk(ids);
+				case GRANT -> userListService.setAdminStatusBulk(ids, true);
+				case REVOKE -> userListService.setAdminStatusBulk(ids, false);
+				case DELETE -> userListService.deleteUsersBulk(ids);
+				default -> throw new IllegalArgumentException("Acción no válida.");
 			}
 
-			model.addAttribute("message", "Operación realizada correctamente.");
-			return "html/admin/user-bulk-success";
+			model.addAttribute("action", action);
+			return "html/userlist/bulk-success";
 
-		} catch (OperationFailedException ex) {
-			model.addAttribute("errorMessage", ex.getMessage());
-			return "error/operation-error";
-
+		} catch (IllegalArgumentException ex) {
+			throw new OperationFailedException("Error al procesar la operación.", 400, ex);
 		} catch (SecurityException ex) {
-			model.addAttribute("errorMessage", ex.getMessage());
-			return "error/403";
+			throw new OperationFailedException("No tiene permisos para realizar esta acción.", 403, ex);
+		} catch (Exception ex) {
+			throw new OperationFailedException("Error inesperado al ejecutar la operación.", 500, ex);
 		}
 	}
 }
 
 /*
- * ----------------------------------------------------------------------------
- * SOBRE LA CONVERSIÓN AUTOMÁTICA DE ENUMS EN SPRING MVC
- * ----------------------------------------------------------------------------
- * Spring convierte automáticamente los parámetros String de la URL en valores
- * de enumerados (enums) siempre que los nombres coincidan.
- *
- * Ejemplo:
- *   /admin/users?orderBy=EMAIL&direction=ASC
- *
- * Si el valor no coincide con ningún miembro del enum, Spring lanza una
- * MethodArgumentTypeMismatchException antes de ejecutar el método.
- *
- * Esta excepción puede manejarse globalmente mediante un controlador de
- * excepciones anotado con @ControllerAdvice para mostrar una página de error
- * personalizada (por ejemplo, 400 Bad Request o una plantilla Thymeleaf).
- *
- * ----------------------------------------------------------------------------
- * SOBRE EL USO DE ENUMS PARA ACCIONES MASIVAS
- * ----------------------------------------------------------------------------
- * Usar el enum BulkActionType mejora la seguridad y legibilidad:
- *   - Evita errores por cadenas mal escritas.
- *   - Centraliza las operaciones válidas.
- *   - Permite autocompletado y validación en tiempo de compilación.
- *
- * Además, mantiene el código alineado con la filosofía de Spring Boot:
- * validación declarativa y conversión de tipos automática.
- */
+===============================================================================
+NOTAS PEDAGÓGICAS
+===============================================================================
+1. CONVERSIÓN AUTOMÁTICA DE ENUMS
+---------------------------------
+Spring convierte automáticamente los parámetros String de la URL o formulario
+en valores de enumerados (UserOrderField, SortDirection, BulkActionType),
+siempre que los nombres coincidan.
+
+Si el valor no coincide con ningún miembro del enum, Spring lanza una
+MethodArgumentTypeMismatchException antes de ejecutar el método, que es
+manejada por el controlador de errores global (ErrorControllerAdvice).
+
+2. FLUJO DE ACCIONES MASIVAS
+-----------------------------
+- /list muestra el listado principal.
+- /bulk-confirm pide confirmación al administrador antes de actuar.
+- /bulk-success ejecuta la acción y muestra una confirmación.
+
+3. EXCEPCIONES
+---------------
+Se usa OperationFailedException para centralizar el manejo de errores:
+ - 400 → errores de validación o selección incorrecta.
+ - 403 → falta de permisos.
+ - 500 → errores internos o inesperados.
+
+El manejador global (ErrorControllerAdvice) decide qué plantilla mostrar
+según el código de error asociado.
+
+4. OBJETIVO PEDAGÓGICO
+------------------------
+Este controlador enseña cómo:
+ - Estructurar rutas jerárquicas coherentes.
+ - Usar enumerados en formularios y parámetros.
+ - Separar vistas de confirmación y ejecución real.
+ - Controlar errores y permisos de manera centralizada.
+===============================================================================
+*/
