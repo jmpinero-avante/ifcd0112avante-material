@@ -19,11 +19,11 @@ import lombok.RequiredArgsConstructor;
  * Controlador que gestiona las operaciones sobre un único usuario.
  *
  * Incluye:
- *  - Visualización de datos personales.
- *  - Edición y actualización de datos.
- *  - Cambio de contraseña.
- *  - Eliminación de cuenta (con confirmación).
- *  - Asignación o revocación de privilegios de administrador.
+ * - Visualización de datos personales.
+ * - Edición y actualización de datos.
+ * - Cambio de contraseña.
+ * - Eliminación de cuenta (con confirmación).
+ * - Asignación o revocación de privilegios de administrador.
  *
  * ----------------------------------------------------------------------------
  * SOBRE LA RESPONSABILIDAD
@@ -47,6 +47,11 @@ public class UserController {
 
 	@GetMapping("/details/{id}")
 	public String showUserDetails(@PathVariable Integer id, Model model) {
+		// Comprobación explícita de sesión (redundante, pero pedagógica)
+		if (!authService.isLogged()) {
+			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		}
+
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		model.addAttribute("loggedUser", authService.getLoggedUser().orElse(null));
@@ -59,6 +64,10 @@ public class UserController {
 
 	@GetMapping("/edit/{id}")
 	public String showEditForm(@PathVariable Integer id, Model model) {
+		if (!authService.isLogged()) {
+			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		}
+
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		model.addAttribute("loggedUser", authService.getLoggedUser().orElse(null));
@@ -68,9 +77,9 @@ public class UserController {
 	@PostMapping("/edit/{id}")
 	@Transactional
 	public String processEditForm(@PathVariable Integer id,
-	                              @RequestParam String email,
-	                              @RequestParam(required = false) String fullName,
-	                              Model model) {
+			@RequestParam String email,
+			@RequestParam(required = false) String fullName,
+			Model model) {
 
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 
@@ -83,10 +92,10 @@ public class UserController {
 
 		} catch (IllegalArgumentException ex) {
 			throw new OperationFailedException(
-				"Error al actualizar los datos del usuario.", 400, ex);
+					"Error al actualizar los datos del usuario.", 400, ex);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-				"Error inesperado al procesar la actualización.", 500, ex);
+					"Error inesperado al procesar la actualización.", 500, ex);
 		}
 	}
 
@@ -96,6 +105,10 @@ public class UserController {
 
 	@GetMapping("/change-password/{id}")
 	public String showChangePasswordForm(@PathVariable Integer id, Model model) {
+		if (!authService.isLogged()) {
+			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		}
+
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		return "html/user/change-password";
@@ -104,10 +117,10 @@ public class UserController {
 	@PostMapping("/change-password/{id}")
 	@Transactional
 	public String processChangePassword(@PathVariable Integer id,
-	                                    @RequestParam String currentPassword,
-	                                    @RequestParam String newPassword,
-	                                    @RequestParam String confirmPassword,
-	                                    Model model) {
+			@RequestParam String currentPassword,
+			@RequestParam String newPassword,
+			@RequestParam String confirmPassword,
+			Model model) {
 
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 
@@ -116,12 +129,12 @@ public class UserController {
 		}
 
 		boolean isSelfChange = authService.getLoggedUser()
-			.map(u -> u.getId().equals(id))
-			.orElse(false);
+				.map(u -> u.getId().equals(id))
+				.orElse(false);
 
 		if (isSelfChange && !authService.verifyPassword(id, currentPassword)) {
 			throw new OperationFailedException(
-				"La contraseña actual no es válida.", 403);
+					"La contraseña actual no es válida.", 403);
 		}
 
 		try {
@@ -130,7 +143,7 @@ public class UserController {
 
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-				"Error al cambiar la contraseña.", 500, ex);
+					"Error al cambiar la contraseña.", 500, ex);
 		}
 	}
 
@@ -140,45 +153,42 @@ public class UserController {
 
 	@GetMapping("/delete/{id}")
 	public String showDeleteConfirmation(@PathVariable Integer id, Model model) {
+		if (!authService.isLogged()) {
+			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		}
+
 		User target = permissionsService.checkAdminOrLoggedUserPermission(id);
 		model.addAttribute("user", target);
 		return "html/user/delete-confirm";
 	}
 
-@PostMapping("/delete/{id}")
-@Transactional
-public String processDelete(@PathVariable Integer id, Model model) {
-	try {
-		userService.deleteUser(id);
+	@PostMapping("/delete/{id}")
+	@Transactional
+	public String processDelete(@PathVariable Integer id, Model model) {
+		try {
+			userService.deleteUser(id);
 
-		// Si el usuario se elimina a sí mismo, cerrar sesión y redirigir
-		// directamente a la página principal con ?logout,
-		// lo que activará el fragmento logout-message.html.
-		authService.getLoggedUser().ifPresent(logged -> {
-			if (logged.getId().equals(id)) {
-				authService.logout();
+			authService.getLoggedUser().ifPresent(logged -> {
+				if (logged.getId().equals(id)) {
+					authService.logout();
+				}
+			});
+
+			if (authService.getLoggedUser().isEmpty()) {
+				return "redirect:/?logout";
 			}
-		});
 
-		// Si el usuario eliminado era el logado, ya se cerró la sesión arriba.
-		// En ese caso, devolvemos la redirección inmediatamente.
-		if (authService.getLoggedUser().isEmpty()) {
-			return "redirect:/?logout";
+			return "html/user/delete-success";
+
+		} catch (SecurityException ex) {
+			throw new OperationFailedException(
+					"No tiene permisos para eliminar este usuario.", 403, ex);
+
+		} catch (Exception ex) {
+			throw new OperationFailedException(
+					"Error inesperado al eliminar el usuario.", 500, ex);
 		}
-
-		// Si el usuario eliminado NO es el logado, mostrar la página de éxito.
-		model.addAttribute("message", "La cuenta ha sido eliminada correctamente.");
-		return "html/user/delete-success";
-
-	} catch (SecurityException ex) {
-		throw new OperationFailedException(
-			"No tiene permisos para eliminar este usuario.", 403, ex);
-
-	} catch (Exception ex) {
-		throw new OperationFailedException(
-			"Error inesperado al eliminar el usuario.", 500, ex);
 	}
-}
 
 	// -------------------------------------------------------------------------
 	// GESTIÓN DE PRIVILEGIOS ADMINISTRATIVOS
@@ -192,10 +202,10 @@ public String processDelete(@PathVariable Integer id, Model model) {
 			return String.format("redirect:/user/details/%d", id);
 		} catch (SecurityException ex) {
 			throw new OperationFailedException(
-				"Acceso denegado. No tiene privilegios para otorgar permisos.", 403, ex);
+					"Acceso denegado. No tiene privilegios para otorgar permisos.", 403, ex);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-				"Error inesperado al asignar privilegios de administrador.", 500, ex);
+					"Error inesperado al asignar privilegios de administrador.", 500, ex);
 		}
 	}
 
@@ -207,15 +217,26 @@ public String processDelete(@PathVariable Integer id, Model model) {
 			return String.format("redirect:/user/details/%d", id);
 		} catch (SecurityException ex) {
 			throw new OperationFailedException(
-				"Acceso denegado. No tiene privilegios para revocar permisos.", 403, ex);
+					"Acceso denegado. No tiene privilegios para revocar permisos.", 403, ex);
 		} catch (Exception ex) {
 			throw new OperationFailedException(
-				"Error inesperado al revocar privilegios de administrador.", 500, ex);
+					"Error inesperado al revocar privilegios de administrador.", 500, ex);
 		}
 	}
 }
 
 /*
+===============================================================================
+CONTROL EXPLÍCITO DE ACCESO
+===============================================================================
+Este controlador incluye comprobaciones explícitas de sesión con
+`authService.isLogged()` antes de mostrar o modificar datos.
+
+Aunque PermissionsService ya valida los permisos, esta verificación inicial
+sirve como refuerzo didáctico para mostrar la diferencia entre:
+ - Autenticación (estar logado)
+ - Autorización (tener permisos adecuados)
+
 ===============================================================================
 NOTAS PEDAGÓGICAS
 ===============================================================================
@@ -237,8 +258,8 @@ Las contraseñas nuevas deben coincidir antes de aplicar el cambio.
 
 4. ELIMINACIÓN DE USUARIO
 --------------------------
-Si el usuario logado se borra a sí mismo, se cierra la sesión.
-El flujo retorna a la página inicial con mensaje informativo.
+Si el usuario logado se borra a sí mismo, se cierra la sesión y se redirige
+a la página principal con ?logout, activando el mensaje de cierre de sesión.
 
 5. GESTIÓN DE PRIVILEGIOS ADMIN
 -------------------------------

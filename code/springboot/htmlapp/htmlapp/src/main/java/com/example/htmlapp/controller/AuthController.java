@@ -66,7 +66,7 @@ public class AuthController {
 	 */
 	@GetMapping("/login")
 	public String showLoginForm(Model model) {
-		if (authService.getLoggedUser().isPresent()) {
+		if (authService.isLogged()) {
 			return "redirect:/main";
 		}
 		return "html/auth/login";
@@ -119,7 +119,7 @@ public class AuthController {
 	 */
 	@GetMapping("/register")
 	public String showRegisterForm(Model model) {
-		if (authService.getLoggedUser().isPresent()) {
+		if (authService.isLogged()) {
 			return "redirect:/main";
 		}
 
@@ -183,14 +183,12 @@ public class AuthController {
 			return "html/auth/register";
 		}
 
-		// El registro puede lanzar OperationFailedException (por ejemplo, si el email ya existe).
 		User newUser = userService.registerUser(
 			userForm.getFullName(),
 			email,
 			passwordPlain
 		);
 
-		// Inicia la sesión automáticamente tras el registro.
 		authService.login(email, passwordPlain);
 		model.addAttribute("loggedUserName", newUser.getFullName());
 		return "redirect:/main";
@@ -228,6 +226,20 @@ public class AuthController {
 }
 
 /*
+ * ----------------------------------------------------------------------------
+ * CONTROL EXPLÍCITO DE ACCESO A PÁGINAS PÚBLICAS
+ * ----------------------------------------------------------------------------
+ * Las páginas de login y registro realizan una comprobación explícita
+ * del estado de sesión para evitar que usuarios ya autenticados vuelvan
+ * a acceder a ellas.
+ *
+ *     if (authService.isLogged()) {
+ *         return "redirect:/main";
+ *     }
+ *
+ * Este enfoque mantiene el control de acceso visible en el propio
+ * controlador y evita la complejidad añadida de interceptores o filtros.
+ *
  * ----------------------------------------------------------------------------
  * SOBRE @ModelAttribute Y @RequestParam
  * ----------------------------------------------------------------------------

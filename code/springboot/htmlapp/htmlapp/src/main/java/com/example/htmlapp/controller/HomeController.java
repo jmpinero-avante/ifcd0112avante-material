@@ -63,7 +63,7 @@ public class HomeController {
 	@GetMapping
 	public String home() {
 		// Si ya hay usuario logado → redirige a la página principal
-		if (authService.getLoggedUser().isPresent()) {
+		if (authService.isLogged()) {
 			return "redirect:/main";
 		}
 
@@ -86,7 +86,8 @@ public class HomeController {
 	@GetMapping("/main")
 	public String mainPage(Model model) {
 		var user = authService.getLoggedUser()
-			.orElseThrow(() -> new SecurityException("Debe iniciar sesión para acceder."));
+			.orElseThrow(() ->
+				new SecurityException("Debe iniciar sesión para acceder."));
 
 		// Información contextual para la vista
 		model.addAttribute("loggedUserName", user.getFullName());
@@ -97,3 +98,33 @@ public class HomeController {
 		return "html/main";
 	}
 }
+
+/*
+ * ----------------------------------------------------------------------------
+ * CONTROL EXPLÍCITO DE ACCESO EN PÁGINAS PÚBLICAS
+ * ----------------------------------------------------------------------------
+ * La página raíz ("/") realiza una comprobación directa del estado de sesión:
+ *
+ *     if (authService.isLogged()) {
+ *         return "redirect:/main";
+ *     }
+ *
+ * Esto evita que usuarios autenticados regresen al inicio público o a los
+ * formularios de login/registro, garantizando una navegación coherente.
+ *
+ * ----------------------------------------------------------------------------
+ * DIFERENCIA RESPECTO A PÁGINAS PRIVADAS
+ * ----------------------------------------------------------------------------
+ * En las páginas que requieren sesión (como `/main` o `/user/...`),
+ * el control se realiza automáticamente a través de `PermissionsService`
+ * o mediante la validación dentro del propio método (como aquí con
+ * `getLoggedUser().orElseThrow()`).
+ *
+ * ----------------------------------------------------------------------------
+ * OBJETIVO PEDAGÓGICO
+ * ----------------------------------------------------------------------------
+ * Este controlador enseña cómo:
+ *  - Controlar manualmente el acceso a rutas públicas y privadas.
+ *  - Redirigir de forma clara según el estado de la sesión.
+ *  - Mostrar información contextual (usuario, hora, rol) en las vistas.
+ */

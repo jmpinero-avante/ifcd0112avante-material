@@ -15,6 +15,7 @@ import com.example.htmlapp.model.db.User;
 import com.example.htmlapp.model.enums.BulkActionType;
 import com.example.htmlapp.model.enums.SortDirection;
 import com.example.htmlapp.model.enums.UserOrderField;
+import com.example.htmlapp.model.logic.AuthService;
 import com.example.htmlapp.model.logic.UserListService;
 import com.example.htmlapp.model.logic.exceptions.OperationFailedException;
 
@@ -47,6 +48,7 @@ import lombok.RequiredArgsConstructor;
 public class UserListController {
 
 	private final UserListService userListService;
+	private final AuthService authService;
 
 	// -------------------------------------------------------------------------
 	// LISTADO DE USUARIOS
@@ -70,6 +72,11 @@ public class UserListController {
 		@RequestParam(name = "direction", required = false) SortDirection direction,
 		Model model
 	) {
+		// Verificación explícita de sesión (autenticación)
+		if (!authService.isLogged()) {
+			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		}
+
 		try {
 			List<User> users = userListService.listAllUsers(
 				orderBy != null ? orderBy : UserOrderField.CREATION_DATETIME,
@@ -111,6 +118,10 @@ public class UserListController {
 		@RequestParam("ids") List<Integer> ids,
 		Model model
 	) {
+		if (!authService.isLogged()) {
+			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		}
+
 		try {
 			List<User> users = userListService.listFilteredUsers(ids);
 			String idsString = String.join(",", ids.stream()
@@ -149,6 +160,10 @@ public class UserListController {
 		@RequestParam("ids") List<Integer> ids,
 		Model model
 	) {
+		if (!authService.isLogged()) {
+			throw new SecurityException("Debe iniciar sesión para acceder a esta página.");
+		}
+
 		try {
 			switch (action) {
 				case GRANT -> userListService.setAdminStatusBulk(ids, true);
@@ -171,6 +186,16 @@ public class UserListController {
 }
 
 /*
+===============================================================================
+CONTROL EXPLÍCITO DE ACCESO
+===============================================================================
+Este controlador incluye comprobaciones explícitas de autenticación mediante
+`authService.isLogged()`, antes de mostrar o modificar listas de usuarios.
+
+Esto permite distinguir entre:
+ - Autenticación: comprobar que existe sesión activa.
+ - Autorización: validar permisos concretos (en UserListService).
+
 ===============================================================================
 NOTAS PEDAGÓGICAS
 ===============================================================================
@@ -197,15 +222,12 @@ Se usa OperationFailedException para centralizar el manejo de errores:
  - 403 → falta de permisos.
  - 500 → errores internos o inesperados.
 
-El manejador global (ErrorControllerAdvice) decide qué plantilla mostrar
-según el código de error asociado.
-
 4. OBJETIVO PEDAGÓGICO
 ------------------------
 Este controlador enseña cómo:
  - Estructurar rutas jerárquicas coherentes.
  - Usar enumerados en formularios y parámetros.
  - Separar vistas de confirmación y ejecución real.
- - Controlar errores y permisos de manera centralizada.
+ - Controlar autenticación y autorización de manera clara y centralizada.
 ===============================================================================
 */
