@@ -4,13 +4,11 @@
 ESTILOS PARA PÁGINAS DE ERROR (400, 403, 404, 500, ETC.)
 ========================================================================== */
 /*
-Este archivo define el diseño visual de las páginas de error.
+Define el diseño visual de las páginas de error y mantiene la coherencia
+con el resto de la aplicación (colores, fuente y espaciado), pero con una
+estructura autónoma que puede mostrarse incluso si fallan otros recursos.
 
-Mantiene la coherencia con el resto de la aplicación (mismos colores,
-fuente y espaciado) pero con una estructura mínima e independiente, ya
-que puede mostrarse incluso si fallan otros componentes.
-
-Se carga exclusivamente en `layout-error.html`.
+Se carga exclusivamente desde `fragments/layout-error.html`.
 */
 
 /* ------------------------------------------------------------
@@ -24,8 +22,7 @@ IMPORTS DE MÓDULOS COMUNES
 CONFIGURACIÓN GLOBAL
 ========================================================================== */
 /*
-El documento usa un layout centrado verticalmente mediante flexbox,
-con un fondo claro y un bloque central con sombra.
+Se usa un layout centrado verticalmente con flexbox y fondo claro.
 */
 
 html, body {
@@ -52,6 +49,7 @@ CONTENEDOR PRINCIPAL DEL ERROR
 	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 	max-width: 500px;
 	margin: 2rem;
+	animation: fadeIn 0.6s ease;
 }
 
 /* ==========================================================================
@@ -69,18 +67,19 @@ p.error-message {
 	font-size: 1.1rem;
 	color: var(--color-muted);
 	margin-bottom: 2rem;
+	line-height: 1.5;
 }
 
 /* ==========================================================================
 BOTONES Y ENLACES DE ACCIÓN
 ========================================================================== */
 /*
-Se reutiliza el estilo de .btn, pero con una variante local
-para evitar depender de base.css.
+Se reutiliza el estilo base de los botones, con una variante local
+para mantener independencia respecto a base.css.
 */
 
-a.error-link,
-a.btn {
+a.btn,
+a.error-link {
 	display: inline-block;
 	background-color: var(--color-accent);
 	color: white;
@@ -88,24 +87,40 @@ a.btn {
 	border-radius: var(--border-radius);
 	text-decoration: none;
 	font-weight: 500;
-	transition: background-color 0.3s ease;
+	transition: background-color 0.3s ease, transform 0.2s ease;
 	margin: 0.25rem;
 }
 
-a.error-link:hover,
-a.btn:hover {
+a.btn:hover,
+a.error-link:hover {
 	background-color: var(--color-accent-hover);
+	transform: translateY(-2px);
 }
 
 /*
-.error-actions agrupa los botones de navegación:
-“Volver al inicio” y “Volver atrás”.
+Agrupa los botones de navegación (“Volver al inicio”, etc.)
 */
 .error-actions {
 	display: flex;
 	justify-content: center;
+	flex-wrap: wrap;
 	gap: 0.75rem;
 	margin-top: 1rem;
+}
+
+/* ==========================================================================
+ANIMACIONES
+========================================================================== */
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 /* ==========================================================================
@@ -129,9 +144,8 @@ OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
 Este archivo demuestra cómo:
- - Crear una hoja de estilo aislada y autónoma.
- - Reutilizar variables globales sin depender del resto de la app.
- - Mantener una jerarquía CSS clara y semántica.
- - Asegurar que las páginas de error sean consistentes, legibles y
-   responsivas incluso en contextos de fallo del servidor.
+ - Diseñar páginas de error limpias y autónomas.
+ - Reutilizar variables globales de color y tipografía.
+ - Añadir pequeñas animaciones sin depender de frameworks.
+ - Asegurar legibilidad y coherencia visual en cualquier contexto.
 */
