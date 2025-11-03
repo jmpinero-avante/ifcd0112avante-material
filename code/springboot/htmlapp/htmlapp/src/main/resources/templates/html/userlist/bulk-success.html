@@ -1,86 +1,20 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-
-<!--
-===============================================================================
-PLANTILLA: bulk-success.html
-Ruta: src/main/resources/templates/html/userlist/bulk-success.html
-===============================================================================
-Esta vista se muestra después de ejecutar una operación masiva exitosa
-sobre varios usuarios (otorgar/revocar privilegios o eliminar cuentas).
-
-Parámetros esperados en el modelo:
- - action   → Tipo de acción (BulkActionType: GRANT, REVOKE, DELETE)
- - message  → Mensaje de éxito generado por el controlador
-===============================================================================
--->
-
+<!-- ============================================================
+RESULTADO DE OPERACIÓN MASIVA (ADMIN)
+============================================================ -->
 <html th:replace="~{fragments/layout :: layout(
-    title='Operación completada',
-    content=~{::main}
+	title='Operación completada',
+	content=~{::main}
 )}">
+<main>
+	<section class="info-box">
+		<h1>Operación completada</h1>
+		<p th:text="'La acción ' + ${action} + ' se ha realizado correctamente sobre los usuarios seleccionados.'">
+			Operación realizada con éxito.
+		</p>
 
-<main class="text-center">
-  <!-- ============================================================
-  ENCABEZADO Y MENSAJE DE CONFIRMACIÓN
-  ============================================================ -->
-  <section>
-    <h1>Operación completada</h1>
-
-    <p class="mt-2" th:text="${message}">
-      La operación se ha realizado correctamente.
-    </p>
-
-    <p class="mt-1">
-      Se ejecutó la acción:
-      <strong th:switch="${action}">
-        <span th:case="'GRANT'">Otorgar privilegios de administrador</span>
-        <span th:case="'REVOKE'">Revocar privilegios de administrador</span>
-        <span th:case="'DELETE'">Eliminar usuarios seleccionados</span>
-      </strong>.
-    </p>
-  </section>
-
-  <!-- ============================================================
-  OPCIONES POSTERIORES
-  ============================================================ -->
-  <section class="mt-4">
-    <a th:href="@{/userlist/list}" class="btn btn-primary">
-      Volver al listado de usuarios
-    </a>
-  </section>
+		<div class="actions">
+			<a th:href="@{/userlist/list}" class="btn btn-success">Volver al listado</a>
+		</div>
+	</section>
 </main>
 </html>
-
-<!--
-===============================================================================
-NOTAS DE DISEÑO Y FUNCIONAMIENTO
-===============================================================================
-1. LAYOUT BASE
----------------
-Esta plantilla hereda la estructura visual completa de `fragments/layout.html`,
-incluyendo header, sidebar, footer y estilos globales (base.css).
-
-2. DATOS DEL MODELO
---------------------
-El controlador (`UserListController`) envía dos atributos principales:
- - `action`  → el tipo de operación ejecutada (enum BulkActionType)
- - `message` → el texto de éxito ("Operación realizada correctamente.")
-
-3. BLOQUE <strong th:switch>
------------------------------
-El uso de `th:switch` permite mostrar un texto diferente según el valor del
-enumerado recibido, sin necesidad de lógica adicional en el controlador.
-
-4. NAVEGACIÓN POSTERIOR
-------------------------
-Tras confirmar la operación, el usuario dispone de un único botón que
-redirige de nuevo al listado principal de usuarios.
-
-5. OBJETIVO PEDAGÓGICO
-------------------------
-Esta plantilla sirve para ilustrar:
- - Cómo representar resultados dinámicos de operaciones del servidor.
- - Cómo usar `th:switch` y `th:case` para valores de enumerados.
- - Cómo mantener la coherencia de diseño mediante layouts comunes.
-===============================================================================
--->

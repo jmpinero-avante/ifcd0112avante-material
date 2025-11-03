@@ -1,41 +1,50 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-
-<!DOCTYPE html>
-<html th:replace="~{fragments/layout :: layout(
-    title='Inicio - HtmlApp',
-    content=~{::main}
-)}"
-      xmlns:th="http://www.thymeleaf.org">
-
 <!-- ============================================================
-PÁGINA DE INICIO (INDEX)
+PÁGINA INICIAL (LOGIN / REGISTRO / LOGOUT MESSAGE)
 ============================================================ -->
+<html th:replace="~{fragments/layout :: layout(
+	title='Bienvenido a HtmlApp',
+	content=~{::main}
+)}">
+
 <!--
-Esta es la página de entrada a la aplicación. Muestra:
- - Un mensaje de logout (si viene ?logout en la URL).
- - Acceso a los formularios de login y registro (enlaces).
+Esta vista actúa como la puerta de entrada de la aplicación.
+
+Su comportamiento depende del estado de la sesión:
+ - Si no hay usuario logado → muestra enlaces a login y registro.
+ - Si la URL contiene ?logout → muestra un mensaje de cierre de sesión.
+ - Si hay sesión activa → el controlador redirige automáticamente a /main.
+
+La vista se mantiene simple para mostrar la diferencia entre
+estado público y autenticado, y enseñar el uso condicional
+de variables de sesión con Thymeleaf.
 -->
-
 <main>
-  <section class="text-center mt-4">
-    <h1>Bienvenido a HtmlApp</h1>
-    <p>Gestiona usuarios, sesiones y permisos de forma sencilla.</p>
+	<section class="info-box">
+		<h1>Bienvenido a HtmlApp</h1>
 
-    <!-- ============================================================
-    MENSAJE DE LOGOUT
-    ============================================================ -->
-    <div th:if="${param.logout}" class="logout-message mt-4">
-      <p class="success">
-        Has cerrado sesión correctamente.
-        <a th:href="@{/login}" class="btn mt-2">Iniciar sesión de nuevo</a>
-      </p>
-    </div>
+		<!-- Mensaje si el usuario acaba de cerrar sesión -->
+		<p th:if="${param.logout}"
+		   class="logout-message"
+		   style="color: var(--color-success); font-weight: 500;">
+			Has cerrado sesión correctamente.
+		</p>
 
-    <div class="mt-4">
-      <a th:href="@{/login}" class="btn">Iniciar sesión</a>
-      <a th:href="@{/register}" class="btn">Registrarse</a>
-    </div>
-  </section>
+		<!-- Opciones disponibles cuando no hay usuario logado -->
+		<div th:if="${session.user == null}">
+			<p>Accede con tu cuenta o crea una nueva.</p>
+			<a th:href="@{/login}" class="btn btn-success">Iniciar sesión</a>
+			<a th:href="@{/register}" class="btn">Registrarse</a>
+		</div>
+
+		<!-- Si el usuario ya está autenticado (no debería mostrarse normalmente) -->
+		<div th:if="${session.user != null}">
+			<p>Ya has iniciado sesión como
+				<strong th:text="${session.user.fullName}">Usuario</strong>.
+			</p>
+			<a th:href="@{/main}" class="btn btn-success">Ir a la página principal</a>
+		</div>
+	</section>
 </main>
 </html>
 
@@ -43,21 +52,8 @@ Esta es la página de entrada a la aplicación. Muestra:
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. MENSAJE DE LOGOUT
----------------------
-El bloque `th:if="${param.logout}"` detecta el parámetro `?logout`
-en la URL y muestra un mensaje confirmando el cierre de sesión.
-Este mensaje solo puede aparecer aquí, ya que el flujo de logout
-redirige siempre a la página principal (`redirect:/?logout`).
-
-2. USO DEL LAYOUT
-------------------
-Se incluye este contenido dentro del layout base (`fragments/layout.html`),
-reutilizando la cabecera, el footer y los estilos globales.
-
-3. OBJETIVO PEDAGÓGICO
-------------------------
-Esta página muestra cómo manejar mensajes condicionales basados
-en parámetros de la URL y cómo integrarlos dentro de un layout
-global sin usar fragmentos adicionales.
+1. Esta página se muestra solo si no hay usuario logado.
+2. Usa la variable especial `param.logout` para mostrar un mensaje tras cerrar sesión.
+3. Los botones de navegación redirigen a las rutas gestionadas por AuthController.
+4. El layout común añade el header, footer y estilos globales.
 -->

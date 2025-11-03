@@ -1,73 +1,69 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-
-<!--
-===============================================================================
-MAIN.HTML — PÁGINA PRINCIPAL CON EFECTO PARALLAX
-===============================================================================
-Esta vista representa la página principal mostrada tras iniciar sesión.
-Demuestra el uso del layout base con tres parámetros:
-
-  title   → texto de la pestaña del navegador.
-  content → contenido principal (esta sección).
-  scripts → bloque de scripts opcionales (inicialización de Rellax.js).
-
-También ilustra cómo integrar un efecto parallax multicapa usando imágenes
-definidas en base.css (.layer-back y .layer-front) y la librería Rellax.js.
-
-Se asume que las imágenes:
- - /static/img/layer-back.jpg
- - /static/img/layer-front.png
-existen y tienen la profundidad deseada (fondo y frente).
-
-El layout utilizado es fragments/layout.html.
-===============================================================================
--->
-
+<!-- ============================================================
+PÁGINA PRINCIPAL (EFECTO PARALLAX)
+============================================================ -->
 <html th:replace="~{fragments/layout :: layout(
 	title='Página principal',
 	content=~{::main},
 	scripts=~{::script}
 )}">
 
+<!--
+Esta vista es accesible solo para usuarios autenticados.
+Muestra un efecto visual de parallax mediante la librería Rellax.js.
+-->
 <main>
-	<!-- Capas del efecto parallax -->
-	<div class="parallax layer-back" data-rellax-speed="-1"></div>
-	<div class="parallax layer-front" data-rellax-speed="-3"></div>
+	<!-- Capa de fondo con imagen lejana -->
+	<div class="rellax" data-rellax-speed="-4" data-rellax-zindex="-2"
+	     style="background-image:url('/img/layer-back.jpg');
+	            background-size:cover; background-position:center;
+	            position:fixed; top:0; left:0; right:0; bottom:0;
+	            opacity:0.3; z-index:-2;">
+	</div>
 
-	<section class="text-center">
-		<h1>Bienvenido a HtmlApp</h1>
+	<!-- Capa de primer plano -->
+	<div class="rellax" data-rellax-speed="-1" data-rellax-zindex="-1"
+	     style="background-image:url('/img/layer-front.png');
+	            background-size:contain; background-repeat:no-repeat;
+	            background-position:center bottom;
+	            position:fixed; top:0; left:0; right:0; bottom:0;
+	            opacity:0.6; z-index:-1;">
+	</div>
+
+	<section class="info-box" style="position:relative; z-index:10;">
+		<h1>Bienvenido, <span th:text="${session.user.fullName}">Usuario</span></h1>
+
 		<p>
-			Has iniciado sesión correctamente.
-			Explora las funcionalidades disponibles a través del menú lateral.
+			Estás conectado como
+			<span th:text="${session.user.admin ? 'administrador' : 'usuario'}">usuario</span>.
 		</p>
 
-		<p class="mt-4">
-			Este ejemplo muestra un <strong>efecto parallax multicapa</strong>,
-			en el que distintas imágenes se desplazan a velocidades diferentes
-			para crear una sensación de profundidad.
+		<p>
+			Esta es la página principal de HtmlApp.  
+			Explora las secciones del menú lateral para acceder a tus datos o gestionar usuarios.
 		</p>
-
-		<div class="mt-4">
-			<a href="/user/details"
-			   class="btn btn-success">Ver mi perfil</a>
-			<a href="/userlist/list"
-			   class="btn btn-primary">Administrar usuarios</a>
-		</div>
 	</section>
 </main>
 
 <!-- ============================================================
-SCRIPTS — INICIALIZACIÓN DEL EFECTO PARALLAX
+SCRIPTS NECESARIOS PARA EL EFECTO PARALLAX
 ============================================================ -->
 <script th:inline="javascript">
-	/* Carga la librería Rellax desde CDN */
-	const script = document.createElement('script');
-	script.src = "https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js";
-	script.onload = () => {
-		console.log("Rellax.js cargado correctamente.");
-		new Rellax('.parallax', { center: true });
-	};
-	document.body.appendChild(script);
+	// Inicialización de la librería Rellax
+	const rellax = new Rellax('.rellax');
 </script>
 
+<!-- Librería Rellax desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"></script>
 </html>
+
+<!-- ============================================================
+NOTAS DE DISEÑO Y FUNCIONAMIENTO
+============================================================ -->
+<!--
+1. Usa el parámetro `scripts` del layout para cargar Rellax.js al final del <body>.
+2. Las imágenes `layer-back.jpg` y `layer-front.png` deben estar en /static/img/.
+3. El fondo se posiciona fijo y con opacidad para simular profundidad.
+4. El contenido real se muestra en una caja con z-index superior.
+5. Compatible con el layout principal y las clases de estilo globales.
+-->

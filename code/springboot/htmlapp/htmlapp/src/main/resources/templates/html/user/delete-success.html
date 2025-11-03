@@ -1,18 +1,16 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-
+<!-- ============================================================
+ELIMINACIÓN EXITOSA DE USUARIO
+============================================================ -->
 <html th:replace="~{fragments/layout :: layout(
-	title='Cuenta eliminada',
+	title='Usuario eliminado',
 	content=~{::main}
 )}">
-
-<main class="text-center">
-	<section class="message-box">
-		<h1>Cuenta eliminada correctamente</h1>
-		<p>La cuenta ha sido borrada del sistema.</p>
-
-		<div class="mt-4">
-			<a th:href="@{/}" class="btn">Volver a la página principal</a>
-		</div>
+<main>
+	<section class="info-box">
+		<h1>Usuario eliminado</h1>
+		<p>La cuenta se ha eliminado correctamente.</p>
+		<a th:href="@{/userlist/list}" th:if="${session.user.admin}" class="btn">Volver a la lista</a>
+		<a th:href="@{/main}" th:unless="${session.user.admin}" class="btn">Volver al inicio</a>
 	</section>
 </main>
 </html>

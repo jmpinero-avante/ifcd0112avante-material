@@ -1,68 +1,54 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
 
+<!-- ============================================================
+FRAGMENTO: LAYOUT DE PÁGINAS DE ERROR
+============================================================ -->
 <!--
-============================================================
-LAYOUT BASE PARA PÁGINAS DE ERROR
-============================================================
+Define la estructura común para todas las páginas de error.
+Se usa en los ficheros de /html/error para mostrar mensajes coherentes
+sin duplicar el HTML base.
 
-Este archivo define la estructura visual y semántica común de todas las
-páginas de error de la aplicación (403, 404, 500, etc.).
+Parámetros:
+ - errorCode: número del error (por ejemplo 403, 404, 500)
+ - errorMessage: texto descriptivo del error
 
-Incluye:
- - Cabecera HTML básica.
- - Estilos específicos de errores (error.css).
- - Un contenedor central con el código de error, el mensaje y el enlace
-   para volver a la página principal.
-
-Las vistas hijas insertan dinámicamente su contenido de error (por ejemplo,
-un texto personalizado) dentro del bloque principal mediante la variable
-`${errorMessage}` y el título `${title}`.
-
-Uso típico en una página de error:
+La vista se invoca con:
 <html th:replace="~{fragments/layout-error :: layoutError(
-	title='Error 404 - No encontrado',
-	errorCode=404,
-	errorMessage='La página solicitada no existe'
+	errorCode=403,
+	errorMessage='Acceso denegado.'
 )}">
-</html>
 -->
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:fragment="layoutError(title, errorCode, errorMessage)">
+      th:fragment="layoutError(errorCode, errorMessage)">
 
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title th:text="${title} ?: 'Error en HtmlApp'">Error - HtmlApp</title>
-	<link rel="stylesheet" th:href="@{/css/error.css}" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="'Error ' + ${errorCode} + ' - HtmlApp'">HtmlApp - Error</title>
+  <link rel="stylesheet" th:href="@{/css/error.css}" />
 </head>
 
 <body>
-	<!-- ============================================================
-	CONTENEDOR PRINCIPAL DE ERROR
-	============================================================ -->
-	<main class="error-container">
-		<h1 class="error-code" th:text="${errorCode} ?: 'Error'">Error</h1>
-		<p class="error-message"
-		   th:text="${errorMessage} ?: 'Ha ocurrido un error inesperado.'">
-		   Ha ocurrido un error inesperado.
-		</p>
+  <div class="error-container">
+    <!-- Código del error -->
+    <h1 class="error-code" th:text="${errorCode} ?: 'Error'">Error</h1>
 
-		<!-- Enlace para volver a la página principal -->
-		<div class="error-actions">
-			<a class="error-link" th:href="@{/}">
-				Volver a la página principal
-			</a>
-		</div>
-	</main>
+    <!-- Descripción del error -->
+    <p class="error-message"
+       th:text="${errorMessage} ?: 'Ha ocurrido un error inesperado.'">
+       Ha ocurrido un error inesperado.
+    </p>
 
-	<!-- ============================================================
-	PIE DE PÁGINA COMÚN
-	============================================================ -->
-	<footer class="error-footer">
-		<p>&copy; 2025 HtmlApp. Todos los derechos reservados.</p>
-	</footer>
+    <!-- Enlace principal adaptado al estado de sesión -->
+    <a th:if="${session.user != null}"
+       th:href="@{/main}"
+       class="error-link">Volver a la página principal</a>
+
+    <a th:if="${session.user == null}"
+       th:href="@{/}"
+       class="error-link">Volver al inicio</a>
+  </div>
 </body>
 </html>
 
@@ -70,37 +56,9 @@ Uso típico en una página de error:
 NOTAS DE DISEÑO Y FUNCIONAMIENTO
 ============================================================ -->
 <!--
-1. ESTRUCTURA GENERAL
-----------------------
-Este layout se usa como plantilla base para las vistas de error,
-de modo que todas comparten el mismo diseño profesional y coherente.
-
-2. PARÁMETROS DEL FRAGMENTO
-----------------------------
- - `title`       → Título de la página de error.
- - `errorCode`   → Código numérico HTTP (por ejemplo, 404, 500...).
- - `errorMessage`→ Descripción legible del error para el usuario.
-
-3. ESTILO
----------
-El layout utiliza `/css/error.css`, que define:
- - Colores neutros y tipografía clara.
- - Contenedor centrado vertical y horizontalmente.
- - Estilos coherentes con el resto de la aplicación.
-
-4. USO DE VALORES POR DEFECTO
-------------------------------
-Las expresiones `?:` establecen textos predeterminados:
- - Si no se pasa `title`, muestra "Error en HtmlApp".
- - Si no se pasa `errorCode`, muestra "Error".
- - Si no se pasa `errorMessage`, muestra
-   "Ha ocurrido un error inesperado."
-
-5. OBJETIVO PEDAGÓGICO
-------------------------
-Este layout enseña cómo:
- - Centralizar la apariencia de las páginas de error.
- - Utilizar fragmentos parametrizados (`th:fragment`).
- - Proporcionar valores por defecto con el operador Elvis (`?:`).
- - Mantener el mismo estilo visual en errores 403, 404 y 500.
+1. Los estilos de `error.css` aseguran consistencia visual con el resto del sitio.
+2. Se usa `session.user` para decidir el destino del enlace principal.
+3. Este layout evita repetir estructura en cada plantilla de error.
+4. Compatible con el manejador global de excepciones (ErrorControllerAdvice).
+5. Ya no incluye `errorLink`: todos los enlaces se gestionan de forma estándar.
 -->

@@ -1,21 +1,16 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!-- ==========================================================================
-ERROR DE OPERACIÓN (MENSAJE PERSONALIZADO)
-========================================================================== -->
+<!-- ============================================================
+ERROR DE OPERACIÓN – FALLO DE NEGOCIO O VALIDACIÓN
+============================================================ -->
 <!--
-Esta plantilla se utiliza para mostrar errores funcionales o de negocio
-producidos durante la ejecución de una operación (por ejemplo, fallos
-al registrar un usuario, procesar un pago o actualizar datos).
+Esta vista se usa cuando ocurre un error de validación o de negocio
+(lanzado como OperationFailedException en los controladores).
 
-El código de error (`errorCode`) y el mensaje (`errorMessage`)
-son proporcionados por el ErrorControllerAdvice.
-
-Si no se especifica un código, se mostrará 500 por defecto.
+Si no se proporcionan valores dinámicos, se muestran por defecto:
+  - Código 400
+  - Mensaje genérico "No se pudo completar la operación solicitada."
 -->
-
-<div th:replace="~{layout-error :: errorLayout(${errorCode} ?: 500, ~{::msg})}">
-	<p th:fragment="msg" th:text="${errorMessage} ?: 
-		'Ha ocurrido un error al procesar la operación. Inténtalo de nuevo.'">
-		Ha ocurrido un error al procesar la operación. Inténtalo de nuevo.
-	</p>
-</div>
+<html th:replace="~{fragments/layout-error :: layoutError(
+	errorCode=${errorCode} ?: 400,
+	errorMessage=${errorMessage} ?: 'No se pudo completar la operación solicitada.'
+)}">
+</html>

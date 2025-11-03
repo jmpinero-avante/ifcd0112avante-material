@@ -1,9 +1,8 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!-- ==========================================================================
-ERROR 404 - PÁGINA NO ENCONTRADA
-========================================================================== -->
-<div th:replace="~{layout-error :: errorLayout('404', ~{::msg})}">
-	<p th:fragment="msg">
-		La página que estás buscando no existe o ha sido movida.
-	</p>
-</div>
+<!-- ============================================================
+ERROR 404 – PÁGINA NO ENCONTRADA
+============================================================ -->
+<html th:replace="~{fragments/layout-error :: layoutError(
+	errorCode=404,
+	errorMessage='La página solicitada no existe o ha sido movida.'
+)}">
+</html>

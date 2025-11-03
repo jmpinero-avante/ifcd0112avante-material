@@ -1,151 +1,60 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout(
-          title='Gestión de usuarios',
-          content=~{::main},
-          scripts=~{::script}
-      )}">
-
 <!-- ============================================================
 LISTADO DE USUARIOS (ADMIN)
 ============================================================ -->
-
+<html th:replace="~{fragments/layout :: layout(
+	title='Listado de usuarios',
+	content=~{::main}
+)}">
 <main>
-  <section>
-    <h1>Gestión de usuarios</h1>
-    <p class="mb-2">Desde esta página puede consultar, ordenar y administrar las cuentas de usuario.</p>
+	<section class="info-box">
+		<h1>Gestión de usuarios</h1>
 
-    <!-- Mensaje informativo -->
-    <div class="info-box">
-      <p>Seleccione uno o varios usuarios y elija una acción masiva.</p>
-    </div>
+		<!-- Solo visible para administradores -->
+		<div th:if="${session.user.admin}">
+			<form th:action="@{/userlist/bulk-confirm}" method="post">
+				<table class="table">
+					<thead>
+						<tr>
+							<th><input type="checkbox" id="select-all" /></th>
+							<th>Email</th>
+							<th>Nombre completo</th>
+							<th>Administrador</th>
+							<th>Fecha de creación</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="user : ${users}">
+							<td>
+								<input type="checkbox" name="ids"
+								       th:value="${user.id}"
+								       th:disabled="${session.user.id == user.id}" />
+							</td>
+							<td th:text="${user.email}">correo@ejemplo.com</td>
+							<td th:text="${user.fullName}">Nombre Apellido</td>
+							<td th:text="${user.admin ? 'Sí' : 'No'}">No</td>
+							<td th:text="${#temporals.format(user.creationTimestamp, 'yyyy-MM-dd HH:mm')}">
+								2025-11-03 14:00
+							</td>
+						</tr>
+					</tbody>
+				</table>
 
-    <!-- Tabla de usuarios -->
-    <form th:action="@{/userlist/bulk-confirm}" method="post" id="bulkForm">
-      <table>
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="selectAll" /></th>
-            <th>
-              <a th:href="@{|/userlist/list?orderBy=EMAIL&direction=${direction == 'ASC' ? 'DESC' : 'ASC'}|}">
-                Email
-              </a>
-            </th>
-            <th>
-              <a th:href="@{|/userlist/list?orderBy=FULL_NAME&direction=${direction == 'ASC' ? 'DESC' : 'ASC'}|}">
-                Nombre completo
-              </a>
-            </th>
-            <th>Administrador</th>
-            <th>Fecha de creación</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
+				<div class="bulk-actions">
+					<select name="action" required>
+						<option value="">-- Seleccionar acción --</option>
+						<option value="GRANT">Hacer administradores</option>
+						<option value="REVOKE">Quitar privilegios</option>
+						<option value="DELETE">Eliminar usuarios</option>
+					</select>
+					<button type="submit" class="btn btn-success">Aplicar</button>
+				</div>
+			</form>
+		</div>
 
-        <tbody>
-          <tr th:each="user : ${users}">
-            <td>
-              <input type="checkbox" name="ids"
-                     th:value="${user.id}"
-                     th:disabled="${session.userId == user.id}" />
-            </td>
-            <td th:text="${user.email}">usuario@example.com</td>
-            <td th:text="${user.fullName ?: '—'}">Nombre</td>
-            <td th:text="${user.isAdmin ? 'Sí' : 'No'}">No</td>
-            <td th:text="${#temporals.format(user.creationTimestamp, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
-            <td class="table-actions">
-              <a th:href="@{|/user/details/${user.id}|}" class="btn">Ver</a>
-              <a th:href="@{|/user/edit/${user.id}|}" class="btn"
-                 th:if="${session.userId != user.id}">Editar</a>
-              <a th:href="@{|/user/delete/${user.id}|}" class="btn btn-danger"
-                 th:if="${session.userId != user.id}">Eliminar</a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Botones de acción masiva -->
-      <div class="bulk-actions mt-4 text-center">
-        <button type="submit" name="action" value="GRANT" class="btn" disabled>
-          Otorgar admin
-        </button>
-        <button type="submit" name="action" value="REVOKE" class="btn" disabled>
-          Revocar admin
-        </button>
-        <button type="submit" name="action" value="DELETE" class="btn btn-danger" disabled>
-          Eliminar seleccionados
-        </button>
-      </div>
-    </form>
-  </section>
+		<div th:unless="${session.user.admin}">
+			<p>No tiene permisos para ver esta página.</p>
+		</div>
+	</section>
 </main>
-
-<!-- ============================================================
-SCRIPTS (activación/desactivación de botones)
-============================================================ -->
-<script th:inline="javascript">
-/* <![CDATA[ */
-document.addEventListener("DOMContentLoaded", () => {
-  const checkboxes = document.querySelectorAll('input[name="ids"]');
-  const selectAll = document.getElementById("selectAll");
-  const buttons = document.querySelectorAll(".bulk-actions button");
-
-  function updateButtons() {
-    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-    buttons.forEach(btn => btn.disabled = !anyChecked);
-  }
-
-  checkboxes.forEach(cb => cb.addEventListener("change", updateButtons));
-
-  if (selectAll) {
-    selectAll.addEventListener("change", (e) => {
-      checkboxes.forEach(cb => {
-        if (!cb.disabled) cb.checked = e.target.checked;
-      });
-      updateButtons();
-    });
-  }
-});
-/* ]]> */
-</script>
 </html>
-
-<!-- ============================================================
-NOTAS DE IMPLEMENTACIÓN
-============================================================ -->
-<!--
-1. ESTRUCTURA Y LAYOUT
------------------------
-Esta plantilla usa el layout base `fragments/layout` con tres parámetros:
- - title   → título de la pestaña del navegador.
- - content → bloque principal (<main>).
- - scripts → código JavaScript al final del body.
-
-2. ORDENACIÓN DE COLUMNAS
---------------------------
-Los enlaces en los encabezados de tabla envían la ordenación por parámetros
-GET (orderBy y direction). Thymeleaf genera dinámicamente la URL correcta.
-
-3. ACCIONES MASIVAS
---------------------
-Los botones GRANT, REVOKE y DELETE se deshabilitan hasta que el usuario
-seleccione al menos una fila. El formulario se envía a /userlist/bulk-confirm.
-
-4. CONTROL DE SESIÓN
----------------------
-El checkbox y los botones de edición/eliminación están deshabilitados para el
-usuario actualmente logado, evitando que se modifique o borre a sí mismo.
-
-5. SCRIPT INLINE
------------------
-Usa `th:inline="javascript"` para que Thymeleaf procese correctamente los
-valores dinámicos dentro del script, aunque en este caso solo gestiona DOM.
-
-6. OBJETIVO PEDAGÓGICO
-------------------------
-Esta plantilla muestra cómo:
- - Combinar datos dinámicos y controles de sesión.
- - Hacer tablas ordenables y formularios masivos.
- - Aplicar Thymeleaf de forma estructurada con layout y fragmentos.
--->

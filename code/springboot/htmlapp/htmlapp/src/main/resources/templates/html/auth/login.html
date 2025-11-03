@@ -1,55 +1,38 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!DOCTYPE html>
-<html th:replace="~{fragments/layout :: layout(
-    title='Iniciar sesión',
-    content=~{::main}
-)}">
-
 <!-- ============================================================
 FORMULARIO DE INICIO DE SESIÓN
 ============================================================ -->
+<html th:replace="~{fragments/layout :: layout(
+	title='Iniciar sesión',
+	content=~{::main}
+)}">
+
 <!--
 Esta plantilla muestra el formulario de inicio de sesión.
-No incluye menú lateral ni cabecera porque no hay usuario logado.
-
-El formulario envía los datos a la ruta POST /login definida
-en el AuthController. Si el usuario ya está autenticado, el
-controlador redirige automáticamente a /main.
+Si el usuario ya está logado (`session.user` no es null),
+el controlador redirige automáticamente a `/main`.
 -->
-
 <main>
-  <section class="text-center">
-    <h1>Iniciar sesión</h1>
-    <p>Introduce tus credenciales para acceder al sistema.</p>
-  </section>
+	<section class="info-box">
+		<h1>Iniciar sesión</h1>
 
-  <section>
-    <!-- Mensaje de error (si existe) -->
-    <div th:if="${errorMessage}" class="alert alert-danger mb-2"
-         th:text="${errorMessage}">
-      Error en el inicio de sesión.
-    </div>
+		<form th:action="@{/login}" method="post" class="form-auth">
+			<label for="email">Correo electrónico:</label>
+			<input type="email" id="email" name="email" required />
 
-    <!-- Formulario de login -->
-    <form th:action="@{/login}" method="post" novalidate>
-      <label for="email">Correo electrónico</label>
-      <input type="email" id="email" name="email"
-             placeholder="tu@correo.com" required />
+			<label for="password">Contraseña:</label>
+			<input type="password" id="password" name="password" required />
 
-      <label for="password">Contraseña</label>
-      <input type="password" id="password" name="password"
-             placeholder="••••••••" required />
+			<div class="form-actions">
+				<button type="submit" class="btn btn-success">Entrar</button>
+				<a th:href="@{/register}" class="btn">Registrarse</a>
+			</div>
 
-      <input type="submit" value="Entrar" class="btn mt-2" />
-    </form>
-
-    <!-- Enlace a registro -->
-    <div class="text-center mt-2">
-      <p>¿No tienes cuenta?
-        <a th:href="@{/register}">Regístrate aquí</a>.
-      </p>
-    </div>
-  </section>
+			<!-- Mensaje de error en login -->
+			<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red; margin-top:1rem;">
+				Correo o contraseña incorrectos.
+			</p>
+		</form>
+	</section>
 </main>
-
 </html>

@@ -1,21 +1,32 @@
 <!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
+<!-- ============================================================
+FORMULARIO DE REGISTRO DE USUARIO
+============================================================ -->
 <html th:replace="~{fragments/layout :: layout(
-    title='Registrar usuario',
-    content=~{::main}
+	title='Registro de usuario',
+	content=~{::main}
 )}">
 
-<main>
-	<section>
-		<h2>Registrar nuevo usuario</h2>
+<!--
+Esta plantilla sirve tanto para el registro público
+como para el alta de nuevos usuarios por parte de un administrador.
 
-		<form th:action="@{/register}" method="post" th:object="${userForm}">
+El controlador AuthController se encarga de permitir el acceso
+siempre que el usuario no esté logado o tenga privilegios de admin.
+-->
+<main>
+	<section class="info-box">
+		<h1 th:text="${session.user != null and session.user.admin} ?
+			'Dar de alta nuevo usuario' : 'Crear cuenta nueva'">Registro</h1>
+
+		<form th:action="@{/register}" method="post" th:object="${userForm}" class="form-auth">
 			<label for="fullName">Nombre completo:</label>
 			<input type="text" id="fullName" name="fullName"
-			       th:field="*{fullName}" placeholder="Introduce el nombre completo" />
+			       th:value="*{fullName}" />
 
 			<label for="email">Correo electrónico:</label>
 			<input type="email" id="email" name="email"
-			       th:field="*{email}" placeholder="Introduce el correo electrónico" required />
+			       th:value="*{email}" required />
 
 			<label for="passwordPlain">Contraseña:</label>
 			<input type="password" id="passwordPlain" name="passwordPlain" required />
@@ -23,29 +34,20 @@
 			<label for="passwordConfirm">Confirmar contraseña:</label>
 			<input type="password" id="passwordConfirm" name="passwordConfirm" required />
 
-			<div class="mt-2">
-				<input type="submit" class="btn btn-success" value="Registrar" />
+			<div class="form-actions">
+				<button type="submit" class="btn btn-success"
+				        th:text="${session.user != null and session.user.admin} ?
+				            'Crear usuario' : 'Registrarse'">
+					Registrarse
+				</button>
+				<a th:href="@{/}" class="btn">Cancelar</a>
 			</div>
 
-			<!-- Mensaje de error (si existe) -->
-			<p th:if="${errorMessage}" th:text="${errorMessage}"
-			   style="color:var(--color-error); margin-top:1rem;"></p>
+			<!-- Mensaje de error -->
+			<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red; margin-top:1rem;">
+				Error en el registro.
+			</p>
 		</form>
 	</section>
 </main>
 </html>
-
-<!-- ============================================================
-NOTAS DE DISEÑO Y FUNCIONAMIENTO
-============================================================ -->
-<!--
-Esta plantilla sirve tanto para:
- - Usuarios nuevos no logados (registro normal).
- - Administradores autenticados (alta de nuevo usuario).
-
-En ambos casos utiliza el mismo controlador `/register`.
-Si hay un usuario logado y no es admin, se redirige a `/main`.
-
-La condición se valida en el controlador con:
-   if (authService.isLogged() && !authService.isAdmin()) redirect:/main
--->

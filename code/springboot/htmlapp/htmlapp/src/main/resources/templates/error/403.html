@@ -1,9 +1,8 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!-- ==========================================================================
-ERROR 403 - ACCESO DENEGADO
-========================================================================== -->
-<div th:replace="~{layout-error :: errorLayout('403', ~{::msg})}">
-	<p th:fragment="msg">
-		No tienes permisos para acceder a esta página.
-	</p>
-</div>
+<!-- ============================================================
+ERROR 403 – ACCESO DENEGADO
+============================================================ -->
+<html th:replace="~{fragments/layout-error :: layoutError(
+	errorCode=403,
+	errorMessage='No tiene permisos para acceder a esta página.'
+)}">
+</html>

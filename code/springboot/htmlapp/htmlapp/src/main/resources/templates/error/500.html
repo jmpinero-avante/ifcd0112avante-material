@@ -1,9 +1,8 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!-- ==========================================================================
-ERROR 500 - ERROR INTERNO DEL SERVIDOR
-========================================================================== -->
-<div th:replace="~{layout-error :: errorLayout('500', ~{::msg})}">
-	<p th:fragment="msg">
-		Ha ocurrido un error interno. Inténtalo de nuevo más tarde.
-	</p>
-</div>
+<!-- ============================================================
+ERROR 500 – ERROR INTERNO DEL SERVIDOR
+============================================================ -->
+<html th:replace="~{fragments/layout-error :: layoutError(
+	errorCode=500,
+	errorMessage='Se ha producido un error interno en el servidor.'
+)}">
+</html>

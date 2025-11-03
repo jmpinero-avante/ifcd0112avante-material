@@ -1,17 +1,16 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!-- ==========================================================================
-ERROR GENÉRICO - FALLBACK PARA EXCEPCIONES NO CONTROLADAS
-========================================================================== -->
+<!-- ============================================================
+ERROR GENÉRICO – MENSAJE PERSONALIZABLE
+============================================================ -->
 <!--
-Esta plantilla se utiliza cuando ocurre una excepción no prevista
-o cuando el controlador de errores (ErrorControllerAdvice) no ha
-asignado un código HTTP concreto.
+Plantilla genérica usada para errores no clasificados.
+Permite mostrar un mensaje y código dinámicos enviados por el controlador.
 
-Puede recibir un mensaje dinámico mediante el atributo 'errorMessage'
-del modelo. Si no lo hay, se mostrará el texto por defecto.
+Valores por defecto:
+  - Código: 500
+  - Mensaje: "Ha ocurrido un error inesperado."
 -->
-<div th:replace="~{layout-error :: errorLayout(${errorCode} ?: 'Error', ~{::msg})}">
-	<p th:fragment="msg" th:text="${errorMessage} ?: 'Se ha producido un error inesperado. Por favor, inténtalo de nuevo más tarde.'">
-		Se ha producido un error inesperado. Por favor, inténtalo de nuevo más tarde.
-	</p>
-</div>
+<html th:replace="~{fragments/layout-error :: layoutError(
+	errorCode=${errorCode} ?: 500,
+	errorMessage=${errorMessage} ?: 'Ha ocurrido un error inesperado.'
+)}">
+</html>

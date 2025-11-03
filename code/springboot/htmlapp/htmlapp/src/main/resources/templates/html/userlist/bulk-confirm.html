@@ -1,132 +1,47 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-
-<!--
-===============================================================================
-PLANTILLA: bulk-confirm.html
-Ruta: src/main/resources/templates/html/userlist/bulk-confirm.html
-===============================================================================
-Esta página muestra una confirmación antes de ejecutar una acción masiva
-sobre varios usuarios seleccionados desde el listado de administración.
-
-Parámetros esperados en el modelo:
- - action     → Tipo de acción (BulkActionType: GRANT, REVOKE o DELETE)
- - users      → Lista de objetos User que serán afectados
- - count      → Número total de usuarios afectados
- - idsString  → Cadena de IDs separados por comas (para el campo oculto)
-===============================================================================
--->
-
+<!-- ============================================================
+CONFIRMACIÓN DE OPERACIÓN MASIVA (ADMIN)
+============================================================ -->
 <html th:replace="~{fragments/layout :: layout(
-    title='Confirmar acción masiva',
-    content=~{::main}
+	title='Confirmar operación masiva',
+	content=~{::main}
 )}">
-
 <main>
-  <!-- ============================================================
-  ENCABEZADO Y CONTEXTO DE LA ACCIÓN
-  ============================================================ -->
-  <section class="text-center">
-    <h1 th:text="'Confirmar acción: ' + ${action}">Confirmar acción</h1>
-    <p th:text="'Se aplicará la siguiente acción a ' + ${count} + ' usuarios:'">
-      Se aplicará la siguiente acción a los usuarios seleccionados:
-    </p>
-  </section>
+	<section class="info-box">
+		<h1>Confirmar operación</h1>
 
-  <!-- ============================================================
-  TABLA DE USUARIOS AFECTADOS
-  ============================================================ -->
-  <section>
-    <table>
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Nombre completo</th>
-          <th>Administrador</th>
-          <th>Fecha de creación</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:each="user : ${users}">
-          <td th:text="${user.email}">usuario@example.com</td>
-          <td th:text="${user.fullName} ?: '-'">Nombre no disponible</td>
-          <td th:text="${user.isAdmin} ? 'Sí' : 'No'">No</td>
-          <td th:text="${#temporals.format(user.creationTimestamp, 'dd/MM/yyyy HH:mm')}">
-            01/11/2025 10:00
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+		<p th:text="'Acción seleccionada: ' + ${action}">Acción seleccionada</p>
+		<p th:text="'Usuarios afectados: ' + ${count}">Usuarios afectados</p>
 
-  <!-- ============================================================
-  FORMULARIO DE CONFIRMACIÓN
-  ============================================================ -->
-  <section class="text-center mt-4">
-    <p>
-      ¿Está seguro de que desea
-      <strong th:switch="${action}">
-        <span th:case="'GRANT'">otorgar privilegios de administrador</span>
-        <span th:case="'REVOKE'">revocar privilegios de administrador</span>
-        <span th:case="'DELETE'">eliminar las cuentas seleccionadas</span>
-      </strong>
-      a los usuarios listados arriba?
-    </p>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Email</th>
+					<th>Nombre</th>
+					<th>Administrador</th>
+					<th>Creación</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="u : ${users}">
+					<td th:text="${u.email}">correo@ejemplo.com</td>
+					<td th:text="${u.fullName}">Nombre Apellido</td>
+					<td th:text="${u.admin ? 'Sí' : 'No'}">No</td>
+					<td th:text="${#temporals.format(u.creationTimestamp, 'yyyy-MM-dd HH:mm')}">
+						2025-11-03 14:00
+					</td>
+				</tr>
+			</tbody>
+		</table>
 
-    <form th:action="@{/userlist/bulk-success}" method="post">
-      <!-- Campos ocultos con la acción y la lista de IDs -->
-      <input type="hidden" name="action" th:value="${action}" />
-      <input type="hidden" name="ids" th:value="${idsString}" />
+		<form th:action="@{/userlist/bulk-success}" method="post">
+			<input type="hidden" name="action" th:value="${action}" />
+			<input type="hidden" name="ids" th:value="${idsString}" />
 
-      <!-- Botones de confirmación -->
-      <button type="submit" class="btn btn-danger mt-2">Sí, confirmar</button>
-      <a th:href="@{/userlist/list}" class="btn btn-secondary mt-2">Cancelar</a>
-    </form>
-  </section>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-success">Confirmar</button>
+				<a th:href="@{/userlist/list}" class="btn btn-danger">Cancelar</a>
+			</div>
+		</form>
+	</section>
 </main>
 </html>
-
-<!--
-===============================================================================
-NOTAS DE DISEÑO Y FUNCIONAMIENTO
-===============================================================================
-1. LAYOUT BASE
----------------
-Esta plantilla utiliza el layout principal (fragments/layout.html) con los
-parámetros `title` y `content`. No requiere scripts específicos.
-
-2. LISTADO DE USUARIOS
------------------------
-Los usuarios afectados por la acción se muestran en una tabla con las columnas:
-  - Email
-  - Nombre completo
-  - Estado de administrador
-  - Fecha de creación
-
-El listado se genera a partir de la lista `users` enviada desde el controlador.
-
-3. CAMPO OCULTO DE IDs
-------------------------
-El campo `ids` utiliza `${idsString}`, que el controlador construye
-como una cadena separada por comas (por ejemplo: "1,3,5,8").
-Esto simplifica la lógica en la vista y evita cálculos en Thymeleaf.
-
-4. ACCIÓN DINÁMICA
--------------------
-El texto de confirmación cambia automáticamente según la acción:
- - GRANT  → "otorgar privilegios de administrador"
- - REVOKE → "revocar privilegios de administrador"
- - DELETE → "eliminar las cuentas seleccionadas"
-
-5. REDIRECCIÓN POSTERIOR
--------------------------
-Al confirmar, el formulario envía los datos a POST /userlist/bulk-success,
-donde se ejecuta la acción y se muestra una página de éxito o error.
-
-6. OBJETIVO PEDAGÓGICO
-------------------------
-Este ejemplo ilustra cómo:
- - Combinar datos dinámicos en una plantilla Thymeleaf.
- - Usar layout reutilizables para coherencia visual.
- - Separar la lógica del servidor (controlador) del renderizado (vista).
-===============================================================================
--->
