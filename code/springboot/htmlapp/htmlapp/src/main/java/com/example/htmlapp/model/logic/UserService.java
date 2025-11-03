@@ -57,7 +57,6 @@ public class UserService {
 	 *
 	 * @throws OperationFailedException si el email ya existe.
 	 */
-	@SuppressWarnings("null")
 	@Transactional
 	public User registerUser(String fullName, String email, String password) {
 		if (userRepository.findByEmail(email).isPresent()) {
