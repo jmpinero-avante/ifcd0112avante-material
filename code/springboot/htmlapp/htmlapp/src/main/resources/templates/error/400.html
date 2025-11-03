@@ -1,9 +1,12 @@
-<!-- vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab textwidth=80 : -->
-<!-- ==========================================================================
-ERROR 400 - SOLICITUD INCORRECTA
-========================================================================== -->
-<div th:replace="~{layout-error :: errorLayout('400', ~{::msg})}">
-	<p th:fragment="msg">
-		La solicitud no se pudo procesar. Revisa los datos enviados.
-	</p>
-</div>
+<!-- ============================================================
+ERROR 400 – SOLICITUD INCORRECTA
+============================================================ -->
+<!--
+Se muestra cuando la petición del usuario contiene parámetros o datos no válidos.
+Si el controlador no proporciona errorCode/errorMessage, se usan los valores por defecto.
+-->
+<html th:replace="~{fragments/layout-error :: layoutError(
+	errorCode=${errorCode} ?: 400,
+	errorMessage=${errorMessage} ?: 'La solicitud no es válida o está incompleta.'
+)}">
+</html>

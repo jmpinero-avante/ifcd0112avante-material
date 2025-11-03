@@ -1,16 +1,11 @@
 <!-- ============================================================
-ERROR GENÉRICO – MENSAJE PERSONALIZABLE
+ERROR 500 – FALLO INTERNO DEL SERVIDOR
 ============================================================ -->
 <!--
-Plantilla genérica usada para errores no clasificados.
-Permite mostrar un mensaje y código dinámicos enviados por el controlador.
-
-Valores por defecto:
-  - Código: 500
-  - Mensaje: "Ha ocurrido un error inesperado."
+Error genérico para excepciones no controladas o inesperadas.
 -->
 <html th:replace="~{fragments/layout-error :: layoutError(
 	errorCode=${errorCode} ?: 500,
-	errorMessage=${errorMessage} ?: 'Ha ocurrido un error inesperado.'
+	errorMessage=${errorMessage} ?: 'Ha ocurrido un error interno en el servidor.'
 )}">
 </html>

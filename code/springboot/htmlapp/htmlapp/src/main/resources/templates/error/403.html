@@ -1,8 +1,11 @@
 <!-- ============================================================
 ERROR 403 – ACCESO DENEGADO
 ============================================================ -->
+<!--
+Se muestra cuando el usuario intenta acceder a un recurso sin permisos.
+-->
 <html th:replace="~{fragments/layout-error :: layoutError(
-	errorCode=403,
-	errorMessage='No tiene permisos para acceder a esta página.'
+	errorCode=${errorCode} ?: 403,
+	errorMessage=${errorMessage} ?: 'No tiene permisos para acceder a esta página.'
 )}">
 </html>

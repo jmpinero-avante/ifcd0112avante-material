@@ -1,8 +1,11 @@
 <!-- ============================================================
 ERROR 404 – PÁGINA NO ENCONTRADA
 ============================================================ -->
+<!--
+Se muestra cuando no existe el recurso solicitado (ruta o archivo).
+-->
 <html th:replace="~{fragments/layout-error :: layoutError(
-	errorCode=404,
-	errorMessage='La página solicitada no existe o ha sido movida.'
+	errorCode=${errorCode} ?: 404,
+	errorMessage=${errorMessage} ?: 'La página que busca no existe o ha sido movida.'
 )}">
 </html>

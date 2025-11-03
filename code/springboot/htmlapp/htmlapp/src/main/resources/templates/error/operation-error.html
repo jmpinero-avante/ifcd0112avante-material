@@ -1,16 +1,12 @@
 <!-- ============================================================
-ERROR DE OPERACIÓN – FALLO DE NEGOCIO O VALIDACIÓN
+ERROR DE OPERACIÓN / NEGOCIO
 ============================================================ -->
 <!--
-Esta vista se usa cuando ocurre un error de validación o de negocio
-(lanzado como OperationFailedException en los controladores).
-
-Si no se proporcionan valores dinámicos, se muestran por defecto:
-  - Código 400
-  - Mensaje genérico "No se pudo completar la operación solicitada."
+Se usa para mostrar fallos en operaciones funcionales o de validación.
+Ejemplo: error al guardar datos, email duplicado, permisos insuficientes...
 -->
 <html th:replace="~{fragments/layout-error :: layoutError(
-	errorCode=${errorCode} ?: 400,
+	errorCode=${errorCode} ?: 500,
 	errorMessage=${errorMessage} ?: 'No se pudo completar la operación solicitada.'
 )}">
 </html>

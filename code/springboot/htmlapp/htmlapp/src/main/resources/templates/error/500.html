@@ -1,8 +1,12 @@
 <!-- ============================================================
 ERROR 500 – ERROR INTERNO DEL SERVIDOR
 ============================================================ -->
+<!--
+Plantilla genérica para errores graves no controlados.
+Se muestra cuando ocurre una excepción inesperada o fallo interno.
+-->
 <html th:replace="~{fragments/layout-error :: layoutError(
-	errorCode=500,
-	errorMessage='Se ha producido un error interno en el servidor.'
+	errorCode=${errorCode} ?: 500,
+	errorMessage=${errorMessage} ?: 'Ha ocurrido un error interno en el servidor. Inténtelo de nuevo más tarde.'
 )}">
 </html>
