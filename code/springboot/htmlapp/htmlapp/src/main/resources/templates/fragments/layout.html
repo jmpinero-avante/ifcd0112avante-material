@@ -64,7 +64,13 @@ será null y el layout no insertará nada en su lugar.
   <!-- ============================================================
   MENSAJES GLOBALES DE SESIÓN
   ============================================================ -->
-  <div th:replace="~{fragments/auth-message :: authMessage}"></div>
+  <!--
+  Este fragmento solo muestra actualmente
+  el mensaje de cierre de sesión correcto (?logout).
+  Se incluye globalmente en todas las páginas, pero solo se
+  renderiza si la URL contiene el parámetro "logout".
+  -->
+  <div th:replace="~{fragments/logout-message :: logoutMessage}"></div>
 
   <!-- ============================================================
   PIE DE PÁGINA
@@ -111,7 +117,14 @@ El parámetro `scripts` permite que las plantillas hijas inyecten
 código JavaScript específico al final del body. Si no se define,
 el layout no renderiza nada en esa posición.
 
-6. OBJETIVO PEDAGÓGICO
+6. FRAGMENTO DE MENSAJES GLOBALES
+---------------------------------
+El fragmento `auth-message.html` se mantiene incluido para mostrar
+mensajes globales. Actualmente solo se usa para mostrar la confirmación
+de cierre de sesión (`?logout`). En el futuro puede ampliarse para
+otros mensajes (registro, notificaciones, etc.).
+
+7. OBJETIVO PEDAGÓGICO
 ------------------------
 Este layout enseña cómo:
  - Crear un layout base con parámetros (title, content, scripts).
@@ -119,5 +132,6 @@ Este layout enseña cómo:
  - Controlar la visibilidad de elementos según la sesión.
  - Definir valores por defecto en Thymeleaf.
  - Inyectar fragmentos opcionales de scripts.
+ - Integrar mensajes globales de sesión de forma modular.
  - Separar estructura HTML del contenido dinámico.
 -->
