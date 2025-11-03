@@ -19,24 +19,6 @@ import lombok.extern.slf4j.Slf4j;
  * Centraliza la gestión de excepciones en toda la aplicación.
  * Sustituye la “Whitelabel Error Page” de Spring Boot por vistas
  * personalizadas coherentes con el diseño HtmlApp.
- *
- * ----------------------------------------------------------------------------
- * SOBRE @ControllerAdvice
- * ----------------------------------------------------------------------------
- * Aplica estas reglas globalmente a todos los controladores.
- * Permite capturar excepciones y dirigir a la plantilla adecuada
- * sin necesidad de duplicar código de manejo de errores.
- *
- * ----------------------------------------------------------------------------
- * SOBRE @Slf4j
- * ----------------------------------------------------------------------------
- * Lombok genera automáticamente un logger `log` para registrar
- * eventos relevantes del ciclo de vida de la aplicación.
- * 
- * Niveles más usados:
- *  - log.warn()  → Errores esperables (403, 404, 400).
- *  - log.error() → Fallos críticos o imprevistos (500).
- *  - log.debug() → StackTrace completo (solo en desarrollo).
  */
 @Slf4j
 @ControllerAdvice
@@ -53,7 +35,7 @@ public class ErrorControllerAdvice {
 
 		model.addAttribute("errorCode", 404);
 		model.addAttribute("errorMessage", "La página solicitada no existe o fue movida.");
-		return "html/error/404";
+		return "error/404";
 	}
 
 	// -------------------------------------------------------------------------
@@ -68,7 +50,7 @@ public class ErrorControllerAdvice {
 		model.addAttribute("errorCode", 403);
 		model.addAttribute("errorMessage",
 			ex.getMessage() != null ? ex.getMessage() : "No tiene permisos para acceder a esta página.");
-		return "html/error/403";
+		return "error/403";
 	}
 
 	// -------------------------------------------------------------------------
@@ -83,18 +65,12 @@ public class ErrorControllerAdvice {
 		model.addAttribute("errorCode", 400);
 		model.addAttribute("errorMessage",
 			ex.getMessage() != null ? ex.getMessage() : "La solicitud contiene datos no válidos.");
-		return "html/error/400";
+		return "error/400";
 	}
 
 	// -------------------------------------------------------------------------
 	// 500 - Error en operación de negocio
 	// -------------------------------------------------------------------------
-	/**
-	 * Maneja excepciones de tipo OperationFailedException.
-	 *
-	 * Esta excepción encapsula errores de negocio o validación,
-	 * proporcionando un código de estado y un mensaje personalizados.
-	 */
 	@ExceptionHandler(OperationFailedException.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public String handleOperationFailed(OperationFailedException ex, Model model) {
@@ -108,16 +84,12 @@ public class ErrorControllerAdvice {
 			ex.getMessage() != null ? ex.getMessage() : "No se pudo completar la operación solicitada.");
 
 		// Usa la plantilla de error funcional
-		return "html/error/operation-error";
+		return "error/operation-error";
 	}
 
 	// -------------------------------------------------------------------------
 	// 500 - Error genérico no controlado
 	// -------------------------------------------------------------------------
-	/**
-	 * Captura cualquier otra excepción no prevista.
-	 * Es el último “catch-all” de la aplicación.
-	 */
 	@ExceptionHandler(Exception.class)
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public String handleGenericException(Exception ex, Model model) {
@@ -128,7 +100,7 @@ public class ErrorControllerAdvice {
 		model.addAttribute("errorMessage",
 			ex.getMessage() != null ? ex.getMessage() : "Ha ocurrido un error inesperado en el servidor.");
 
-		return "html/error/generic-error";
+		return "error/generic-error";
 	}
 }
 
@@ -137,7 +109,7 @@ public class ErrorControllerAdvice {
  * NOTAS ADICIONALES
  * ----------------------------------------------------------------------------
  * 1. Todas las vistas de error están en:
- *    src/main/resources/templates/html/error/
+ *    src/main/resources/templates/error/
  *
  * 2. Excepciones esperadas:
  *    - SecurityException          → acceso denegado (403)
