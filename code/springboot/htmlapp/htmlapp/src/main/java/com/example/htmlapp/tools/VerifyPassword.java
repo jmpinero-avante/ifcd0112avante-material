@@ -21,9 +21,7 @@ import java.util.Scanner;
  *
  * Modo 2 (interactivo si faltan parámetros):
  *   mvn exec:java -Dexec.mainClass="com.example.htmlapp.tools.VerifyPassword"
- *   → El programa pedirá los valores por teclado.
  *
- * ----------------------------------------------------------------------------
  * Salida:
  *   Password matches: true
  *
@@ -37,6 +35,7 @@ import java.util.Scanner;
  */
 public class VerifyPassword {
 
+	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		Map<String, String> params = parseArgs(args);
 		Scanner scanner = new Scanner(System.in);
@@ -45,7 +44,7 @@ public class VerifyPassword {
 		String salt = params.get("salt");
 		String hash = params.get("hash");
 
-		// Si falta algún parámetro, lo pedimos por consola
+		// Solicitud interactiva si faltan parámetros
 		if (password == null || password.isEmpty()) {
 			System.out.print("Introduce la contraseña: ");
 			password = scanner.nextLine().trim();
@@ -72,17 +71,16 @@ public class VerifyPassword {
 		} catch (Exception ex) {
 			System.err.println("Error verificando la contraseña: " + ex.getMessage());
 			System.exit(1);
-			scanner.close();
 			return;
 		}
 
-		System.out.println("=== Verificación de contraseña ===");
-		System.out.println("Contraseña introducida: " + password);
+		System.out.println("\n=== Verificación de contraseña ===");
+		System.out.println("Longitud contraseña introducida: " + password.length());
 		System.out.println("Salt: " + salt);
 		System.out.println("Hash esperado: " + hash);
 		System.out.println("Resultado: Password matches = " + matches);
 
-		scanner.close();
+		// No cerrar Scanner(System.in) — puede interferir con otros procesos
 		System.exit(matches ? 0 : 1);
 	}
 
@@ -95,24 +93,23 @@ public class VerifyPassword {
 	 */
 	private static Map<String, String> parseArgs(String[] args) {
 		Map<String, String> map = new HashMap<>();
-		for (int i = 0; i < args.length - 1; i++) {
-			switch (args[i]) {
-				case "--password":
-					map.put("password", args[++i]);
-					break;
-				case "--salt":
-					map.put("salt", args[++i]);
-					break;
-				case "--hash":
-					map.put("hash", args[++i]);
-					break;
-				case "--help":
-				case "-h":
+		for (int i = 0; i < args.length; i++) {
+			String arg = args[i];
+			switch (arg) {
+				case "--password" -> {
+					if (i + 1 < args.length) map.put("password", args[++i]);
+				}
+				case "--salt" -> {
+					if (i + 1 < args.length) map.put("salt", args[++i]);
+				}
+				case "--hash" -> {
+					if (i + 1 < args.length) map.put("hash", args[++i]);
+				}
+				case "--help", "-h" -> {
 					showHelp();
 					System.exit(0);
-					break;
-				default:
-					break;
+				}
+				default -> { /* ignorar argumentos no reconocidos */ }
 			}
 		}
 		return map;

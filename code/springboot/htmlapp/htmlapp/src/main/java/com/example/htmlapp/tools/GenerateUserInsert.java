@@ -59,11 +59,11 @@ public class GenerateUserInsert {
 		String salt = passwordService.generateSalt();
 		String hash = passwordService.hashPassword(password, salt);
 
-		// SQL generado
+		// SQL generado (escape de comillas simples para mostrarlo correctamente)
 		String sql = String.format(
 			"INSERT INTO users (email, full_name, salt, password_hash, is_admin)\n" +
 			"VALUES ('%s', '%s', '%s', '%s', %s);",
-			email, fullName, salt, hash, isAdmin ? "TRUE" : "FALSE"
+			escapeSql(email), escapeSql(fullName), salt, hash, isAdmin ? "TRUE" : "FALSE"
 		);
 
 		System.out.println("=== Generador de INSERT INTO users ===\n");
@@ -79,33 +79,38 @@ public class GenerateUserInsert {
 			System.exit(1);
 		}
 
-		try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPass)) {
-			System.out.println("\nConexión establecida con la base de datos.");
+		try {
+			// Registrar driver PostgreSQL explícitamente (por compatibilidad)
+			Class.forName("org.postgresql.Driver");
 
-			// Verificamos si el email ya existe
-			String checkQuery = "SELECT COUNT(*) FROM users WHERE email = ?";
-			try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
-				checkStmt.setString(1, email);
-				try (ResultSet rs = checkStmt.executeQuery()) {
-					if (rs.next() && rs.getInt(1) > 0) {
-						System.err.println("Error: ya existe un usuario con ese email.");
-						System.exit(1);
+			try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPass)) {
+				System.out.println("\nConexión establecida con la base de datos.");
+
+				// Verificamos si el email ya existe
+				String checkQuery = "SELECT COUNT(*) FROM users WHERE email = ?";
+				try (PreparedStatement checkStmt = conn.prepareStatement(checkQuery)) {
+					checkStmt.setString(1, email);
+					try (ResultSet rs = checkStmt.executeQuery()) {
+						if (rs.next() && rs.getInt(1) > 0) {
+							System.err.println("Error: ya existe un usuario con ese email.");
+							System.exit(1);
+						}
 					}
 				}
-			}
 
-			// Insertamos el usuario
-			try (PreparedStatement stmt = conn.prepareStatement(
-				"INSERT INTO users (email, full_name, salt, password_hash, is_admin) " +
-				"VALUES (?, ?, ?, ?, ?);"
-			)) {
-				stmt.setString(1, email);
-				stmt.setString(2, fullName);
-				stmt.setString(3, salt);
-				stmt.setString(4, hash);
-				stmt.setBoolean(5, isAdmin);
-				int rows = stmt.executeUpdate();
-				System.out.println("Inserción completada. Filas afectadas: " + rows);
+				// Insertamos el usuario
+				try (PreparedStatement stmt = conn.prepareStatement(
+					"INSERT INTO users (email, full_name, salt, password_hash, is_admin) " +
+					"VALUES (?, ?, ?, ?, ?);"
+				)) {
+					stmt.setString(1, email);
+					stmt.setString(2, fullName);
+					stmt.setString(3, salt);
+					stmt.setString(4, hash);
+					stmt.setBoolean(5, isAdmin);
+					int rows = stmt.executeUpdate();
+					System.out.println("Inserción completada correctamente. Filas afectadas: " + rows);
+				}
 			}
 		} catch (Exception ex) {
 			System.err.println("Error al insertar el usuario: " + ex.getMessage());
@@ -131,6 +136,13 @@ public class GenerateUserInsert {
 			}
 		}
 		return map;
+	}
+
+	/**
+	 * Escapa comillas simples en valores SQL para impresión segura.
+	 */
+	private static String escapeSql(String value) {
+		return value == null ? "" : value.replace("'", "''");
 	}
 
 	/**

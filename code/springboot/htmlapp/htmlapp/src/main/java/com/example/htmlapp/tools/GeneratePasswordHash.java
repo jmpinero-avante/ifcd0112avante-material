@@ -37,20 +37,21 @@ import java.util.Scanner;
  */
 public class GeneratePasswordHash {
 
+	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		String password;
+
+		System.out.println("=== Generador de hash de contraseña ===");
 
 		// Si no se pasa argumento, pedimos la contraseña por teclado
 		if (args.length == 0) {
 			Scanner scanner = new Scanner(System.in);
-			System.out.println("=== Generador de hash de contraseña ===");
 			System.out.print("Introduce la contraseña: ");
 			password = scanner.nextLine().trim();
-			scanner.close();
+			// No cerrar System.in para evitar interferencias
 		} else {
 			password = args[0].trim();
-			System.out.println("=== Generador de hash de contraseña ===");
-			System.out.println("Contraseña recibida como argumento.");
+			System.out.println("(Contraseña recibida como argumento)");
 		}
 
 		if (password.isEmpty()) {
@@ -71,5 +72,7 @@ public class GeneratePasswordHash {
 			"VALUES ('usuario@example.com', 'Nombre Apellido', '%s', '%s', FALSE);\n",
 			salt, hash
 		);
+
+		System.out.println("\nProceso completado correctamente.");
 	}
 }
