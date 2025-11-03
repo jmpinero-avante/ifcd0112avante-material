@@ -5,116 +5,145 @@ package com.example.htmlapp.model.logic;
 import org.springframework.stereotype.Service;
 
 import com.example.htmlapp.model.db.User;
-import com.example.htmlapp.model.db.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 /**
- * Servicio centralizado de verificación de permisos.
+ * Servicio de validación de permisos.
  *
- * Este servicio agrupa los métodos que controlan el acceso
- * a las operaciones de la aplicación, separando la lógica de
- * autorización de la lógica de negocio (UserService, etc.).
- *
- * ----------------------------------------------------------------------------
- * DIFERENCIA ENTRE AUTENTICACIÓN Y AUTORIZACIÓN
- * ----------------------------------------------------------------------------
- * - Autenticación (AuthService): identifica al usuario y gestiona
- *   su sesión (login, logout, usuario actual).
- *
- * - Autorización (PermissionsService): decide si el usuario puede
- *   realizar una determinada acción o acceder a una parte concreta
- *   del sistema, según su rol o identidad.
+ * Controla el acceso a operaciones que dependen del rol del usuario
+ * (administrador o usuario normal) y del contexto (propietario del recurso).
  *
  * ----------------------------------------------------------------------------
- * USO TÍPICO:
+ * RESPONSABILIDADES
  * ----------------------------------------------------------------------------
- *   permissionsService.checkLoggedUserPermission();
- *   permissionsService.checkAdminPermission();
- *   permissionsService.checkAdminOrLoggedUserPermission(userId);
+ * - Verificar si el usuario tiene sesión activa.
+ * - Comprobar si el usuario es administrador.
+ * - Validar si un usuario puede operar sobre su propia cuenta.
+ * - Lanzar excepciones de seguridad en caso de acceso no autorizado.
  *
- *   // o en su versión extendida, que devuelve el User:
- *   User u = permissionsService.checkAdminOrLoggedUserPermission(5);
+ * ----------------------------------------------------------------------------
+ * SOBRE EL DISEÑO
+ * ----------------------------------------------------------------------------
+ * Este servicio no accede directamente a la base de datos. Su función es
+ * exclusivamente validar permisos, basándose en la información de sesión
+ * gestionada por `AuthService`.
  */
 @Service
 @RequiredArgsConstructor
 public class PermissionsService {
 
 	private final AuthService authService;
-	private final UserRepository userRepository;
+
+	// -------------------------------------------------------------------------
+	// COMPROBACIONES DE PERMISOS
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Verifica que haya un usuario logado.
+	 * Comprueba si hay un usuario logado. Si no lo hay, lanza una excepción 403.
 	 *
 	 * @return El usuario logado.
-	 * @throws SecurityException si no hay usuario logado.
+	 * @throws SecurityException Si no hay sesión activa.
 	 */
-	public User checkLoggedUserPermission() {
-		return authService.getLoggedUser().orElseThrow(() ->
-			new SecurityException("Acceso denegado: no hay usuario logado.")
-		);
+	public User checkLoggedUser() {
+		return authService.getUser()
+			.orElseThrow(() -> new SecurityException("Debe iniciar sesión para acceder."));
 	}
 
 	/**
-	 * Verifica que el usuario logado tenga privilegios de administrador.
+	 * Comprueba si el usuario actual tiene privilegios de administrador.
 	 *
-	 * @return El usuario administrador.
-	 * @throws SecurityException si no hay usuario o no es administrador.
+	 * @throws SecurityException Si el usuario no es admin o no está logado.
 	 */
-	public User checkAdminPermission() {
-		User user = checkLoggedUserPermission();
-		if (!user.isAdmin()) {
-			throw new SecurityException(
-				"Acceso denegado: el usuario no tiene privilegios de administrador."
-			);
+	public void checkAdminPermission() {
+		if (!isAdmin()) {
+			throw new SecurityException("Acceso denegado. Solo los administradores pueden realizar esta acción.");
 		}
-		return user;
 	}
 
 	/**
-	 * Verifica que el usuario logado sea el propietario o administrador.
+	 * Comprueba si el usuario logado es el mismo que el usuario objetivo
+	 * o si tiene privilegios de administrador.
 	 *
-	 * @param userId ID del usuario sobre el que se realiza la acción.
-	 * @return El usuario sobre el que se tiene permiso.
-	 * @throws SecurityException si no existe o no tiene permiso.
+	 * @param targetId ID del usuario sobre el que se quiere operar.
+	 * @return El usuario logado si tiene permiso.
+	 * @throws SecurityException Si no tiene permiso para acceder.
 	 */
-	public User checkAdminOrLoggedUserPermission(int userId) {
-		User loggedUser = checkLoggedUserPermission();
+	public User checkAdminOrLoggedUserPermission(Integer targetId) {
+		User logged = checkLoggedUser();
 
-		User target = userRepository.findById(userId).orElseThrow(() ->
-			new SecurityException("El usuario especificado no existe.")
-		);
-
-		boolean isOwner = loggedUser.getId().equals(target.getId());
-		boolean isAdmin = loggedUser.isAdmin();
-
-		if (!(isOwner || isAdmin)) {
-			throw new SecurityException(
-				"Acceso denegado: no tiene permiso para acceder a estos datos."
-			);
+		if (logged.isAdmin() || logged.getId().equals(targetId)) {
+			return logged;
 		}
 
-		return target;
+		throw new SecurityException("Acceso denegado. No tiene permiso para acceder a este recurso.");
+	}
+
+	// -------------------------------------------------------------------------
+	// MÉTODOS AUXILIARES (PARA USO INTERNO O DIDÁCTICO)
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Indica si el usuario logado puede operar sobre el usuario dado.
+	 *
+	 * @param target Usuario objetivo.
+	 * @return true si puede acceder (admin o mismo usuario).
+	 */
+	public boolean canAccessUser(User target) {
+		return isAdmin() ||
+			authService.getUserId().map(id -> id.equals(target.getId())).orElse(false);
+	}
+
+	/**
+	 * Indica si hay un usuario logado y si es administrador.
+	 *
+	 * @return true si el usuario logado es admin.
+	 */
+	public boolean isAdmin() {
+		return authService.isAdmin();
+	}
+
+	/**
+	 * Indica si hay un usuario logado.
+	 *
+	 * @return true si hay sesión activa.
+	 */
+	public boolean isLogged() {
+		return authService.isLogged();
 	}
 }
 
 /*
- * ----------------------------------------------------------------------------
- * SOBRE LA DEVOLUCIÓN DEL USUARIO
- * ----------------------------------------------------------------------------
- * En esta versión, los métodos devuelven el objeto User validado. Esto permite
- * a los servicios que los usan evitar duplicar búsquedas en la base de datos.
- *
- * Ejemplo:
- *   User user = permissionsService.checkAdminOrLoggedUserPermission(id);
- *   user.setFullName("Nuevo nombre");
- *   userRepository.save(user);
- *
- * ----------------------------------------------------------------------------
- * SOBRE SecurityException
- * ----------------------------------------------------------------------------
- * SecurityException es una excepción estándar apropiada para indicar
- * violaciones de acceso o permisos insuficientes.
- *
- * Puede capturarse globalmente y mostrar una página 403 personalizada.
- */
+===============================================================================
+NOTAS PEDAGÓGICAS
+===============================================================================
+1. SEPARACIÓN DE RESPONSABILIDADES
+----------------------------------
+   - `AuthService`: gestiona sesión e información del usuario actual.
+   - `PermissionsService`: valida qué puede o no puede hacer un usuario.
+   - `UserService`: aplica la lógica de negocio tras las validaciones.
+
+2. MODELO DE AUTORIZACIÓN
+--------------------------
+   - Usuario anónimo → no puede acceder a rutas protegidas.
+   - Usuario normal  → solo puede acceder/modificar su propia cuenta.
+   - Administrador   → tiene acceso a cualquier recurso o usuario.
+
+3. EXCEPCIONES DE SEGURIDAD
+----------------------------
+   Las comprobaciones lanzan `SecurityException`, que es interceptada por
+   `ErrorControllerAdvice` y renderiza la plantilla `error/403.html`.
+
+4. USO DESDE CONTROLADORES
+---------------------------
+   - `permissionsService.checkAdminPermission();`
+   - `permissionsService.checkLoggedUser();`
+   - `permissionsService.checkAdminOrLoggedUserPermission(id);`
+   - `permissionsService.canAccessUser(user);`
+
+5. OBJETIVO PEDAGÓGICO
+------------------------
+   Mostrar cómo separar la lógica de permisos de la lógica de sesión,
+   siguiendo principios de claridad, reutilización y responsabilidad única.
+===============================================================================
+*/

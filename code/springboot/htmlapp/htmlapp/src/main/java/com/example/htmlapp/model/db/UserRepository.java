@@ -8,157 +8,139 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Repositorio principal para la entidad User.
  *
- * Hereda de JpaRepository, lo que proporciona de forma automática
- * todos los métodos básicos CRUD:
+ * Hereda de JpaRepository, proporcionando automáticamente
+ * métodos CRUD básicos:
  *
- * - findAll()
- * - findById()
- * - save()
- * - deleteById()
- * - count()
+ *   - findAll()
+ *   - findById()
+ *   - save()
+ *   - deleteById()
+ *   - count()
  *
- * Además, Spring Data JPA es capaz de generar automáticamente
- * métodos de consulta basándose en el nombre del método, sin
- * necesidad de escribir consultas SQL o JPQL explícitas.
+ * Además, incluye operaciones personalizadas definidas en
+ * UserRepositoryCustom (como insert() con refresh) e implementadas
+ * en UserRepositoryImpl.
  *
- * ----------------------------------------------------------------------------
- * SOBRE LA ANOTACIÓN @Repository
- * ----------------------------------------------------------------------------
- * En este caso, la anotación @Repository no es estrictamente
- * necesaria, porque Spring Data JPA ya registra automáticamente
- * todas las interfaces que extienden JpaRepository como beans
- * del contexto de Spring.
- *
- * Sin embargo, se puede incluir por claridad o si se desea reforzar
- * explícitamente que esta interfaz pertenece a la capa de acceso
- * a datos.
- *
- * Es buena práctica añadirla en proyectos educativos o en aquellos
- * donde se desee mantener una separación visual clara de capas.
- *
- * ----------------------------------------------------------------------------
- * SOBRE LA CREACIÓN AUTOMÁTICA DE MÉTODOS DE CONSULTA
- * ----------------------------------------------------------------------------
- * Spring Data JPA permite definir métodos como findByEmail() o
- * findByFullName() sin necesidad de usar @Query.
- *
- * El framework analiza el nombre del método (findBy + campo) y
- * genera automáticamente la consulta JPQL necesaria.
- *
- * Ejemplo:
- * Optional<User> findByEmail(String email);
- *
- * generará internamente una consulta equivalente a:
- * SELECT u FROM User u WHERE u.email = ?1
- *
- * ----------------------------------------------------------------------------
- * SOBRE LA ANOTACIÓN @Query (alternativa manual)
- * ----------------------------------------------------------------------------
- * También es posible definir el método de forma explícita usando
- * 
- * @Query y @Param, por ejemplo:
- *
- *        @Query("SELECT u FROM User u WHERE u.email = :email")
- *        Optional<User> findByEmail(@Param("email") String email);
- *
- *        Esto se usa cuando necesitamos una consulta más compleja o con
- *        condiciones personalizadas que no se pueden expresar con el
- *        nombre del método.
- *
- *        ----------------------------------------------------------------------------
- *        SOBRE LA ANOTACIÓN @Param
- *        ----------------------------------------------------------------------------
- *        La anotación @Param sirve para vincular un parámetro de un método
- *        Java con un parámetro con nombre dentro de una consulta JPQL o SQL
- *        definida con @Query.
- *
- *        En el ejemplo anterior, ":email" dentro de la consulta se asocia
- *        al argumento del método marcado con @Param("email").
- *
- *        En resumen:
- *        - Sin @Query → Spring genera la consulta automáticamente.
- *        - Con @Query + @Param → se escribe la consulta manualmente.
+ * También define métodos de ordenación y operaciones masivas (bulk).
  */
 @Repository
 public interface UserRepository
-		extends JpaRepository<User, Integer>, UserRepositoryCustom {
+	extends JpaRepository<User, Integer>, UserRepositoryCustom {
+
+	// -------------------------------------------------------------------------
+	// MÉTODOS DE BÚSQUEDA
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Busca un usuario por su email (se usa en el proceso de login).
+	 * Busca un usuario por su email (usado en login y registro).
 	 *
-	 * Spring Data JPA generará automáticamente la consulta JPQL:
-	 * SELECT u FROM User u WHERE u.email = ?1
+	 * @param email Correo electrónico.
+	 * @return Optional<User> con el usuario, si existe.
 	 */
 	Optional<User> findByEmail(String email);
 
 	/**
-	 * Recupera todos los usuarios cuyos IDs estén en la lista proporcionada.
+	 * Recupera todos los usuarios cuyos IDs estén en la lista indicada.
 	 *
-	 * @param ids Lista de identificadores de usuario.
-	 * @return Lista de entidades User que coinciden con los IDs.
+	 * @param ids Lista de identificadores.
+	 * @return Lista de usuarios coincidentes.
 	 */
 	List<User> findAllByIdIn(List<Integer> ids);
 
-	// =========================================================================
-	// CONSULTAS PERSONALIZADAS PARA OPERACIONES MASIVAS
-	// =========================================================================
+	// -------------------------------------------------------------------------
+	// MÉTODOS DE ORDENACIÓN PERSONALIZADA
+	// -------------------------------------------------------------------------
+
+	// Ordenar por EMAIL
+	@Query("SELECT u FROM User u ORDER BY u.email ASC")
+	List<User> findAllOrderByEmailAsc();
+
+	@Query("SELECT u FROM User u ORDER BY u.email DESC")
+	List<User> findAllOrderByEmailDesc();
+
+	// Ordenar por NOMBRE COMPLETO
+	@Query("SELECT u FROM User u ORDER BY u.fullName ASC")
+	List<User> findAllOrderByFullNameAsc();
+
+	@Query("SELECT u FROM User u ORDER BY u.fullName DESC")
+	List<User> findAllOrderByFullNameDesc();
+
+	// Ordenar por FECHA DE CREACIÓN
+	@Query("SELECT u FROM User u ORDER BY u.creationTimestamp ASC")
+	List<User> findAllOrderByCreationTimestampAsc();
+
+	@Query("SELECT u FROM User u ORDER BY u.creationTimestamp DESC")
+	List<User> findAllOrderByCreationTimestampDesc();
+
+	// -------------------------------------------------------------------------
+	// OPERACIONES MASIVAS (BULK)
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Elimina de forma masiva todos los usuarios cuyos IDs estén en la lista.
+	 * Elimina en bloque los usuarios cuyos IDs coincidan con la lista.
 	 *
-	 * Se ejecuta mediante una sola sentencia JPQL:
-	 *   DELETE FROM User u WHERE u.id IN :ids
-	 *
-	 * Esto es más eficiente que llamar repetidamente a deleteById()
-	 * en un bucle, ya que se envía una única query a la base de datos.
-	 *
-	 * @param ids Lista de identificadores de usuario a eliminar.
+	 * @param ids Lista de IDs a eliminar.
 	 */
-	@Modifying
-	@Query("DELETE FROM User u WHERE u.id IN :ids")
-	void deleteAllByIds(@Param("ids") List<Integer> ids);
+	void deleteAllByIdIn(List<Integer> ids);
 
 	/**
-	 * Actualiza el campo isAdmin de todos los usuarios cuyos IDs estén
-	 * en la lista, en una sola operación.
+	 * Actualiza en bloque el estado de administrador de varios usuarios.
 	 *
-	 * La sentencia JPQL resultante es:
-	 *   UPDATE User u SET u.isAdmin = :isAdmin WHERE u.id IN :ids
+	 * Este método usa una query de actualización directa (sin cargar entidades),
+	 * lo que lo hace mucho más eficiente para grandes volúmenes de datos.
 	 *
-	 * Esto permite asignar o revocar privilegios de administrador
-	 * de forma masiva sin necesidad de recorrer la lista en memoria.
-	 *
-	 * @param ids     Lista de identificadores de usuario a actualizar.
-	 * @param isAdmin Nuevo valor del campo isAdmin.
+	 * @param ids     Lista de IDs de usuarios.
+	 * @param isAdmin Nuevo valor para el campo `isAdmin`.
 	 */
+	@Transactional
 	@Modifying
 	@Query("UPDATE User u SET u.isAdmin = :isAdmin WHERE u.id IN :ids")
-	void updateAdminStatusBulk(@Param("ids") List<Integer> ids, @Param("isAdmin") boolean isAdmin);
+	void updateAdminStatusByIds(List<Integer> ids, boolean isAdmin);
 }
 
 /*
- * ----------------------------------------------------------------------------
- * NOTAS PEDAGÓGICAS
- * ----------------------------------------------------------------------------
- * 1. Las operaciones con @Modifying requieren ejecutarse dentro de un método
- *    anotado con @Transactional (normalmente en el servicio).
- *
- * 2. @Query define la consulta JPQL, y los parámetros con nombre se asocian
- *    mediante @Param.
- *
- * 3. Este tipo de métodos son más eficientes que los bucles tradicionales
- *    porque reducen el número de round-trips a la base de datos.
- *
- * 4. Aun así, la lógica de permisos o filtrado (como excluir el usuario
- *    logado) debe mantenerse en la capa de servicio (UserListService),
- *    nunca en el repositorio.
- *
- * 5. Esto permite separar claramente la lógica de negocio (servicio)
- *    del acceso a datos (repositorio), siguiendo el principio SRP.
- */
+===============================================================================
+NOTAS PEDAGÓGICAS
+===============================================================================
+1. SOBRE LA EXTENSIÓN DE UserRepositoryCustom
+----------------------------------------------
+Esta interfaz hereda también de UserRepositoryCustom, que define el método
+`insert(User user)` implementado en `UserRepositoryImpl` usando persist + refresh.
+Esto garantiza que al crear un usuario nuevo, los campos generados por la BD
+(por ejemplo, creation_timestamp o is_admin) se devuelvan actualizados.
+
+2. SOBRE @Modifying Y @Transactional
+------------------------------------
+- @Modifying indica a Spring Data que la consulta no es una SELECT, sino
+  una operación de escritura (UPDATE o DELETE).
+- @Transactional garantiza que la actualización se ejecute dentro de una
+  transacción (necesario para confirmar los cambios).
+
+3. EFICIENCIA DE OPERACIONES MASIVAS
+-------------------------------------
+Usar consultas JPQL como:
+   UPDATE User u SET u.isAdmin = true WHERE u.id IN :ids
+permite que la base de datos actualice todos los registros en una sola
+operación SQL, sin necesidad de cargar entidades en memoria.
+
+4. DIFERENCIA ENTRE MÉTODOS CRUD Y BULK
+----------------------------------------
+- Los métodos CRUD (`saveAll`, `deleteAll`) respetan el ciclo de vida JPA,
+  incluyendo validaciones y sincronización de caché.
+- Los métodos bulk (`updateAdminStatusByIds`, `deleteAllByIdIn`) actúan
+  directamente sobre la base de datos, sin pasar por el contexto de persistencia.
+
+5. OBJETIVO PEDAGÓGICO
+------------------------
+Este repositorio enseña cómo:
+ - Combinar JPQL y métodos derivados automáticos.
+ - Implementar operaciones masivas eficientes.
+ - Aplicar buenas prácticas de transaccionalidad y diseño limpio.
+===============================================================================
+*/

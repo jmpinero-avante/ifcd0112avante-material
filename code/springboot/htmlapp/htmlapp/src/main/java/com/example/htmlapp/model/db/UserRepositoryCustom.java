@@ -3,20 +3,20 @@
 package com.example.htmlapp.model.db;
 
 /**
- * Interfaz de repositorio personalizado.
+ * Interfaz de repositorio personalizado para operaciones específicas
+ * no cubiertas por JpaRepository.
  *
- * Define métodos adicionales que no vienen incluidos en JpaRepository
- * y que requieren una implementación específica.
- *
- * En este caso, se añade un método insert() para controlar que tras
- * guardar el usuario, se refresquen los valores generados por la BD
- * (como creation_timestamp o valores DEFAULT).
+ * Esta interfaz se implementa manualmente en `UserRepositoryImpl`.
  */
 public interface UserRepositoryCustom {
 
 	/**
-	 * Inserta un usuario y lo refresca para obtener los valores por
-	 * defecto generados por la base de datos.
+	 * Inserta un nuevo usuario en la base de datos y actualiza el objeto
+	 * con los valores por defecto generados por el motor (como timestamps
+	 * o valores booleanos definidos con DEFAULT).
+	 *
+	 * @param user Entidad User a persistir.
+	 * @return La misma entidad actualizada (refrescada desde la BD).
 	 */
 	User insert(User user);
 }
