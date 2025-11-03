@@ -162,6 +162,35 @@ section {
 }
 
 /* ==========================================================================
+ÁREA PRINCIPAL DE CONTENIDO (CUANDO HAY SIDEBAR)
+========================================================================== */
+/*
+Este bloque ajusta el contenido principal cuando el sidebar está presente,
+evitando que se monte encima y garantizando un ancho fluido.
+*/
+
+.content-area {
+	display: block;
+	flex: 1;
+	min-height: calc(100vh - 80px); /* deja espacio para header y footer */
+	margin-left: 240px; /* coincide con el ancho del sidebar */
+	padding: 2rem 2rem;
+	background-color: var(--color-bg);
+	box-sizing: border-box;
+	width: calc(100% - 240px);
+	overflow-x: hidden;
+}
+
+/* En pantallas medianas o pequeñas, el sidebar pasa arriba, así que quitamos el margen */
+@media (max-width: 992px) {
+	.content-area {
+		margin-left: 0;
+		width: 100%;
+		padding: 1.5rem 1rem;
+	}
+}
+
+/* ==========================================================================
 CAJAS DE INFORMACIÓN
 ========================================================================== */
 

@@ -4,14 +4,13 @@
 LAYOUT.CSS – ESTRUCTURA GENERAL DE LA APLICACIÓN
 ========================================================================== */
 /*
-Define la disposición de las secciones principales:
+Define la disposición general de la interfaz:
  - Header (barra superior)
  - Sidebar (menú lateral)
  - Main (contenido principal)
  - Footer
 
-Usa las variables definidas en core/variables.css
-para mantener la coherencia estructural.
+Este archivo controla solo estructura y posicionamiento, no colores ni fuentes.
 */
 
 /* ==========================================================================
@@ -34,7 +33,6 @@ HEADER (BARRA SUPERIOR)
 
 header.topbar {
 	width: 100%;
-	height: var(--topbar-height);
 	background-color: var(--color-header-bg);
 	color: var(--color-header-text);
 	padding: 0.75rem 1.5rem;
@@ -42,10 +40,9 @@ header.topbar {
 	justify-content: space-between;
 	align-items: center;
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-	position: fixed;
+	position: sticky;
 	top: 0;
-	left: 0;
-	z-index: 100;
+	z-index: 1000;
 }
 
 header .app-name {
@@ -64,13 +61,14 @@ header .role-tag {
 SIDEBAR (MENÚ LATERAL)
 ========================================================================== */
 
+/* Ancho fijo principal del sidebar (sin usar variable CSS para compatibilidad total) */
 .sidebar {
-	width: var(--sidebar-width);
-	background-color: var(--color-sidebar-bg);
-	border-right: 1px solid var(--color-border);
+	width: 240px;
+	background-color: var(--color-sidebar-bg, #f8f9fa);
+	border-right: 1px solid var(--color-border, #ddd);
 	padding: 1.5rem 1rem;
 	position: fixed;
-	top: var(--topbar-height);
+	top: 0;
 	left: 0;
 	bottom: 0;
 	overflow-y: auto;
@@ -79,7 +77,13 @@ SIDEBAR (MENÚ LATERAL)
 	transition: width 0.3s ease;
 }
 
-/* Enlaces del sidebar */
+/* Enlaces dentro del menú */
+.sidebar nav ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
 .sidebar a {
 	display: block;
 	color: var(--color-link, #004085);
@@ -93,66 +97,41 @@ SIDEBAR (MENÚ LATERAL)
 
 .sidebar a:hover,
 .sidebar a.active {
-	background-color: var(--color-accent-light);
-	color: var(--color-accent);
+	background-color: var(--color-accent-light, #e9ecef);
+	color: var(--color-accent, #0b5ed7);
 }
 
 /* ==========================================================================
-CONTENIDO PRINCIPAL
+MAIN (CONTENIDO PRINCIPAL)
 ========================================================================== */
 
-main {
+main,
+.content-area {
 	flex: 1;
-	padding: 2rem 1.5rem;
+	margin-left: 240px; /* espacio reservado para el sidebar */
+	padding: 2rem 2rem;
 	background-color: var(--color-bg);
 	box-sizing: border-box;
-	min-height: calc(100vh - 60px);
 	transition: margin-left 0.3s ease;
+	min-height: calc(100vh - 80px);
 }
 
-/* Solo dejar margen cuando el sidebar está presente (vistas logadas) */
-body:has(.sidebar) main {
-	margin-left: 220px;
-}
-
-/* ==========================================================================
-INFO-BOX – CAJAS DE CONTENIDO DENTRO DEL LAYOUT
-========================================================================== */
-
-/* Caja genérica de información: hereda el diseño base desde base.css,
-   pero se adapta al flujo del layout (centrada, con más padding y sombra media) */
+/* Las cajas principales del contenido */
 .info-box {
-  background-color: var(--color-surface, #fff);
-  border-radius: var(--border-radius);
-  padding: 2rem;
-  box-shadow: var(--box-shadow-md);
-  max-width: var(--max-width, 900px);
-  margin: 2rem auto;
-  box-sizing: border-box;
+	background-color: var(--color-surface, #fff);
+	border-radius: var(--border-radius);
+	padding: 2rem;
+	box-shadow: var(--box-shadow-md);
+	max-width: var(--max-width, 1000px);
+	margin: 2rem auto;
 }
 
-/* Variante ancha: pensada para listados y tablas administrativas.
-   Ocupa más ancho y ajusta el padding para mayor legibilidad. */
+/* Variante para tablas anchas o listados */
 .info-box.table-wide {
-  max-width: 100%;
-  width: calc(100% - 3rem);
-  padding: 2.5rem;
-  box-shadow: var(--box-shadow-md);
+	max-width: 100%;
+	width: 100%;
+	padding: 1.5rem 2rem;
 }
-
-/* En pantallas pequeñas, reduce el margen y el padding */
-@media (max-width: 768px) {
-  .info-box {
-    padding: 1.5rem;
-    margin: 1.5rem auto;
-  }
-
-  .info-box.table-wide {
-    width: 100%;
-    padding: 1.5rem;
-  }
-}
-
 
 /* ==========================================================================
 FOOTER
@@ -172,18 +151,19 @@ footer {
 RESPONSIVE DESIGN
 ========================================================================== */
 
-/* Tablets horizontales y portátiles pequeños */
+/* -------- Tablets y portátiles pequeños -------- */
 @media (max-width: 992px) {
 	.sidebar {
 		width: 180px;
 	}
-	main {
+	main,
+	.content-area {
 		margin-left: 180px;
 		padding: 1.5rem 1rem;
 	}
 }
 
-/* Tablets verticales */
+/* -------- Tablets verticales -------- */
 @media (max-width: 768px) {
 	body {
 		flex-direction: column;
@@ -192,7 +172,6 @@ RESPONSIVE DESIGN
 	.sidebar {
 		position: relative;
 		width: 100%;
-		top: 0;
 		border-right: none;
 		border-bottom: 1px solid var(--color-border);
 		display: flex;
@@ -202,14 +181,14 @@ RESPONSIVE DESIGN
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 	}
 
-	main {
+	main,
+	.content-area {
 		margin-left: 0;
 		padding: 1rem;
-		padding-top: calc(var(--topbar-height) + 1rem);
 	}
 }
 
-/* Móviles pequeños */
+/* -------- Móviles pequeños -------- */
 @media (max-width: 480px) {
 	.sidebar {
 		flex-direction: column;
@@ -224,9 +203,9 @@ RESPONSIVE DESIGN
 		padding: 0.6rem 0;
 	}
 
-	main {
+	main,
+	.content-area {
 		padding: 0.75rem;
-		padding-top: calc(var(--topbar-height) + 1rem);
 	}
 
 	.info-box {
@@ -240,8 +219,8 @@ OBJETIVO PEDAGÓGICO
 ========================================================================== */
 /*
 Este archivo enseña cómo:
- - Aplicar variables estructurales para un layout modular.
- - Mantener un sidebar fijo sin superposición con la topbar.
- - Controlar los offsets del contenido con calc() y variables.
- - Hacer el diseño responsive de forma progresiva y coherente.
+ - Sincronizar un sidebar fijo con un main fluido.
+ - Usar flex y márgenes calculados sin dependencias.
+ - Mantener consistencia con el ancho del sidebar.
+ - Asegurar un layout responsive funcional en todos los navegadores.
 */

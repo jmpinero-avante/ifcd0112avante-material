@@ -8,14 +8,21 @@ LISTADO DE USUARIOS (ADMIN)
 	scripts=~{}
 )}">
 
-<main>
-	<!-- Cabecera descriptiva -->
+<main class="content-area">
+	<!-- ============================================================
+	CABECERA DESCRIPTIVA
+	============================================================ -->
 	<section class="info-box">
 		<h1>Gestión de usuarios</h1>
-		<p>Desde aquí puedes ver, editar o eliminar usuarios, así como gestionar privilegios de administrador.</p>
+		<p>
+			Desde aquí puedes ver, editar o eliminar usuarios,
+			así como gestionar privilegios de administrador.
+		</p>
 	</section>
 
-	<!-- Sección principal del listado -->
+	<!-- ============================================================
+	SECCIÓN PRINCIPAL DEL LISTADO
+	============================================================ -->
 	<section class="info-box table-wide">
 		<!-- Solo visible para administradores -->
 		<div th:if="${session.user.admin}">
@@ -52,8 +59,10 @@ LISTADO DE USUARIOS (ADMIN)
 
 								<!-- Columna de acciones -->
 								<td class="table-actions">
-									<a th:href="@{'/user/details/' + ${user.id}}" class="icon-btn" title="Ver detalles">🔍</a>
-									<a th:href="@{'/user/edit/' + ${user.id}}" class="icon-btn" title="Editar usuario">✏️</a>
+									<a th:href="@{'/user/details/' + ${user.id}}"
+									   class="icon-btn" title="Ver detalles">🔍</a>
+									<a th:href="@{'/user/edit/' + ${user.id}}"
+									   class="icon-btn" title="Editar usuario">✏️</a>
 									<a th:href="@{'/user/delete/' + ${user.id}}"
 									   class="icon-btn"
 									   th:if="${session.user.id != user.id}"
@@ -74,13 +83,30 @@ LISTADO DE USUARIOS (ADMIN)
 					</select>
 					<button type="submit" class="btn btn-success">Aplicar</button>
 				</div>
-
 			</form>
 		</div>
 
+		<!-- Si el usuario no es administrador -->
 		<div th:unless="${session.user.admin}">
 			<p>No tiene permisos para ver esta página.</p>
 		</div>
 	</section>
 </main>
 </html>
+
+<!-- ============================================================
+NOTAS DE DISEÑO Y FUNCIONAMIENTO
+============================================================ -->
+<!--
+1. La clase `.content-area` garantiza que el contenido principal
+   no se solape con el sidebar y mantenga un ancho fluido.
+
+2. `.info-box` → usada para bloques descriptivos o introductorios.
+   `.info-box.table-wide` → para secciones con tablas amplias.
+
+3. `.table-container` aplica scroll horizontal si la tabla
+   supera el ancho disponible en pantallas pequeñas.
+
+4. Compatible con `layout.html`, `tables.css` y `layout.css`
+   con el nuevo sistema modular de estilos.
+-->
